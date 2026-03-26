@@ -1,0 +1,12 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Base de datos local (para que no se suba tu DB de prueba)
+parking.db
