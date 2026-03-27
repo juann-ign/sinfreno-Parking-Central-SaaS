@@ -33,6 +33,7 @@ class Usuario(Base):
     sucursal = relationship("Sucursal", back_populates="usuarios")
     # Relaciones de auditoría
     estadias_ingresadas = relationship("Estadia", foreign_keys="[Estadia.usuario_ingreso_id]", back_populates="usuario_ingreso")
+    estadias_finalizadas = relationship("Estadia", foreign_keys="[Estadia.usuario_salida_id]", back_populates="usuario_salida")
 
 class Torre(Base):
     __tablename__ = "torres"
@@ -61,7 +62,6 @@ class Estadia(Base):
     # Auditoría de empleados
     usuario_ingreso_id = Column(Integer, ForeignKey("usuarios.id")) 
     usuario_salida_id = Column(Integer, ForeignKey("usuarios.id"))
-
     
     fecha_entrada = Column(DateTime, default=datetime.datetime.utcnow)
     fecha_salida = Column(DateTime, nullable=True)
@@ -72,3 +72,4 @@ class Estadia(Base):
     vehiculo = relationship("Vehiculo", back_populates="estadias")
     torre = relationship("Torre", back_populates="estadias")
     usuario_ingreso = relationship("Usuario", foreign_keys=[usuario_ingreso_id], back_populates="estadias_ingresadas")
+    usuario_salida = relationship("Usuario", foreign_keys=[usuario_salida_id], back_populates="estadias_finalizadas")
