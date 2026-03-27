@@ -3,6 +3,13 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
+class Empresa(Base):
+    __tablename__ = "empresas"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, unique=True)
+    cuit = Column(String, unique=True)
+    sucursales = relationship("Sucursal", back_populates="empresa")
+
 class Sucursal(Base):
     __tablename__ = "sucursales"
     id = Column(Integer, primary_key=True, index=True)
