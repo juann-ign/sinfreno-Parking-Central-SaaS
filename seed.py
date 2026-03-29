@@ -1,5 +1,5 @@
-from database import SessionLocal
-import models
+from app.core.database import SessionLocal
+import app.models.db_models as models
 
 def seed():
     db = SessionLocal()
