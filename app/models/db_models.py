@@ -40,7 +40,7 @@ class Torre(Base):
     id = Column(Integer, primary_key=True, index=True)
     numero = Column(Integer)
     capacidad = Column(Integer)
-    tiene_descuento = Column(Integer, default=False) 
+    aplica_descuento = Column(Boolean, default=False) 
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     
     sucursal = relationship("Sucursal", back_populates="torres")
