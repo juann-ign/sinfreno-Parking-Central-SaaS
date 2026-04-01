@@ -10,3 +10,8 @@ router = APIRouter(prefix="/parking", tags=["Parking Operations"])
 def ingreso(data: schemas.EstadiaCreate, db: Session = Depends(dependencies.get_db)):
     
     return parking_service.registrar_ingreso_vehiculo(db, data.patente, data.torre_id, data.usuario_ingreso_id)
+
+
+@router.post("/salida", response_model=schemas.EstadiaOut)
+def salida(patente: str, usuario_id: int, db: Session = Depends(dependencies.get_db)):
+    return parking_service.registrar_salida_vehiculo(db, patente, usuario_id)
