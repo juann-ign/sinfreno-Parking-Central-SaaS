@@ -8,7 +8,5 @@ router = APIRouter(prefix="/parking", tags=["Parking Operations"])
 
 @router.post("/ingreso", response_model=schemas.EstadiaOut)
 def ingreso(data: schemas.EstadiaCreate, db: Session = Depends(dependencies.get_db)):
-    try:
-        return parking_service.registrar_ingreso_vehiculo(db, data.patente, data.torre_id, data.usuario_ingreso_id)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    
+    return parking_service.registrar_ingreso_vehiculo(db, data.patente, data.torre_id, data.usuario_ingreso_id)
