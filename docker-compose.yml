@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sinfreno_db
+    restart: always
+    environment:
+      POSTGRES_USER: user_sinfreno
+      POSTGRES_PASSWORD: password_sinfreno
+      POSTGRES_DB: sinfreno_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: sinfreno_api
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user_sinfreno:password_sinfreno@db:5432/sinfreno_db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
