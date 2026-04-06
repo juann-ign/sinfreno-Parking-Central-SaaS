@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-from app.api.v1 import parking
-from app.core.database import engine, Base
+from backend.app.api.v1 import parking
+from backend.app.core.database import engine, Base
 
 # Crea las tablas
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="ParkingCentral SaaS")
+app = FastAPI(title="Sinfreno Parking Central")
 
 # Incluimos las rutas versionadas
 app.include_router(parking.router, prefix="/api/v1")
