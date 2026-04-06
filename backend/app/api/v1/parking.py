@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.api import dependencies
-from app.models import schemas
-from app.services import parking_service
+from backend.app.api import dependencies
+from backend.app.models import schemas
+from backend.app.services import parking_service
 
 router = APIRouter(prefix="/parking", tags=["Parking Operations"])
 
