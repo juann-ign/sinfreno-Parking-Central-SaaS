@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from backend.app.core.database import Base
 import datetime
 
 class Empresa(Base):
@@ -8,7 +8,10 @@ class Empresa(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True)
     cuit = Column(String, unique=True)
-    
+    # --- NUEVO: DIFERENCIAL ---
+    logo_url = Column(String, nullable=True) 
+    color_primario = Column(String, default="#2563eb") 
+    # --------------------------
     sucursales = relationship("Sucursal", back_populates="empresa")
 
 class Sucursal(Base):
