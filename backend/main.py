@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 from backend.app.api.v1 import parking
-from backend.app.core.database import engine, Base
 
-# Crea las tablas
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Sinfreno Parking Central")
 
