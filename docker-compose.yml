@@ -15,10 +15,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: .
+    build: 
+      context: ./backend 
     container_name: sinfreno_api
     volumes:
-      - .:/app
+      - ./backend:/app
     ports:
       - "8000:8000"
     environment:
