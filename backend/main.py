@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.app.api.v1 import parking
+from app.api.v1 import parking
 
 
 app = FastAPI(title="Sinfreno Parking Central")
