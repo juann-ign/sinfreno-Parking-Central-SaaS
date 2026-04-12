@@ -81,3 +81,13 @@ class UsuarioOut(UsuarioBase):
     sucursal_id: Optional[int]
     class Config:
         from_attributes = True
+
+class EstadiaDetallada(BaseModel):
+    id: int
+    patente: str
+    fecha_entrada: datetime
+    torre_numero: int
+    estado: str
+
+    class Config:
+        from_attributes = True

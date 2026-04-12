@@ -74,3 +74,6 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     db.commit()
     db.refresh(estadia)
     return estadia
+
+def obtener_estadias_activas(db: Session):
+    return db.query(db_models.Estadia).filter(db_models.Estadia.estado == "ACTIVO").all()

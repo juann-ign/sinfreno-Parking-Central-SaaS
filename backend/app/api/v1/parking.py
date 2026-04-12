@@ -15,3 +15,7 @@ def ingreso(data: schemas.EstadiaCreate, db: Session = Depends(dependencies.get_
 @router.post("/salida", response_model=schemas.EstadiaOut)
 def salida(patente: str, usuario_id: int, db: Session = Depends(dependencies.get_db)):
     return parking_service.registrar_salida_vehiculo(db, patente, usuario_id)
+
+@router.get("/activas", response_model=list[schemas.EstadiaOut])
+def listar_activas(db: Session = Depends(dependencies.get_db)):
+    return parking_service.obtener_estadias_activas(db)
