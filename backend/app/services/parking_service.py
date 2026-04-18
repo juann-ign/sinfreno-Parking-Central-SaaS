@@ -55,7 +55,9 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
 
     # 2. Cálculos de tiempo y dinero
     fecha_salida = datetime.now(timezone.utc)
-    duracion = fecha_salida - estadia.fecha_entrada.replace(tzinfo=timezone.utc)
+    # Aseguramos que ambas fechas tengan el mismo 'vibe' (offset-aware)
+    entrada_tz = estadia.fecha_entrada.replace(tzinfo=timezone.utc)
+    duracion = fecha_salida - entrada_tz
     horas_a_cobrar = ceil(duracion.total_seconds() / 3600)
     if horas_a_cobrar <= 0: horas_a_cobrar = 1
 
