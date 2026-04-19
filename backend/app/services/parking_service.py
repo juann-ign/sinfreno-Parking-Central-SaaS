@@ -3,6 +3,8 @@ from app.models import db_models
 from fastapi import HTTPException 
 from datetime import datetime, timezone
 from math import ceil
+from app.core.websocket_manager import manager # Importar arriba
+
 
 def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int):
     # 1. Validar Torre
@@ -77,5 +79,12 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     db.refresh(estadia)
     return estadia
 
-def obtener_estadias_activas(db: Session):
-    return db.query(db_models.Estadia).filter(db_models.Estadia.estado == "ACTIVO").all()
+def obtener_estadias_activas(db: Session, sucursal_id: int):
+    """
+    Retorna solo las estadías activas de la sucursal a la que 
+    pertenece el usuario actual.
+    """
+    return db.query(db_models.Estadia).join(db_models.Torre).filter(
+        db_models.Estadia.estado == "ACTIVO",
+        db_models.Torre.sucursal_id == sucursal_id
+    ).all()
