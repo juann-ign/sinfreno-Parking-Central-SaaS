@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from math import ceil
 from app.core.websocket_manager import manager # Importar arriba
 
-
 def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int):
     # 1. Validar Torre
     torre = db.query(db_models.Torre).filter(db_models.Torre.id == torre_id).first()
@@ -43,6 +42,15 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     db.add(nueva_estadia)
     db.commit()
     db.refresh(nueva_estadia)
+    
+    # Notificación Real-time (esto es asíncrono, se hace sin bloquear).
+    import asyncio
+    asyncio.create_task(manager.broadcast({
+        "event": "NUEVO_INGRESO", 
+        "patente": patente_up,
+        "torre": torre.numero
+    }))
+    
     return nueva_estadia
 
 def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
