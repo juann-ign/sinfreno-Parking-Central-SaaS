@@ -40,9 +40,8 @@ class UsuarioCreate(UsuarioBase):
     sucursal_id: Optional[int] = None
 
 class EstadiaCreate(BaseModel):
-    patente: str
+    patente: str = Field(..., min_length=6, max_length=10, example="ABC1234")
     torre_id: int
-    usuario_ingreso_id: int
 
 class EstadiaUpdate(BaseModel):
     # Usado para el cierre de estadía
