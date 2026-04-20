@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
+from app.core.websocket_manager import manager 
 from sqlalchemy.orm import Session
 from app.api import dependencies
 from app.models import schemas, db_models
@@ -7,12 +8,27 @@ from app.services import parking_service
 router = APIRouter(prefix="/parking", tags=["Parking Operations"])
 
 @router.post("/ingreso", response_model=schemas.EstadiaOut)
-def ingreso(data: schemas.EstadiaCreate, db: Session = Depends(dependencies.get_db),
+def ingreso(
+    data: schemas.EstadiaCreate, 
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(dependencies.get_db),
     # El usuario viene del token y se inyecta automáticamente gracias a Depends
     current_user: db_models.Usuario = Depends(dependencies.get_current_user)
 ):
+    # 1. Ejecutamos la lógica de DB (sincrónica)
+    nueva_estadia = parking_service.registrar_ingreso_vehiculo(
+        db, data.patente, data.torre_id, current_user.id
+    )
+
+    # 2. Programamos la notificación WebSocket como tarea de fondo
+    # Esto no bloquea la respuesta al cliente
+    background_tasks.add_task(
+        manager.broadcast, 
+        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "torre_id": data.torre_id}
+    )
+
     # Usamos current_user.id extraído del JWT
-    return parking_service.registrar_ingreso_vehiculo(db, data.patente, data.torre_id, current_user.id)
+    return nueva_estadia
     
 @router.post("/salida", response_model=schemas.EstadiaOut)
 def salida(patente: str, db: Session = Depends(dependencies.get_db),

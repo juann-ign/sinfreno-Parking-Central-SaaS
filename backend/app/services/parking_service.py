@@ -43,14 +43,6 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     db.commit()
     db.refresh(nueva_estadia)
     
-    # Notificación Real-time (esto es asíncrono, se hace sin bloquear).
-    import asyncio
-    asyncio.create_task(manager.broadcast({
-        "event": "NUEVO_INGRESO", 
-        "patente": patente_up,
-        "torre": torre.numero
-    }))
-    
     return nueva_estadia
 
 def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
