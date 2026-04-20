@@ -43,7 +43,7 @@ class Torre(Base):
     id = Column(Integer, primary_key=True, index=True)
     numero = Column(Integer)
     capacidad = Column(Integer)
-    aplica_descuento = Column(Boolean, default=False) 
+    porcentaje_descuento = Column(Float, default=0.0) # Ejemplo: 0.15 para 15%
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     
     sucursal = relationship("Sucursal", back_populates="torres")
@@ -53,6 +53,7 @@ class Vehiculo(Base):
     __tablename__ = "vehiculos"
     id = Column(Integer, primary_key=True, index=True)
     patente = Column(String, unique=True, index=True)
+    tipo = Column(String, default="AUTO") # Auto, Moto, Camioneta, etc.
 
     estadias = relationship("Estadia", back_populates="vehiculo")
 

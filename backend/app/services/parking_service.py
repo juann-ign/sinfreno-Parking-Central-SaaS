@@ -71,11 +71,17 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     horas_a_cobrar = ceil(duracion.total_seconds() / 3600)
     if horas_a_cobrar <= 0: horas_a_cobrar = 1
 
-    tarifa = estadia.torre.sucursal.tarifa_hora
-    monto_final = horas_a_cobrar * tarifa
+    tarifa_base = estadia.torre.sucursal.tarifa_hora
 
-    if estadia.torre.aplica_descuento:
-        monto_final *= 0.85
+    # Multiplicador por tipo de vehículo (Lógica simple para este ejemplo)
+    multiplicadores = {"AUTO": 1.0, "MOTO": 0.5, "CAMIONETA": 1.5}
+    factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
+    monto_bruto = horas_a_cobrar * tarifa_base * factor_tipo
+
+
+    # Aplicar descuento dinámico de la torre
+    descuento = monto_bruto * estadia.torre.porcentaje_descuento
+    monto_final = monto_bruto - descuento
 
     # 3. Actualizar registro
     estadia.fecha_salida = fecha_salida
