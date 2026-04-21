@@ -67,6 +67,7 @@ class EstadiaOut(BaseModel):
     vehiculo_id: int
     torre_id: int
     usuario_ingreso_id: int
+    usuario_salida_id: Optional[int] = None
     fecha_entrada: datetime
     fecha_salida: Optional[datetime] = None
     monto: float
