@@ -43,14 +43,6 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     db.commit()
     db.refresh(nueva_estadia)
     
-    # Notificación Real-time (esto es asíncrono, se hace sin bloquear).
-    import asyncio
-    asyncio.create_task(manager.broadcast({
-        "event": "NUEVO_INGRESO", 
-        "patente": patente_up,
-        "torre": torre.numero
-    }))
-    
     return nueva_estadia
 
 def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
@@ -78,9 +70,10 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
     monto_bruto = horas_a_cobrar * tarifa_base * factor_tipo
 
+    porcentaje = estadia.torre.porcentaje_descuento if estadia.torre.porcentaje_descuento is not None else 0.0
 
     # Aplicar descuento dinámico de la torre
-    descuento = monto_bruto * estadia.torre.porcentaje_descuento
+    descuento = monto_bruto * porcentaje
     monto_final = monto_bruto - descuento
 
     # 3. Actualizar registro

@@ -43,3 +43,32 @@ def get_current_user(
     if not user:
         raise credentials_exception
     return user
+
+def get_current_active_user(
+    current_user: db_models.Usuario = Depends(get_current_user)
+) -> db_models.Usuario:
+    """
+    Verifica que el usuario no solo tenga un token válido, 
+    sino que siga existiendo y esté habilitado.
+    """
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Usuario no encontrado o inactivo"
+        )
+    return current_user
+
+def get_user_tenant(
+    user: db_models.Usuario = Depends(get_current_active_user)
+) -> int:
+    """
+    Dependency para obtener el ID de la empresa del usuario actual.
+    Garantiza el aislamiento de datos (Multi-tenancy).
+    """
+    if not user.sucursal_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario no tiene una sucursal/empresa asignada."
+        )
+    # Navegamos la relación: Usuario -> Sucursal -> Empresa
+    return user.sucursal.empresa_id
