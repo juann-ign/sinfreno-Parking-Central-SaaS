@@ -91,3 +91,12 @@ class EstadiaDetallada(BaseModel):
 
     class Config:
         from_attributes = True
+
+class DashboardSummary(BaseModel):
+    autos_adentro: int
+    capacidad_disponible: int
+    porcentaje_ocupacion: float
+    recaudacion_hoy: float
+
+    class Config:
+        from_attributes = True
