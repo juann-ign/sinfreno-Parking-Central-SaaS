@@ -2,9 +2,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import sqlalchemy as sa
 from app.models import db_models
-from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
+from app.core.config import settings
+from app.core.timezone_utils import get_today_range_utc
 
 def get_dashboard_summary(db: Session, sucursal_id: int):
+    # Usamos el helper para filtrar "Hoy" según Argentina
+    inicio_utc, fin_utc = get_today_range_utc()
+
     # 1. Ocupación Actual
     autos_adentro = db.query(db_models.Estadia).join(db_models.Torre).filter(
         db_models.Torre.sucursal_id == sucursal_id,
@@ -17,11 +22,11 @@ def get_dashboard_summary(db: Session, sucursal_id: int):
     ).scalar() or 0
 
     # 3. Recaudación Real (Hoy)
-    hoy_inicio = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0)
     recaudacion_hoy = db.query(func.sum(db_models.Estadia.monto)).join(db_models.Torre).filter(
         db_models.Torre.sucursal_id == sucursal_id,
         db_models.Estadia.estado == "FINALIZADO",
-        db_models.Estadia.fecha_salida >= hoy_inicio
+        db_models.Estadia.fecha_salida >= inicio_utc,
+        db_models.Estadia.fecha_salida <= fin_utc
     ).scalar() or 0.0
 
     return {
@@ -32,17 +37,19 @@ def get_dashboard_summary(db: Session, sucursal_id: int):
     }
 
 def get_hourly_revenue(db: Session, sucursal_id: int):
-    hoy = datetime.now(timezone.utc).date()
+    inicio_utc, fin_utc = get_today_range_utc()
+    tz_local = settings.APP_TZ
     
     # Usamos func.extract para obtener la hora de la fecha_salida
     # Filtramos por sucursal, estado FINALIZADO y que la salida sea HOY
     results = db.query(
-        func.extract('hour', db_models.Estadia.fecha_salida).label('hora'),
+        func.extract('hour', db_models.Estadia.fecha_salida.op('AT TIME ZONE')('UTC').op('AT TIME ZONE')(tz_local)).label('hora'),
         func.sum(db_models.Estadia.monto).label('monto')
     ).join(db_models.Torre).filter(
         db_models.Torre.sucursal_id == sucursal_id,
         db_models.Estadia.estado == "FINALIZADO",
-        func.cast(db_models.Estadia.fecha_salida, sa.Date) == hoy
+        db_models.Estadia.fecha_salida >= inicio_utc,
+        db_models.Estadia.fecha_salida <= fin_utc
     ).group_by('hora').order_by('hora').all()
 
     # Convertimos los resultados de la DB (tuplas) a una lista de diccionarios
