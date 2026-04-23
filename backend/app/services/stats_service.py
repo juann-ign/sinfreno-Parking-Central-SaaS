@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+import sqlalchemy as sa
 from app.models import db_models
 from datetime import datetime, timezone, timedelta
 
@@ -29,3 +30,20 @@ def get_dashboard_summary(db: Session, sucursal_id: int):
         "porcentaje_ocupacion": round((autos_adentro / capacidad_total * 100), 2) if capacidad_total > 0 else 0,
         "recaudacion_hoy": recaudacion_hoy
     }
+
+def get_hourly_revenue(db: Session, sucursal_id: int):
+    hoy = datetime.now(timezone.utc).date()
+    
+    # Usamos func.extract para obtener la hora de la fecha_salida
+    # Filtramos por sucursal, estado FINALIZADO y que la salida sea HOY
+    results = db.query(
+        func.extract('hour', db_models.Estadia.fecha_salida).label('hora'),
+        func.sum(db_models.Estadia.monto).label('monto')
+    ).join(db_models.Torre).filter(
+        db_models.Torre.sucursal_id == sucursal_id,
+        db_models.Estadia.estado == "FINALIZADO",
+        func.cast(db_models.Estadia.fecha_salida, sa.Date) == hoy
+    ).group_by('hora').order_by('hora').all()
+
+    # Convertimos los resultados de la DB (tuplas) a una lista de diccionarios
+    return [{"hora": int(r.hora), "monto": float(r.monto)} for r in results]

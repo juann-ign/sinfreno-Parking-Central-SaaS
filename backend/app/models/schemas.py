@@ -100,3 +100,10 @@ class DashboardSummary(BaseModel):
 
     class Config:
         from_attributes = True
+
+class HourlyRevenue(BaseModel):
+    hora: int  # 0 a 23
+    monto: float
+
+    class Config:
+        from_attributes = True
