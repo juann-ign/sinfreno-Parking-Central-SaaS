@@ -3,8 +3,9 @@ from app.models import db_models
 from fastapi import HTTPException 
 from datetime import datetime, timezone
 from math import ceil
-from app.core.websocket_manager import manager # Importar arriba
+from app.core.websocket_manager import manager
 from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaError
+from app.core.logger import logger 
 
 def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int):
     # 1. Validar Torre
@@ -29,7 +30,7 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     ).first()
     
     if estadia_activa:
-        raise HTTPException(status_code=400, detail="El vehículo ya está en el sistema.")
+        raise VehiculoYaPresenteError(patente_up)
 
     # 4. Crear estadía con UTC
     nueva_estadia = db_models.Estadia(
@@ -44,6 +45,8 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     db.commit()
     db.refresh(nueva_estadia)
     
+    logger.info(f"INGRESO: Vehículo {patente_up} en Torre {torre_id} por Usuario ID {usuario_ingreso_id}")
+
     return nueva_estadia
 
 def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
