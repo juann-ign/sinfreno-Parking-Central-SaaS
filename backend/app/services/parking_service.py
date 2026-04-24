@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from datetime import datetime, timezone
 from math import ceil
 from app.core.websocket_manager import manager # Importar arriba
+from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaError
 
 def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int):
     # 1. Validar Torre
@@ -53,28 +54,32 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     ).first()
 
     if not estadia:
-        raise HTTPException(status_code=404, detail="No hay una estadía activa para esta patente.")
+        raise EstadiaNoEncontradaError(patente)
 
     # 2. Cálculos de tiempo y dinero
     fecha_salida = datetime.now(timezone.utc)
     # Aseguramos que ambas fechas tengan el mismo 'vibe' (offset-aware)
     entrada_tz = estadia.fecha_entrada.replace(tzinfo=timezone.utc)
     duracion = fecha_salida - entrada_tz
-    horas_a_cobrar = ceil(duracion.total_seconds() / 3600)
-    if horas_a_cobrar <= 0: horas_a_cobrar = 1
+    segundos_totales = duracion.total_seconds()
 
-    tarifa_base = estadia.torre.sucursal.tarifa_hora
+    # --- LÓGICA DE NEGOCIO: Franja de Cortesía (5 minutos) ---
+    if segundos_totales < 300: 
+        monto_final = 0.0
+    else:
+        horas_a_cobrar = ceil(segundos_totales / 3600)
+        tarifa_base = estadia.torre.sucursal.tarifa_hora
 
-    # Multiplicador por tipo de vehículo (Lógica simple para este ejemplo)
-    multiplicadores = {"AUTO": 1.0, "MOTO": 0.5, "CAMIONETA": 1.5}
-    factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
-    monto_bruto = horas_a_cobrar * tarifa_base * factor_tipo
+        # Multiplicador por tipo de vehículo (Lógica simple para este ejemplo)
+        multiplicadores = {"AUTO": 1.0, "MOTO": 0.5, "CAMIONETA": 1.5}
+        factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
+        monto_bruto = horas_a_cobrar * tarifa_base * factor_tipo
 
-    porcentaje = estadia.torre.porcentaje_descuento if estadia.torre.porcentaje_descuento is not None else 0.0
+        porcentaje = estadia.torre.porcentaje_descuento if estadia.torre.porcentaje_descuento is not None else 0.0
 
-    # Aplicar descuento dinámico de la torre
-    descuento = monto_bruto * porcentaje
-    monto_final = monto_bruto - descuento
+        # Aplicar descuento dinámico de la torre
+        descuento = monto_bruto * porcentaje
+        monto_final = monto_bruto - descuento
 
     # 3. Actualizar registro
     estadia.fecha_salida = fecha_salida
