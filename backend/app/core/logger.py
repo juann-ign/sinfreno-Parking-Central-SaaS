@@ -3,7 +3,7 @@ import sys
 import os
 
 # Definimos el formato: Timestamp | Nivel de Error | Nombre del Archivo | Mensaje
-# Ejemplo: 2023-10-27 10:00:00 | INFO | parking_service | Vehículo ABC1234 ingresado
+# Ejemplo: 2023-10-27 10:00:00 | INFO | parking_service | Vehículo ABC1234 ingresado.
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(module)s | %(message)s"
 
 def setup_logging():
