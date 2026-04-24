@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.api import dependencies
 from app.services import stats_service
 from app.models import schemas, db_models
+from app.api.dependencies import RoleChecker
+
 
 router = APIRouter(prefix="/stats", tags=["Analytics"])
 

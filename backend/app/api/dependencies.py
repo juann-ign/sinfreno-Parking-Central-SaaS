@@ -72,3 +72,22 @@ def get_user_tenant(
         )
     # Navegamos la relación: Usuario -> Sucursal -> Empresa
     return user.sucursal.empresa_id
+
+class RoleChecker:
+    def __init__(self, allowed_roles: list[str]):
+        """
+        Al instanciar la clase, definimos qué roles permitimos.
+        Ejemplo: RoleChecker(["admin", "superAdmin"])
+        """
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, current_user: db_models.Usuario = Depends(get_current_active_user)):
+        """
+        Este método se ejecuta cada vez que alguien llama al endpoint.
+        """
+        if current_user.rol not in self.allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos suficientes para realizar esta acción."
+            )
+        return current_user
