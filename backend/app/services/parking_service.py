@@ -49,16 +49,18 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
 
     return nueva_estadia
 
-def registrar_salida_vehiculo(db: Session, patente: str, torre_id: int, usuario_egreso_id: int):
+def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
     # 1. Buscar estadía activa usando un JOIN (más eficiente)
     estadia = db.query(db_models.Estadia).join(db_models.Vehiculo).filter(
         db_models.Vehiculo.patente == patente.upper().strip(),
         db_models.Estadia.estado == "ACTIVO",
-        db_models.Estadia.torre_id == torre_id
     ).first()
 
     if not estadia:
         raise EstadiaNoEncontradaError(patente)
+
+    # Recuperamos el torre_id directamente del objeto que encontramos en la DB
+    torre_id= estadia.torre_id 
 
     # 2. Cálculos de tiempo y dinero
     fecha_salida = datetime.now(timezone.utc)
@@ -91,7 +93,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, torre_id: int, usuario_
     estadia.usuario_salida_id = usuario_egreso_id
     estadia.estado = "FINALIZADO"
 
-    logger.info(f"SALIDA: Vehículo {patente} en Torre {torre_id} por Usuario ID {usuario_egreso_id}")
+    logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {torre_id} por Usuario ID {usuario_egreso_id}")
     
 
     db.commit()
