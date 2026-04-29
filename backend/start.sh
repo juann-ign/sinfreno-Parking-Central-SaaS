@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Detener el script si hay algún error
 set -e
 
