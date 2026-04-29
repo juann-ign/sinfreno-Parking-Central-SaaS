@@ -92,6 +92,15 @@ class EstadiaDetallada(BaseModel):
     class Config:
         from_attributes = True
 
+class EstadiaPaginated(BaseModel): 
+    total: int 
+    page: int 
+    pages: int 
+    items: List[EstadiaOut] 
+    
+    class Config: 
+        from_attributes = True
+
 class DashboardSummary(BaseModel):
     autos_adentro: int
     capacidad_disponible: int

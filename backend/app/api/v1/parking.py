@@ -43,3 +43,12 @@ def listar_activas(
 ):
         # La lógica de filtrado ahora depende de quién hace la petición
     return parking_service.obtener_estadias_activas(db, current_user.sucursal_id)
+
+@router.get("/historial", response_model=schemas.EstadiaPaginated)
+def listar_historial(
+    page: int = 1, 
+    size: int = 20,
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.get_current_user)
+):
+    return parking_service.obtener_historial_paginado(db, current_user.sucursal_id, page, size)
