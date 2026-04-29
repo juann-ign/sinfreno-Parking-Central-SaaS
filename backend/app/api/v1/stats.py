@@ -30,3 +30,10 @@ def read_hourly_revenue(
     Ideal para gráficos de barras o líneas en el dashboard.
     """
     return stats_service.get_hourly_revenue(db, current_user.sucursal_id)
+
+@router.get("/peak-hour", response_model=schemas.PeakHour)
+def read_peak_hour(
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(allow_admin)
+):
+    return stats_service.get_peak_hour(db, current_user.sucursal_id)

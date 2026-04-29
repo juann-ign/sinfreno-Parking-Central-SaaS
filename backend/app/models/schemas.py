@@ -107,3 +107,10 @@ class HourlyRevenue(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PeakHour(BaseModel):
+    hora_pico: Optional[int]  # Puede ser None si no hay datos
+    volumen: int
+    
+    class Config:
+        from_attributes = True
