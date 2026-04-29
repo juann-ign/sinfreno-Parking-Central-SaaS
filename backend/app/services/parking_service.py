@@ -8,11 +8,20 @@ from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaErro
 from app.core.logger import logger 
 
 def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int):
-    # 1. Validar Torre
+    # 1. Validar Torre y su capacidad
     torre = db.query(db_models.Torre).filter(db_models.Torre.id == torre_id).first()
     if not torre:
         raise HTTPException(status_code=404, detail="Torre no encontrada.")
     
+    # Contar cuántos vehículos están actualmente en esa torre
+    ocupacion_actual = db.query(db_models.Estadia).filter(
+        db_models.Estadia.torre_id == torre_id,
+        db_models.Estadia.estado == "ACTIVO"
+    ).count()
+
+    if ocupacion_actual >= torre.capacidad:
+        raise HTTPException(status_code=400, detail="Torre llena. No se pueden registrar más ingresos.")
+
     patente_up = patente.upper().strip()
     
     # 2. Obtener o crear vehículo
@@ -95,7 +104,6 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
 
     logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {torre_id} por Usuario ID {usuario_egreso_id}")
     
-
     db.commit()
     db.refresh(estadia)
     return estadia

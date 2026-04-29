@@ -92,6 +92,15 @@ class EstadiaDetallada(BaseModel):
     class Config:
         from_attributes = True
 
+class EstadiaPaginated(BaseModel):
+    total: int
+    page: int
+    pages: int
+    items: List[EstadiaOut]
+
+    class Config:
+        from_attributes = True
+
 class DashboardSummary(BaseModel):
     autos_adentro: int
     capacidad_disponible: int
@@ -105,5 +114,12 @@ class HourlyRevenue(BaseModel):
     hora: int  # 0 a 23
     monto: float
 
+    class Config:
+        from_attributes = True
+
+class PeakHour(BaseModel):
+    hora_pico: Optional[int]  # Puede ser None si no hay datos
+    volumen: int
+    
     class Config:
         from_attributes = True

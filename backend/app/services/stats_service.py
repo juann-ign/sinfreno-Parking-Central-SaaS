@@ -54,3 +54,21 @@ def get_hourly_revenue(db: Session, sucursal_id: int):
 
     # Convertimos los resultados de la DB (tuplas) a una lista de diccionarios
     return [{"hora": int(r.hora), "monto": float(r.monto)} for r in results]
+
+def get_peak_hour(db: Session, sucursal_id: int):
+    """
+    Calcula la hora con mayor volumen de ingresos en la historia de la sucursal.
+    Arquitectura: Agrupamiento (GROUP BY) y Conteo (COUNT) a nivel DB para eficiencia.
+    """
+    # Extraemos la hora de la fecha_entrada y contamos
+    result = db.query(
+        func.extract('hour', db_models.Estadia.fecha_entrada).label('hora'),
+        func.count(db_models.Estadia.id).label('cantidad')
+    ).join(db_models.Torre).filter(
+        db_models.Torre.sucursal_id == sucursal_id
+    ).group_by('hora').order_by(sa.desc('cantidad')).first()
+
+    if not result:
+        return {"hora_pico": None, "volumen": 0}
+    
+    return {"hora_pico": int(result.hora), "volumen": result.cantidad}
