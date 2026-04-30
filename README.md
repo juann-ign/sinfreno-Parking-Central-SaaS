@@ -20,54 +20,54 @@ A diferencia de los sistemas tradicionales, Sinfreno ofrece:
 
 sinfreno/
 ├── backend
-    ├── app/                     # Paquete principal de la aplicación
-    │   ├── __init__.py         # Inicialización del paquete
-        ├── seed.py
-    │   ├── api/                # Endpoints de la API
-    │   │   ├── __init__.py
-    │   │   ├── dependencies.py # Dependencias de la API
-    │   │   └── v1/            # API v1 endpoints
-    │   │       ├── __init__.py
-                ├── auth.py
-                ├── parking.py
-                ├── stats.py
-    │   │       ├── chat.py     # Endpoints de chat
-    │   │       └── health.py   # Health check endpoints
-    │   ├── config/             # Configuración
-    │   │   ├── __init__.py
-    │   │   └── settings.py    # Settings de la aplicación
-    │   ├── core/               # Componentes core
-    │   │   ├── __init__.py
-    |   |   ├── config.py
-    |   |   ├── database.py
-    |   |   ├── exceptions.py
-    |   |   ├── timezone_utils.py
-    |   |   ├── websocket_manager.py
-    │   │   ├── logger.py      # Configuración de logging
-    │   │   └── security.py    # Utilidades de seguridad
-    │   ├── models/             # Modelos de datos
-    │   │   ├── __init__.py
-            ├── db_models.py
-    │   │   └── schemas.py      # Modelos Pydantic
-    │   └── services/           # Lógica de negocio
-    │       ├── __init__.py
-            ├── parking_service.py
-    │       └── stats_service.py  # Servicio de IA
-        ├── stats_service.py
-        
-    ├── alembic/
-        ├── versions/
-            ├── ...
-        ├── env.py              # Configuración Docker
-        ├── script.py.mako
-        ├── README.md
-    ├── main.py              # Configuración Docker
-    ├── requirements.txt         # Dependencias (para pip)
-    ├── pyproject.toml          # Configuración del proyecto (para uv)
-    ├── alembic.ini              # Configuración Docker
-    ├── app_audit.log              # Configuración Docker
-    ├── Dockerfile              # Configuración Docker
-    ├── start.sh              # Configuración Docker
+|   ├── app/                     # Paquete principal de la aplicación
+|   │   ├── __init__.py         # Inicialización del paquete
+|   |   ├── seed.py
+|   │   ├── api/                # Endpoints de la API
+|   │   │   ├── __init__.py
+|   │   │   ├── dependencies.py # Dependencias de la API
+|   │   │   └── v1/            # API v1 endpoints
+|   │   │       ├── __init__.py
+|   |   |       ├── auth.py
+|   |   |       ├── parking.py
+|   |   |       ├── stats.py
+|   │   │       ├── chat.py     # Endpoints de chat
+|   │   │       └── health.py   # Health check endpoints
+|   │   ├── config/             # Configuración
+|   │   │   ├── __init__.py
+|   │   │   └── settings.py    # Settings de la aplicación
+|   │   ├── core/               # Componentes core
+|   │   │   ├── __init__.py
+|   |   |   ├── config.py
+|   |   |   ├── database.py
+|   |   |   ├── exceptions.py
+|   |   |   ├── timezone_utils.py
+|   |   |   ├── websocket_manager.py
+|  │   │   ├── logger.py      # Configuración de logging
+|   │   │   └── security.py    # Utilidades de seguridad
+|   │   ├── models/             # Modelos de datos
+|   │   │   ├── __init__.py
+|   |   |   ├── db_models.py
+|   │   │   └── schemas.py      # Modelos Pydantic
+|   │   └── services/           # Lógica de negocio
+|   │       ├── __init__.py
+|   |       ├── parking_service.py
+|   │       └── stats_service.py  # Servicio de IA    
+|   ├── alembic/
+|       ├── versions/
+|       |   └── ...
+|       ├── env.py              # Configuración Docker
+|       ├── script.py.mako
+|       └── README.md
+|   ├── main.py                 # Configuración Docker
+|   ├── alembic.ini              # Configuración Docker
+|   ├── app_audit.log              # Configuración Docker
+|   ├── Dockerfile              # Configuración Docker
+|   ├── pyproject.toml          # Configuración del proyecto (para uv)
+|   ├── requirements.txt         # Dependencias (para pip)
+|   └── start.sh              # Configuración Docker
+├── frontend/
+|   └── ...
 ├── docker-compose.yml      # Orquestación Docker Compose
 ├── .dockerignore           # Archivos ignorados por Docker
 ├── .gitignore             # Archivos ignorados por Git
