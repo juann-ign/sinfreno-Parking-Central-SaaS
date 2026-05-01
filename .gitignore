@@ -10,6 +10,3 @@ __pycache__/
 
 # Base de datos local (para que no se suba tu DB de prueba)
 parking.db
-
-# Node modules 
-node_modules/
