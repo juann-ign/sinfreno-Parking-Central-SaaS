@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Tus variables de White-label siguen aquí */
+:root {
+  --color-primary: #2563eb; 
+}
