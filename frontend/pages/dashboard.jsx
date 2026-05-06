@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import StatCard from '../components/statCard';
-import StatCard from '../components/activeTable';
+import ActiveTable from '../components/activeTable';
 import { Car, Unlock, Percent, DollarSign, LogOut } from 'lucide-react';
 
 const Dashboard = ({ onLogout }) => {
@@ -95,6 +95,12 @@ const Dashboard = ({ onLogout }) => {
                 icon={DollarSign} 
                 colorClass="bg-emerald-600"
             />
+            </div>
+            <div className="mt-10">
+                <ActiveTable 
+                    vehicles={activeVehicles} 
+                    onCheckout={handleCheckout} 
+                ></ActiveTable>
             </div>
         </main>
         </div>
