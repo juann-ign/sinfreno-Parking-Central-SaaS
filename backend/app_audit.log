@@ -4,3 +4,9 @@
 2026-04-24 14:51:47,215 | INFO | parking_service | INGRESO: Vehículo AAA999 en Torre 1 por Usuario ID 1
 2026-04-24 14:52:31,825 | INFO | parking_service | SALIDA: Vehículo aaa999 egresó por Torre 1 por Usuario ID 1
 2026-04-29 19:28:10,160 | INFO | parking_service | INGRESO: Vehículo CHO123 en Torre 1 por Usuario ID 1
+2026-05-06 03:50:50,225 | INFO | parking_service | INGRESO: Vehículo ABC1234 en Torre 1 por Usuario ID 1
+2026-05-06 04:56:34,617 | INFO | parking_service | INGRESO: Vehículo KANYE897 en Torre 1 por Usuario ID 1
+2026-05-06 04:57:58,084 | INFO | parking_service | SALIDA: Vehículo KEN999 egresó por Torre 1 por Usuario ID 1
+2026-05-06 04:58:08,940 | INFO | parking_service | SALIDA: Vehículo ABC1234 egresó por Torre 1 por Usuario ID 1
+2026-05-06 04:58:15,402 | INFO | parking_service | SALIDA: Vehículo CHO123 egresó por Torre 1 por Usuario ID 1
+2026-05-06 04:58:19,923 | INFO | parking_service | SALIDA: Vehículo KANYE897 egresó por Torre 1 por Usuario ID 1

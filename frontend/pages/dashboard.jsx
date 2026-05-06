@@ -27,6 +27,11 @@ const Dashboard = ({ onLogout }) => {
     };
 
     const handleCheckout = async (patente) => {
+        console.log("Intentando cobrar patente:", patente); // Verifica que aquí no salga undefined
+        if (!patente) {
+            alert("Error: No se detectó la patente");
+            return;
+        }
         if (!window.confirm(`¿Confirmar salida del vehículo ${patente}?`)) return;
         try {
         // Llamamos al endpoint de salida que ya tienes en el backend
@@ -41,7 +46,7 @@ const Dashboard = ({ onLogout }) => {
     useEffect(() => {
         fetchData();
         // Opcional: Actualizar cada 30 segundos automáticamente
-        const interval = setInterval(fetchStats, 30000);
+        const interval = setInterval(fetchData, 30000);
         return () => clearInterval(interval);
     }, []);
 

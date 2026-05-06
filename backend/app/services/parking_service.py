@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models import db_models
 from fastapi import HTTPException 
 from datetime import datetime, timezone
@@ -113,9 +113,12 @@ def obtener_estadias_activas(db: Session, sucursal_id: int):
     Retorna solo las estadías activas de la sucursal a la que 
     pertenece el usuario actual.
     """
-    return db.query(db_models.Estadia).join(db_models.Torre).filter(
-        db_models.Estadia.estado == "ACTIVO",
-        db_models.Torre.sucursal_id == sucursal_id
+    return db.query(db_models.Estadia)\
+        .options(joinedload(db_models.Estadia.vehiculo))\
+        .join(db_models.Torre)\
+        .filter(
+            db_models.Estadia.estado == "ACTIVO",
+            db_models.Torre.sucursal_id == sucursal_id
     ).all()
 
 def obtener_historial_paginado(db: Session, sucursal_id: int, page: int = 1, size: int = 20):

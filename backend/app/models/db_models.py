@@ -77,3 +77,8 @@ class Estadia(Base):
     torre = relationship("Torre", back_populates="estadias")
     usuario_ingreso = relationship("Usuario", foreign_keys=[usuario_ingreso_id], back_populates="estadias_ingresadas")
     usuario_salida = relationship("Usuario", foreign_keys=[usuario_salida_id], back_populates="estadias_finalizadas")
+    
+    # Añadimos esto para que la estadía sepa responder su patente directamente
+    @property
+    def patente(self):
+        return self.vehiculo.patente if self.vehiculo else "S/D"
