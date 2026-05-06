@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
-import Login from '../pages/Login.jsx';
+import Login from '../pages/Login';
+import Dashboard from '../pages/Dashboard';
 
 function App() {
-  // Estado para saber si el usuario está dentro o fuera
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
 
-  if (!isLoggedIn) {
-    return <Login onLoginSuccess={() => setIsLoggedIn(true)} />;
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
 
   return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold">¡Bienvenido a Sinfreno!</h1>
-      <p>Próximamente: Tu Dashboard con estadísticas reales.</p>
-      <button 
-        onClick={() => { localStorage.removeItem('token'); setIsLoggedIn(false); }}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Cerrar Sesión
-      </button>
+    <div className="font-sans antialiased text-gray-900">
+      {!isLoggedIn ? (
+        <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+      ) : (
+        <Dashboard onLogout={handleLogout} />
+      )}
     </div>
   );
 }
