@@ -65,6 +65,7 @@ class SucursalOut(SucursalBase):
 class EstadiaOut(BaseModel):
     id: int
     vehiculo_id: int
+    patente: str
     torre_id: int
     usuario_ingreso_id: int
     usuario_salida_id: Optional[int] = None
