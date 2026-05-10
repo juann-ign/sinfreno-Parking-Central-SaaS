@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import StatCard from '../components/statCard';
 import ActiveTable from '../components/activeTable';
+import EntryForm from '../components/EntryForm'; 
 import { Car, Unlock, Percent, DollarSign, LogOut } from 'lucide-react';
 
 const Dashboard = ({ onLogout }) => {
@@ -101,6 +102,11 @@ const Dashboard = ({ onLogout }) => {
                 colorClass="bg-emerald-600"
             />
             </div>
+            
+            {/* Formulario de Ingreso */}
+            <EntryForm onEntrySuccess={fetchData} />
+
+            {/* Tabla de Vehículos Activos */}            
             <div className="mt-10">
                 <ActiveTable 
                     vehicles={activeVehicles} 
