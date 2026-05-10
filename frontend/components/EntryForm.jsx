@@ -1,118 +1,140 @@
 import React, { useState } from 'react';
-import { PlusCircle, Car, AlertCircle } from 'lucide-react';
+import { PlusCircle, Car, AlertCircle, CheckCircle2, Globe } from 'lucide-react';
 import api from '../api/axios';
 
 const EntryForm = ({ onEntrySuccess }) => {
-    // Estas son nuestras "cajas" de memoria
     const [patente, setPatente] = useState('');
-    const [torreId, setTorreId] = useState('1'); // Por defecto torre 1
+    const [torreId, setTorreId] = useState('1');
     const [loading, setLoading] = useState(false);
-    const [errorLocal, setErrorLocal] = useState('');
+    
+    // Estados de validación
+    const [status, setStatus] = useState('empty'); // 'empty', 'valid-arg', 'special', 'invalid'
 
-    // FUNCIÓN DE VALIDACIÓN (Visión de Negocio: Datos limpios)
-    const validarPatente = (valor) => {
-        // 1. Solo permitir letras y números (elimina espacios y guiones)
+    const analizarPatente = (valor) => {
+        // 1. Limpieza absoluta (solo letras y números)
         const limpio = valor.replace(/[^A-Z0-9]/gi, '').toUpperCase();
-        
-        // 2. Limitar a 7 caracteres (estándar Mercosur)
-        if (limpio.length > 7) return;
+        if (limpio.length > 8) return; // Máximo 8 (algunos países usan 8)
 
         setPatente(limpio);
 
-        // 3. Validación de formato básico (mínimo 6 caracteres para ser válida)
-        if (limpio.length > 0 && limpio.length < 6) {
-            setErrorLocal('La patente debe tener 6 o 7 caracteres');
+        // 2. Definir patrones (Regex)
+        const patronArgViejo = /^[A-Z]{3}\d{3}$/;          // AAA111
+        const patronArgNuevo = /^[A-Z]{2}\d{3}[A-Z]{2}$/;  // AA111AA
+        const esAlfanumerico = /^(?=.*[A-Z])(?=.*\d)[A-Z0-9]{6,8}$/; // Mezcla de letras y números entre 6 y 8
+
+        // 3. Lógica de estados
+        if (limpio === '') {
+            setStatus('empty');
+        } else if (patronArgViejo.test(limpio) || patronArgNuevo.test(limpio)) {
+            setStatus('valid-arg');
+        } else if (esAlfanumerico.test(limpio)) {
+            setStatus('special');
         } else {
-            setErrorLocal('');
+            setStatus('invalid');
         }
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Evita que la página se recargue sola
-
-        if (!patente) return alert("Por favor, ingresa una patente");
-
-        // No enviamos si no cumple el mínimo
-        if (patente.length < 6) {
-            setErrorLocal('Formato de patente inválido');
-            return;
-        }
+        e.preventDefault();
+        if (status === 'invalid' || status === 'empty') return;
 
         setLoading(true);
         try {
-            // Llamada al backend (FastAPI)
             await api.post('/parking/ingreso', {
-                patente: patente.trim().toUpperCase(),
+                patente: patente,
                 torre_id: parseInt(torreId)
             });
-
-            // Si sale bien:
-            setPatente(''); // Limpiamos el cuadrito de texto
-            alert(`Vehículo ${patente.toUpperCase()} ingresado con éxito`);
-            onEntrySuccess(); // Le avisamos al Dashboard que refresque la lista
+            setPatente('');
+            setStatus('empty');
+            alert(`✅ Ingreso registrado: ${patente}`);
+            onEntrySuccess();
         } catch (error) {
-            alert(error.response?.data?.detail || "Error al ingresar el vehículo");
+            alert(error.response?.data?.detail || "Error al ingresar");
         } finally {
             setLoading(false);
         }
     };
 
-    return (
-        <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-50 mb-12 mt-12 transition-all">
-            <div className = "mb-6">
-                <h3 className="text-2xl font-extrabold text-gray-800 flex items-center gap-2">
-                    <PlusCircle className="text-blue-600" size={24} /> Registrar nuevo ingreso
-                </h3>
-                <p className="text-gray-500 text-sm">Registra un nuevo vehículo en el sistema.</p>
-            </div>
+    // Colores dinámicos según el estado
+    const getStyles = () => {
+        switch(status) {
+            case 'valid-arg': return 'border-green-500 bg-green-50 focus:ring-green-100';
+            case 'special': return 'border-orange-400 bg-orange-50 focus:ring-orange-100';
+            case 'invalid': return 'border-red-400 bg-red-50 focus:ring-red-100';
+            default: return 'border-gray-100 bg-gray-50 focus:border-blue-500 focus:ring-blue-100';
+        }
+    };
 
-            <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-6">
-                <div className="flex-1 min-w-[300px]">
-                    <label className="block text-sm font-bold text-gray-600 mb-2 uppercase tracking-wide">Patente (sin espacios)</label>
+    return (
+        <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-blue-50 mb-12 mt-12 transition-all">
+            <div className="mb-6">
+                <h3 className="text-xl font-extrabold text-gray-800 flex items-center gap-2">
+                    <PlusCircle className="text-blue-600" size={24} /> 
+                    Registrar ingreso de vehículo
+                </h3>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex flex-wrap items-start gap-6">
+                {/* Input de Patente con validación y feedback visual */}
+                <div className="flex-1 min-w-[300px] relative">
+                    <label className="block text-sm font-bold text-gray-600 mb-2 uppercase tracking-widest">
+                        Patente 
+                    </label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                             <Car size={24} />
                         </span>
                         <input 
                             type="text"
-                            placeholder="ABC123 o AA111AA"
-                            className={`w-full pl-12 pr-4 py-5 border-3 rounded-xl focus:ring-4 text-2xl font-mono font-all transition-all uppercase ${
-                                errorLocal ? `border-red-500 bg-red-100 focus:border-red-400 focus:ring-red 100` : `border-gray-100 bg-gray 50 focus:border-blue-500 focus:ring-blue-200`
-                            }`}
+                            placeholder="ABC1234"
+                            className={`w-full pl-12 pr-12 py-5 border-3 rounded-xl transition-all text-2xl font-mono font-bold uppercase outline-none ${getStyles()}`}
                             value={patente}
-                            onChange={(e) => validarPatente(e.target.value)}
+                            onChange={(e) => analizarPatente(e.target.value)}
                         />
+                        {/* ICONO DE ESTADO A LA DERECHA DEL INPUT */}
+                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                            {status === 'valid-arg' && <CheckCircle2 className="text-green-500" size={28} />}
+                            {status === 'special' && <Globe className="text-orange-500" size={28} />}
+                            {status === 'invalid' && <AlertCircle className="text-red-500" size={28} />}
+                        </div>
                     </div>
-                    {errorLocal && (
-                        <p className='mt-2 text-red 500 text-sm flex items-center gap-1 font-medium'>
-                            <AlertCircle size={14} /> {errorLocal}
-                        </p>
-                    )}
+
+                    {/* MENSAJES DE AYUDA */}
+                    <div className="absolute top-full left-0 mt-2 w-full">
+                        {status === 'valid-arg' && <p className="text-green-600 text-xs font-bold uppercase tracking-tighter">Patente Argentina estándar</p>}
+                        {status === 'special' && <p className="text-green-600 text-xs font-bold uppercase tracking-tighter">Formato especial / extranjero</p>}
+                        {status === 'invalid' && <p className="text-green-500 text-xs font-bold uppercase tracking-tighter">Debe mezclar letras y números (6-8 caracteres)</p>}
+                    </div>
                 </div>
 
                 <div className="w-40">
-                    <label className="block text-sm font-bold text-gray-600 mb-2 uppercase">Torre</label>
+                    <label className="block text-sm font-bold text-gray-600 mb-2 uppercase tracking-widest text-center">Torre</label>
                     <select 
-                        className="w-full p-5 border-3 border-gray-100 bg-gray 50 rounded-xl focus:border-blue-500 text-2xl font-bold transition-all"
+                        className="w-full p-5 border-3 border-gray-100 bg-gray-50 rounded-xl focus:border-blue-500 text-xl font-bold transition-all text-center"
                         value={torreId}
                         onChange={(e) => setTorreId(e.target.value)}
                     >
-                        <option value="1">Torre 1</option>
-                        <option value="2">Torre 2</option>
+                        <option value="1">T1</option>
+                        <option value="2">T2</option>
                     </select>
                 </div>
 
-                <button 
-                    type="submit"
-                    disabled={loading || patente.length < 6}
-                    className={`px-10 py-5 rounded-xl font-black text-xl text-white shadow-x1 transition-all flex items-center gap-3 ${
-                        loading || patente.length < 6 
-                        ? 'bg-gray-300 cursor-not-allowed shadow-none' 
-                        : 'bg-blue-600 hover:bg-blue-700 hover:-translate-y-1 active:scale-95'
-                    }`}
-                >
-                    {loading ? 'Procesando...' : 'INGRESAR VEHÍCULO'}
-                </button>
+                <div className="flex flex-col">
+                    <label className="block text-sm font-bold opacity-0 mb-2 uppercase">
+                        Acción
+                    </label>
+                    <button 
+                        type="submit"
+                        disabled={loading || status === 'invalid' || status === 'empty'}
+                        className={`px-10 py-5 rounded-xl font-black text-xl text-white shadow-xl transition-all flex items-center justify-content h-[76px] gap-3 ${
+                            (loading || status === 'invalid' || status === 'empty')
+                            ? 'bg-gray-300 cursor-not-allowed shadow-none' 
+                            : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
+                        }`}
+                    >
+                        {loading ? '...' : 'INGRESAR'}
+                    </button>
+                </div>
             </form>
         </div>
     );
