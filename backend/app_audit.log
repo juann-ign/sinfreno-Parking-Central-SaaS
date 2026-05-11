@@ -10,3 +10,23 @@
 2026-05-06 04:58:08,940 | INFO | parking_service | SALIDA: Vehículo ABC1234 egresó por Torre 1 por Usuario ID 1
 2026-05-06 04:58:15,402 | INFO | parking_service | SALIDA: Vehículo CHO123 egresó por Torre 1 por Usuario ID 1
 2026-05-06 04:58:19,923 | INFO | parking_service | SALIDA: Vehículo KANYE897 egresó por Torre 1 por Usuario ID 1
+2026-05-10 03:59:05,909 | INFO | parking_service | INGRESO: Vehículo NAS123 en Torre 1 por Usuario ID 1
+2026-05-10 03:59:16,843 | INFO | parking_service | SALIDA: Vehículo NAS123 egresó por Torre 1 por Usuario ID 1
+2026-05-10 04:00:22,243 | INFO | parking_service | INGRESO: Vehículo DASDSADSAA en Torre 1 por Usuario ID 1
+2026-05-10 04:00:49,918 | INFO | parking_service | INGRESO: Vehículo &#&"DADAS en Torre 1 por Usuario ID 1
+2026-05-10 04:01:12,540 | INFO | parking_service | INGRESO: Vehículo NAS872 en Torre 1 por Usuario ID 1
+2026-05-10 04:01:55,628 | INFO | parking_service | SALIDA: Vehículo DASDSADSAA egresó por Torre 1 por Usuario ID 1
+2026-05-10 04:06:49,297 | INFO | parking_service | INGRESO: Vehículo DASDSASD23 en Torre 1 por Usuario ID 1
+2026-05-10 04:34:24,303 | INFO | parking_service | INGRESO: Vehículo SAFSAFA en Torre 1 por Usuario ID 1
+2026-05-10 04:34:35,163 | INFO | parking_service | INGRESO: Vehículo 4324324 en Torre 1 por Usuario ID 1
+2026-05-10 04:34:47,726 | INFO | parking_service | INGRESO: Vehículo 423DASD en Torre 1 por Usuario ID 1
+2026-05-10 04:35:00,952 | INFO | parking_service | SALIDA: Vehículo NAS872 egresó por Torre 1 por Usuario ID 1
+2026-05-10 04:40:10,073 | INFO | parking_service | INGRESO: Vehículo DSA23243 en Torre 1 por Usuario ID 1
+2026-05-10 04:40:17,677 | INFO | parking_service | INGRESO: Vehículo ABC124 en Torre 1 por Usuario ID 1
+2026-05-10 04:40:23,334 | INFO | parking_service | INGRESO: Vehículo AB124SS en Torre 1 por Usuario ID 1
+2026-05-10 04:40:27,458 | INFO | parking_service | INGRESO: Vehículo 131321DA en Torre 1 por Usuario ID 1
+2026-05-10 04:43:14,211 | INFO | parking_service | SALIDA: Vehículo 4324324 egresó por Torre 1 por Usuario ID 1
+2026-05-10 04:52:54,790 | INFO | parking_service | INGRESO: Vehículo ASFBSAF2 en Torre 1 por Usuario ID 1
+2026-05-10 04:52:59,648 | INFO | parking_service | INGRESO: Vehículo DASDSAV2 en Torre 1 por Usuario ID 1
+2026-05-10 04:53:03,815 | INFO | parking_service | INGRESO: Vehículo DSADSA21 en Torre 1 por Usuario ID 1
+2026-05-10 04:53:08,819 | INFO | parking_service | SALIDA: Vehículo 423DASD egresó por Torre 1 por Usuario ID 1
