@@ -4,6 +4,7 @@ import StatCard from '../components/statCard';
 import ActiveTable from '../components/activeTable';
 import EntryForm from '../components/EntryForm'; 
 import { Car, Unlock, Percent, DollarSign, LogOut } from 'lucide-react';
+import { toast } from 'sonner'
 
 const Dashboard = ({ onLogout }) => {
     const [stats, setStats] = useState(null);
@@ -36,11 +37,20 @@ const Dashboard = ({ onLogout }) => {
         if (!window.confirm(`¿Confirmar salida del vehículo ${patente}?`)) return;
         try {
         // Llamamos al endpoint de salida que ya tienes en el backend
-            await api.post(`/parking/salida?patente=${patente}`);
-            alert(`Salida registrada para ${patente}`);
+            const reponse = await api.post(`/parking/salida?patente=${patente}`);
+            const montoFinal = response.data.monto;
+
+            toast.info (
+                <div className='flex flex-col'>
+                    <span className='font-bold'>Salida exitosa: {patente}</span>
+                    <span className='text-lg'>Cobrar: <b className='text-blue-700'>${montoFinal}</b></span>
+                </div>,
+                { duration: 8000} // Le dejamos 8 segundos para que el operario anote el monto
+            );
+
             fetchData(); // Refrescamos todo automáticamente
         } catch (error) {
-            alert("Error al registrar salida: " + error.response?.data?.detail || "Error desconocido");
+            toast.error("No se pudo registrar la salida. Intente nuevamente.");
         }
     };
     // useEffect: Se ejecuta apenas carga el componente

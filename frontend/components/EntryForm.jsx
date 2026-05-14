@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlusCircle, Car, AlertCircle, CheckCircle2, Globe } from 'lucide-react';
 import api from '../api/axios';
+import { toast } from 'sonner';
 
 const EntryForm = ({ onEntrySuccess }) => {
     const [patente, setPatente] = useState('');
@@ -46,10 +47,10 @@ const EntryForm = ({ onEntrySuccess }) => {
             });
             setPatente('');
             setStatus('empty');
-            alert(`✅ Ingreso registrado: ${patente}`);
+            toast.success(`Vehículo ${patente} ingresado correctamente`);
             onEntrySuccess();
         } catch (error) {
-            alert(error.response?.data?.detail || "Error al ingresar");
+            toast.error(error.response?.data?.detail || "Error al procesar el ingreso");
         } finally {
             setLoading(false);
         }
