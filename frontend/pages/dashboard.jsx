@@ -39,16 +39,17 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const handleCheckout = async (patente) => {
-    console.log("Intentando cobrar patente:", patente); // Verifica que aquí no salga undefined
     if (!patente) {
-      alert("Error: No se detectó la patente");
+      toast.error("Error: No se detectó la patente");
       return;
     }
+
+    console.log("Iniciando proceso de salida para:", patente);
 
     try {
       // Llamamos al endpoint de salida que ya tienes en el backend
 
-      const reponse = await api.post(`/parking/salida?patente=${patente}`);
+      const response = await api.post(`/parking/salida?patente=${patente}`);
       const estadiaFinalizada = response.data;
       const monto = estadiaFinalizada.monto ?? 0; // Si no hay monto, ponemos 0 para que no rompa
 
@@ -69,6 +70,8 @@ const Dashboard = ({ onLogout }) => {
       const mensajeError =
         error.response?.data?.detail || "Error al registrar salida";
       toast.error(mensajeError);
+
+      fetchData();
     }
   };
   // useEffect: Se ejecuta apenas carga el componente
