@@ -68,7 +68,7 @@ const History = ({ onLogout }) => {
                 placeholder="Buscar por patente..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)} // Esto actualiza el estado
+                onChange={(e) => setSearchTerm(e.target.value.toUpperCase())} // Esto actualiza el estado
               />
             </div>
           </div>
@@ -83,40 +83,61 @@ const History = ({ onLogout }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {records.map((r) => (
-                  <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-mono font-bold bg-gray-100 px-2 py-1 rounded border border-gray-200">
-                        {r.patente}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Calendar size={14} />{" "}
-                        {new Date(r.fecha_entrada).toLocaleDateString()}
-                        <Clock size={14} className="ml-2" />{" "}
-                        {new Date(r.fecha_entrada).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                {records.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="px-6 py-10 text-center text-gray-400"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <Search size={40} className="opacity-20" />
+                        <p>
+                          {" "}
+                          No se encontraron estadías con la patente{" "}
+                          {searchTerm.toUpperCase()}.{" "}
+                        </p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Clock size={14} />{" "}
-                        {new Date(r.fecha_salida).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        <DollarSign size={16} /> {r.monto}
-                      </span>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  records.map((r) => (
+                    <tr
+                      key={r.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="font-mono font-bold bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                          {r.patente}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={14} />{" "}
+                          {new Date(r.fecha_entrada).toLocaleDateString()}
+                          <Clock size={14} className="ml-2" />{" "}
+                          {new Date(r.fecha_entrada).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Clock size={14} />{" "}
+                          {new Date(r.fecha_salida).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-emerald-600 font-bold flex items-center gap-1">
+                          <DollarSign size={16} /> {r.monto}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
