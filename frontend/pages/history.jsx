@@ -6,11 +6,15 @@ import { ArrowLeft, Clock, DollarSign, Calendar, Search } from "lucide-react";
 const History = ({ onLogout }) => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  const fetchHistory = async () => {
+  const fetchHistory = async (term) => {
     try {
-      const response = await api.get("/parking/historial?size=50");
+      setLoading(true);
+      const response = await api.get(
+        `/parking/historial?size=50&patente=${term}`,
+      );
       setRecords(response.data.items);
     } catch (error) {
       console.error("Error al cargar historial");
@@ -20,8 +24,14 @@ const History = ({ onLogout }) => {
   };
 
   useEffect(() => {
-    fetchHistory();
-  }, []);
+    // Creo un temporizador para evitar hacer una petición en cada pulsación
+    const delayDebounceFn = setTimeout(() => {
+      fetchHistory(searchTerm);
+    }, 400); // 400ms de retraso después de la última pulsación
+
+    // Limpio el temporizador si el componente se desmonta o si searchTerm cambia antes de los 400ms
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -42,12 +52,26 @@ const History = ({ onLogout }) => {
 
       <main className="p-8 max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-          <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-            <p className="text-gray-500 text-sm">
-              Mostrando los últimos registros de salida y cobros realizados.
-            </p>
-          </div>
+          <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-gray-500 text-sm">
+                Mostrando los últimos registros de salida y cobros realizados.
+              </p>
+            </div>
 
+            <div className="relative w-full md:w-64">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                <Search size={18} />
+              </span>
+              <input
+                type="text"
+                placeholder="Buscar por patente..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)} // Esto actualiza el estado
+              />
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">

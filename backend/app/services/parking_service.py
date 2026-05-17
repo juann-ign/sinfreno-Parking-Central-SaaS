@@ -121,21 +121,25 @@ def obtener_estadias_activas(db: Session, sucursal_id: int):
             db_models.Torre.sucursal_id == sucursal_id
     ).all()
 
-def obtener_historial_paginado(db: Session, sucursal_id: int, page: int = 1, size: int = 20):
-    query = db.query(db_models.Estadia).join(db_models.Torre).filter(
+def obtener_historial_paginado(db: Session, sucursal_id: int, page: int = 1, size: int = 20, patente: str = None):
+    query = db.query(db_models.Estadia).join(db_models.Torre).join(db_models.Vehiculo).filter(
         db_models.Torre.sucursal_id == sucursal_id,
         db_models.Estadia.estado == "FINALIZADO"
     ).order_by(db_models.Estadia.fecha_salida.desc())
 
+    if patente and patente.strip() != "":
+        query = query.filter(db_models.Vehiculo.patente.ilike(f"%{patente}%"))
+
+    
     total = query.count()
     # Lógica de paginación: (página - 1) * tamaño
     offset = (page - 1) * size
-    items = query.offset(offset).limit(size).all()
+    items = query.order_by(db_models.Estadia.fecha_salida.desc()).offset(offset).limit(size).all()
     
     import math
     return {
         "total": total,
         "page": page,
-        "pages": math.ceil(total / size),
+        "pages": math.ceil(total / size) if total > 0 else 1,
         "items": items
     }
