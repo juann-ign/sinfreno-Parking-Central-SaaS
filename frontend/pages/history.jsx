@@ -9,10 +9,11 @@ const History = ({ onLogout }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  const fetchHistory = async () => {
+  const fetchHistory = async (term) => {
     try {
+      setLoading(true);
       const response = await api.get(
-        `/parking/historial?size=50&patente=${searchTerm}`,
+        `/parking/historial?size=50&patente=${term}`,
       );
       setRecords(response.data.items);
     } catch (error) {
@@ -25,8 +26,7 @@ const History = ({ onLogout }) => {
   useEffect(() => {
     // Creo un temporizador para evitar hacer una petición en cada pulsación
     const delayDebounceFn = setTimeout(() => {
-      console.log("Buscando patente:", searchTerm);
-      fetchHistory();
+      fetchHistory(searchTerm);
     }, 400); // 400ms de retraso después de la última pulsación
 
     // Limpio el temporizador si el componente se desmonta o si searchTerm cambia antes de los 400ms
