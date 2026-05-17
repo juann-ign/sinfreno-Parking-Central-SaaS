@@ -48,7 +48,8 @@ def listar_activas(
 def listar_historial(
     page: int = 1, 
     size: int = 20,
+    patente: str = None,
     db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.get_current_user)
 ):
-    return parking_service.obtener_historial_paginado(db, current_user.sucursal_id, page, size)
+    return parking_service.obtener_historial_paginado(db, current_user.sucursal_id, page, size, patente)
