@@ -3,6 +3,7 @@ import api from "../api/axios";
 import StatCard from "../components/statCard";
 import ActiveTable from "../components/activeTable";
 import EntryForm from "../components/EntryForm";
+import RevenueChart from "../components/RevenueChart";
 import {
   History as HistoryIcon,
   Car,
@@ -18,6 +19,7 @@ const Dashboard = ({ onLogout }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeVehicles, setActiveVehicles] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   const navigate = useNavigate();
 
@@ -25,12 +27,15 @@ const Dashboard = ({ onLogout }) => {
   const fetchData = async () => {
     try {
       // Pedimos stats y activos en paralelo (más rápido)
-      const [statsRes, activeRes] = await Promise.all([
+      const [statsRes, activeRes, chartRes] = await Promise.all([
         api.get("/stats/summary"),
         api.get("/parking/activas"),
+        api.get("/stats/revenue-hourly"),
       ]);
+
       setStats(statsRes.data);
       setActiveVehicles(activeRes.data);
+      setChartData(chartRes.data);
     } catch (error) {
       console.error("Error cargando datos", error);
     } finally {
@@ -152,8 +157,16 @@ const Dashboard = ({ onLogout }) => {
           />
         </div>
 
-        {/* Formulario de Ingreso */}
-        <EntryForm onEntrySuccess={fetchData} />
+        {/* Sección de gráfico y formulario */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
+          <div className="lg:col-span-2">
+            <RevenueChart data={chartData} />
+          </div>
+          <div className="lg:col-span-1">
+            {/* Formulario de Ingreso */}
+            <EntryForm onEntrySuccess={fetchData} />
+          </div>
+        </div>
 
         {/* Tabla de Vehículos Activos */}
         <div className="mt-10">

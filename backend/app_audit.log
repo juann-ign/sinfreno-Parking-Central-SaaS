@@ -38,3 +38,6 @@
 2026-05-16 20:17:22,069 | INFO | parking_service | SALIDA: Vehículo ABC124 egresó por Torre 1 por Usuario ID 1
 2026-05-16 20:19:20,023 | INFO | parking_service | INGRESO: Vehículo 131321D en Torre 1 por Usuario ID 1
 2026-05-16 20:19:31,340 | INFO | parking_service | SALIDA: Vehículo 131321D egresó por Torre 1 por Usuario ID 1
+2026-05-17 19:55:16,411 | INFO | parking_service | SALIDA: Vehículo DSA23243 egresó por Torre 1 por Usuario ID 1
+2026-05-17 19:55:20,639 | INFO | parking_service | SALIDA: Vehículo DASDSASD23 egresó por Torre 1 por Usuario ID 1
+2026-05-17 19:55:21,990 | INFO | parking_service | SALIDA: Vehículo ASFBSAF2 egresó por Torre 1 por Usuario ID 1
