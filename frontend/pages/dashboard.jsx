@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
-import StatCard from "../components/statCard";
+import StatCard from "../components/StatCard";
 import ActiveTable from "../components/activeTable";
 import EntryForm from "../components/EntryForm";
 import RevenueChart from "../components/RevenueChart";
+import OccupancyPieChart from "../components/OccupancyPieChart";
 import {
   History as HistoryIcon,
   Car,
@@ -157,23 +158,29 @@ const Dashboard = ({ onLogout }) => {
           />
         </div>
 
-        {/* Sección de gráfico y formulario */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
+          {/* RECAUDACIÓN (Ocupa 2 columnas en pantallas grandes) */}
           <div className="lg:col-span-2">
             <RevenueChart data={chartData} />
           </div>
+
+          {/* OCUPACIÓN (Ocupa 1 columna) */}
           <div className="lg:col-span-1">
-            {/* Formulario de Ingreso */}
-            <EntryForm onEntrySuccess={fetchData} />
+            <OccupancyPieChart
+              occupied={stats?.autos_adentro || 0}
+              available={stats?.capacidad_disponible || 0}
+            />
           </div>
         </div>
 
-        {/* Tabla de Vehículos Activos */}
+        {/* FORMULARIO DE INGRESO (Ahora lo podemos poner a ancho completo o debajo) */}
         <div className="mt-10">
-          <ActiveTable
-            vehicles={activeVehicles}
-            onCheckout={handleCheckout}
-          ></ActiveTable>
+          <EntryForm onEntrySuccess={fetchData} />
+        </div>
+
+        {/* TABLA DE ACTIVOS */}
+        <div className="mt-10">
+          <ActiveTable vehicles={activeVehicles} onCheckout={handleCheckout} />
         </div>
       </main>
     </div>
