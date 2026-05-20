@@ -27,21 +27,27 @@ const ActiveTable = ({ vehicles, onCheckout }) => {
             {vehicles.map((v) => (
               <tr
                 key={v.id}
-                className="hover:bg-indigo-50/30 transition-colors group"
+                className="hover:bg-indigo-50/30 transition-colors group border-b border-slate-50"
               >
                 <td className="px-6 py-4">
+                  <span className="text-xl">
+                    {v.tipo_vehiculo === "MOTO"
+                      ? "🏍️"
+                      : v.tipo_vehiculo === "CAMIONETA"
+                        ? "🚐"
+                        : v.tipo_vehiculo === "AUTO"
+                          ? "🚗"
+                          : "🚗"}
+                  </span>
                   <p className="font-black text-slate-800 text-lg leading-none">
                     {v.patente}
                   </p>
                   <p className="text-[10px] font-bold text-indigo-500 uppercase mt-1">
-                    Visitante
+                    {v.tipo_vehiculo}
                   </p>
                 </td>
-                <td className="px-6 py-4 text-sm font-bold text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <MapPin size={14} className="text-slate-300" /> Torre{" "}
-                    {v.torre_id}
-                  </div>
+                <td className="px-6 py-4 text-sm font-bold text-slate-600 italic">
+                  Torre {v.torre_id}
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span className="font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg text-xs">

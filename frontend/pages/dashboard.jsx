@@ -41,8 +41,16 @@ const Dashboard = ({ onLogout }) => {
   }, []);
 
   const handleCheckout = async (patente) => {
+    // Validación de seguridad para que no envíe vacíos
+    if (!patente || patente === "") {
+      toast.error("No se pudo leer la patente del vehículo");
+      return;
+    }
+
     try {
-      const response = await api.post(`/parking/salida?patente=${patente}`);
+      const response = await api.post(
+        `/parking/salida?patente=${encodeURIComponent(patente)}`,
+      );
       toast.success(`Cobrar: $${response.data.monto}`, { duration: 5000 });
       fetchData();
     } catch (error) {
@@ -155,14 +163,18 @@ const Dashboard = ({ onLogout }) => {
           </div>
 
           {/* BOTÓN REPORTE */}
-          <div className="bg-slate-900 rounded-[2rem] p-6 text-center text-white cursor-pointer hover:bg-slate-800 transition-colors group">
-            <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-1">
-              Ver Analíticas
+          <button
+            onClick={() => toast.info("Generando reporte Excel del día...")}
+            className="w-full bg-slate-900 hover:bg-black text-white rounded-[2rem] p-6 transition-all group flex flex-col items-center justify-center border-2 border-slate-800"
+          >
+            <div className="bg-white/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+              <Activity className="text-indigo-400" size={24} />
+            </div>
+            <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em] mb-1">
+              Business Intelligence
             </p>
-            <p className="text-sm font-bold group-hover:text-indigo-400 transition-colors">
-              Generar Reporte Detallado
-            </p>
-          </div>
+            <p className="text-base font-extrabold">GENERAR REPORTE PDF</p>
+          </button>
         </aside>
       </main>
     </div>

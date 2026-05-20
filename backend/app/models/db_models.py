@@ -82,3 +82,7 @@ class Estadia(Base):
     @property
     def patente(self):
         return self.vehiculo.patente if self.vehiculo else "S/D"
+        
+    @property
+    def tipo_vehiculo(self):
+        return self.vehiculo.tipo if self.vehiculo else "AUTO"
