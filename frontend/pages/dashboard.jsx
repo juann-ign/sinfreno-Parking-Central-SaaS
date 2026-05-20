@@ -1,42 +1,32 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
-import StatCard from "../components/StatCard";
-import ActiveTable from "../components/activeTable";
+import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
-import RevenueChart from "../components/RevenueChart";
-import OccupancyPieChart from "../components/OccupancyPieChart";
 import {
-  History as HistoryIcon,
   Car,
-  Unlock,
-  Percent,
   DollarSign,
+  PieChart,
   LogOut,
+  History as HistoryIcon,
+  Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = ({ onLogout }) => {
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeVehicles, setActiveVehicles] = useState([]);
-  const [chartData, setChartData] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Función para pedir datos al backend
   const fetchData = async () => {
     try {
-      // Pedimos stats y activos en paralelo (más rápido)
-      const [statsRes, activeRes, chartRes] = await Promise.all([
+      const [statsRes, activeRes] = await Promise.all([
         api.get("/stats/summary"),
         api.get("/parking/activas"),
-        api.get("/stats/revenue-hourly"),
       ]);
-
       setStats(statsRes.data);
       setActiveVehicles(activeRes.data);
-      setChartData(chartRes.data);
     } catch (error) {
       console.error("Error cargando datos", error);
     } finally {
@@ -44,144 +34,136 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
-  const handleCheckout = async (patente) => {
-    if (!patente) {
-      toast.error("Error: No se detectó la patente");
-      return;
-    }
-
-    console.log("Iniciando proceso de salida para:", patente);
-
-    try {
-      // Llamamos al endpoint de salida que ya tienes en el backend
-
-      const response = await api.post(`/parking/salida?patente=${patente}`);
-      const estadiaFinalizada = response.data;
-      const monto = estadiaFinalizada.monto ?? 0; // Si no hay monto, ponemos 0 para que no rompa
-
-      toast.success(
-        <div className="flex flex-col">
-          <span className="font-bold text-lg">Salida exitosa: {patente}</span>
-          <span className="text-lg">
-            Cobrar: <b className="text-blue-700">${monto}</b>
-          </span>
-        </div>,
-        { duration: 6000 }, // Le dejamos 6 segundos para que el operario anote el monto
-      );
-
-      fetchData(); // Refrescamos todo automáticamente
-    } catch (error) {
-      console.error("Error al registrar salida", error);
-      // Leemos el error real que viene del backend (ej: "No hay registros activos")
-      const mensajeError =
-        error.response?.data?.detail || "Error al registrar salida";
-      toast.error(mensajeError);
-
-      fetchData();
-    }
-  };
-  // useEffect: Se ejecuta apenas carga el componente
   useEffect(() => {
     fetchData();
-    // Opcional: Actualizar cada 30 segundos automáticamente
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(fetchData, 60000); // Actualiza cada minuto
     return () => clearInterval(interval);
   }, []);
 
+  const handleCheckout = async (patente) => {
+    try {
+      const response = await api.post(`/parking/salida?patente=${patente}`);
+      toast.success(`Cobrar: $${response.data.monto}`, { duration: 5000 });
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error en salida");
+    }
+  };
+
   if (loading)
     return (
-      <div className="p-10 text-center">Cargando datos del sistema...</div>
+      <div className="flex h-screen items-center justify-center font-black text-indigo-600 animate-pulse uppercase tracking-widest">
+        Sinfreno | Cargando...
+      </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header / Navbar */}
-      <nav className="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-blue-600 flex items-center gap-2">
-          <Car /> Sinfreno | Panel de Control
-        </h1>
-
-        {/* Navbar  */}
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen flex flex-col">
+      {/* HEADER COMPACTO */}
+      <nav className="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <div className="bg-indigo-600 p-2 rounded-xl text-white">
+            <Car size={20} />
+          </div>
+          <h1 className="text-xl font-black text-slate-800 tracking-tighter">
+            SINFRENO <span className="text-indigo-600 text-xs">PRO</span>
+          </h1>
+        </div>
+        <div className="flex gap-4">
           <button
             onClick={() => navigate("/history")}
-            className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium transition-colors"
+            className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2 transition-colors"
           >
-            <HistoryIcon size={18} /> Ver Historial
+            <HistoryIcon size={16} /> HISTORIAL
           </button>
-
           <button
             onClick={onLogout}
-            className="flex items-center gap-2 text-gray-600 hover:text-red-600 font-medium transition-colors"
+            className="text-xs font-bold text-red-400 hover:text-red-600 flex items-center gap-2 transition-colors border-l pl-4"
           >
-            <LogOut size={18} /> Cerrar Sesión
+            <LogOut size={16} /> SALIR
           </button>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="p-8 max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Estado de la Sucursal
-          </h2>
-          <p className="text-gray-500">
-            Monitoreo en tiempo real de flujos vehiculares.
-          </p>
-        </header>
-
-        {/* Grid de Tarjetas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Autos Adentro"
-            value={stats?.autos_adentro || 0}
-            icon={Car}
-            colorClass="bg-blue-500"
-          />
-          <StatCard
-            title="Espacios Libres"
-            value={stats?.capacidad_disponible || 0}
-            icon={Unlock}
-            colorClass="bg-green-500"
-          />
-          <StatCard
-            title="Ocupación"
-            value={`${stats?.porcentaje_ocupacion || 0}%`}
-            icon={Percent}
-            colorClass="bg-orange-500"
-          />
-          <StatCard
-            title="Recaudación Hoy"
-            value={`$${stats?.recaudacion_hoy || 0}`}
-            icon={DollarSign}
-            colorClass="bg-emerald-600"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
-          {/* RECAUDACIÓN (Ocupa 2 columnas en pantallas grandes) */}
-          <div className="lg:col-span-2">
-            <RevenueChart data={chartData} />
-          </div>
-
-          {/* OCUPACIÓN (Ocupa 1 columna) */}
-          <div className="lg:col-span-1">
-            <OccupancyPieChart
-              occupied={stats?.autos_adentro || 0}
-              available={stats?.capacidad_disponible || 0}
-            />
-          </div>
-        </div>
-
-        {/* FORMULARIO DE INGRESO (Ahora lo podemos poner a ancho completo o debajo) */}
-        <div className="mt-10">
+      {/* GRID PRINCIPAL */}
+      <main className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-[1600px] mx-auto w-full">
+        {/* COLUMNA IZQUIERDA: OPERATIVA (70%) */}
+        <div className="lg:col-span-8 space-y-8">
           <EntryForm onEntrySuccess={fetchData} />
-        </div>
-
-        {/* TABLA DE ACTIVOS */}
-        <div className="mt-10">
           <ActiveTable vehicles={activeVehicles} onCheckout={handleCheckout} />
         </div>
+
+        {/* COLUMNA DERECHA: ESTRATEGIA (30%) */}
+        <aside className="lg:col-span-4 space-y-6">
+          {/* RECAUDACIÓN CARD */}
+          <div className="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200 overflow-hidden relative">
+            <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-2">
+              Recaudación Hoy
+            </p>
+            <h3 className="text-5xl font-black mb-6 tracking-tighter">
+              ${stats?.recaudacion_hoy || 0}
+            </h3>
+            <div className="flex justify-between items-center bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
+              <div>
+                <p className="text-[9px] font-bold opacity-60 uppercase">
+                  Ocupación
+                </p>
+                <p className="text-xl font-black">
+                  {stats?.porcentaje_ocupacion}%
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] font-bold opacity-60 uppercase">
+                  Disponibles
+                </p>
+                <p className="text-xl font-black text-emerald-300">
+                  {stats?.capacidad_disponible}
+                </p>
+              </div>
+            </div>
+            <Activity
+              className="absolute -right-4 -top-4 text-white/5"
+              size={160}
+            />
+          </div>
+
+          {/* ESTADO DE CAPACIDAD (BARRAS VERDES) */}
+          <div className="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+              <PieChart size={14} /> Capacidad de Bahías
+            </h3>
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between text-xs font-bold mb-2">
+                  <span className="text-slate-500 uppercase">
+                    Lugares Disponibles
+                  </span>
+                  <span className="text-emerald-500">
+                    {stats?.capacidad_disponible}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                  <div
+                    className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all duration-1000"
+                    style={{
+                      width: `${(stats?.capacidad_disponible / (stats?.autos_adentro + stats?.capacidad_disponible)) * 100}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* BOTÓN REPORTE */}
+          <div className="bg-slate-900 rounded-[2rem] p-6 text-center text-white cursor-pointer hover:bg-slate-800 transition-colors group">
+            <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-1">
+              Ver Analíticas
+            </p>
+            <p className="text-sm font-bold group-hover:text-indigo-400 transition-colors">
+              Generar Reporte Detallado
+            </p>
+          </div>
+        </aside>
       </main>
     </div>
   );
