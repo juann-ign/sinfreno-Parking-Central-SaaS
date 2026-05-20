@@ -42,6 +42,7 @@ class UsuarioCreate(UsuarioBase):
 class EstadiaCreate(BaseModel):
     patente: str = Field(..., min_length=6, max_length=10, example="ABC1234")
     torre_id: int
+    tipo: str
 
 class EstadiaUpdate(BaseModel):
     # Usado para el cierre de estadía
@@ -66,6 +67,7 @@ class EstadiaOut(BaseModel):
     id: int
     vehiculo_id: int
     patente: str
+    tipo_vehiculo: str
     torre_id: int
     usuario_ingreso_id: int
     usuario_salida_id: Optional[int] = None

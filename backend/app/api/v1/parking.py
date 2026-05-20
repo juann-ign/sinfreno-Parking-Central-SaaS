@@ -17,14 +17,14 @@ def ingreso(
 ):
     # 1. Ejecutamos la lógica de DB (sincrónica)
     nueva_estadia = parking_service.registrar_ingreso_vehiculo(
-        db, data.patente, data.torre_id, current_user.id
+        db=db, patente=data.patente, torre_id=data.torre_id, usuario_ingreso_id=current_user.id, tipo=data.tipo
     )
 
     # 2. Programamos la notificación WebSocket como tarea de fondo
     # Esto no bloquea la respuesta al cliente
     background_tasks.add_task(
         manager.broadcast, 
-        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "torre_id": data.torre_id}
+        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "torre_id": data.torre_id, "tipo": data.tipo}
     )
 
     # Usamos current_user.id extraído del JWT

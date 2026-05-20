@@ -106,9 +106,20 @@ const History = ({ onLogout }) => {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <span className="font-mono font-bold bg-gray-100 px-2 py-1 rounded border border-gray-200">
-                          {r.patente}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-black bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700">
+                            {r.patente}
+                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                              {r.tipo_vehiculo === "MOTO"
+                                ? "🏍️ Moto"
+                                : r.tipo_vehiculo === "CAMIONETA"
+                                  ? "🚐 Camioneta"
+                                  : "🚗 Auto"}
+                            </span>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-gray-600 text-sm">
                         <div className="flex items-center gap-1">

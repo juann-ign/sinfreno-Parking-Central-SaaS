@@ -7,7 +7,7 @@ from app.core.websocket_manager import manager
 from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaError
 from app.core.logger import logger 
 
-def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int):
+def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int, tipo: str = "AUTO"):
     # 1. Validar Torre y su capacidad
     torre = db.query(db_models.Torre).filter(db_models.Torre.id == torre_id).first()
     if not torre:
@@ -27,7 +27,7 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     # 2. Obtener o crear vehículo
     vehiculo = db.query(db_models.Vehiculo).filter(db_models.Vehiculo.patente == patente_up).first()
     if not vehiculo:
-        vehiculo = db_models.Vehiculo(patente=patente_up)
+        vehiculo = db_models.Vehiculo(patente=patente_up, tipo=tipo)
         db.add(vehiculo)
         db.commit()
         db.refresh(vehiculo)
