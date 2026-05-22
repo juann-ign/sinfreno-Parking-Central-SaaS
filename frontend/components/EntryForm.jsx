@@ -149,7 +149,7 @@ const EntryForm = ({ onEntrySuccess }) => {
         <button
           type="submit"
           disabled={loading || status === "invalid" || status === "empty"}
-          className={`w-full h-[60px] rounded-2xl font-black text-white transition-all flex items-center justify-center gap-2 shadow-lg ${
+          className={`w-full h-[60px] rounded-2xl font-arvo font-black text-white transition-all flex items-center justify-center gap-2 shadow-lg ${
             loading || status === "invalid" || status === "empty"
               ? "bg-slate-200 shadow-nonecursor-not-allowed"
               : "bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-indigo-200"

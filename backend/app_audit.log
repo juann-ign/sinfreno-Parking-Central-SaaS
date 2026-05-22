@@ -56,3 +56,9 @@
 2026-05-20 16:29:16,166 | INFO | parking_service | INGRESO: Vehículo DASDSA13 en Torre 1 por Usuario ID 1
 2026-05-20 16:29:29,301 | INFO | parking_service | INGRESO: Vehículo ADDDCCC2 en Torre 1 por Usuario ID 1
 2026-05-20 18:49:32,904 | INFO | parking_service | SALIDA: Vehículo ADDDCCC2 egresó por Torre 1 por Usuario ID 1
+2026-05-20 21:42:16,067 | INFO | parking_service | INGRESO: Vehículo CAMION1 en Torre 1 por Usuario ID 1
+2026-05-20 21:42:25,953 | INFO | parking_service | INGRESO: Vehículo DALECAM1 en Torre 1 por Usuario ID 1
+2026-05-20 21:48:58,446 | INFO | parking_service | INGRESO: Vehículo DSADSAD2 en Torre 1 por Usuario ID 1
+2026-05-20 21:49:06,679 | INFO | parking_service | INGRESO: Vehículo DAS134 en Torre 1 por Usuario ID 1
+2026-05-20 21:49:13,419 | INFO | parking_service | INGRESO: Vehículo AA433AD en Torre 1 por Usuario ID 1
+2026-05-22 22:20:20,078 | INFO | parking_service | INGRESO: Vehículo DAS324 en Torre 1 por Usuario ID 1
