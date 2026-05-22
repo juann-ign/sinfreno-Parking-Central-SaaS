@@ -1,23 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&family=Inter:wght@300;400;600;700;800;900&display=swap");
 @import "tailwindcss";
 
 :root {
-  --color-primary: #4f46e5;
+  font-family: "Inter", sans-serif;
+}
+
+p {
+  font-family: "Inter", sans-serif;
 }
 
 body {
   font-family: "Inter", sans-serif;
   background-color: #f8fafc;
+  color: #1e293b;
 }
 
+/* Aplicamos Arvo a los encabezados globalmente */
 h1,
 h2,
 h3,
-h4,
-button {
-  font-family: "Montserrat", sans-serif;
+h4 {
+  font-family: "Arvo", serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-/* Custom scrollbar para el listado largo */
+/* Estilizamos el scroll para que combine */
 .custom-scroll::-webkit-scrollbar {
   width: 5px;
 }
