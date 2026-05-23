@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
+import { SkeletonCard, SkeletonTable } from "../components/Skeletons";
 import {
   Car,
   DollarSign,
@@ -58,13 +59,6 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex h-screen items-center justify-center font-black text-indigo-600 animate-pulse uppercase tracking-widest">
-        Sinfreno | Cargando...
-      </div>
-    );
-
   return (
     <div className="min-h-screen flex flex-col">
       {/* HEADER COMPACTO */}
@@ -98,83 +92,104 @@ const Dashboard = ({ onLogout }) => {
         {/* COLUMNA IZQUIERDA: OPERATIVA (70%) */}
         <div className="lg:col-span-8 space-y-8">
           <EntryForm onEntrySuccess={fetchData} />
-          <ActiveTable vehicles={activeVehicles} onCheckout={handleCheckout} />
+          {loading ? (
+            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="h-6 w-40 bg-slate-200 rounded animate-pulse"></div>
+              </div>
+              <SkeletonTable rows={5} />
+            </div>
+          ) : (
+            <ActiveTable
+              vehicles={activeVehicles}
+              onCheckout={handleCheckout}
+            />
+          )}
         </div>
 
         {/* COLUMNA DERECHA: ESTRATEGIA (30%) */}
         <aside className="lg:col-span-4 space-y-6">
-          {/* RECAUDACIÓN CARD */}
-          <div className="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200 overflow-hidden relative">
-            <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-2">
-              Recaudación Hoy
-            </p>
-            <h3 className="text-5xl font-black mb-6 tracking-tighter">
-              ${stats?.recaudacion_hoy || 0}
-            </h3>
-            <div className="flex justify-between items-center bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-              <div>
-                <p className="text-[9px] font-bold opacity-60 uppercase">
-                  Ocupación
+          {loading ? (
+            <>
+              <SkeletonCard />
+              <div className="bg-white rounded-[2rem] p-6 h-48 animate-pulse bg-slate-50"></div>
+            </>
+          ) : (
+            <>
+              {/* RECAUDACIÓN CARD */}
+              <div className="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200 overflow-hidden relative">
+                <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-2">
+                  Recaudación Hoy
                 </p>
-                <p className="text-xl font-black">
-                  {stats?.porcentaje_ocupacion}%
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-[9px] font-bold opacity-60 uppercase">
-                  Disponibles
-                </p>
-                <p className="text-xl font-black text-emerald-300">
-                  {stats?.capacidad_disponible}
-                </p>
-              </div>
-            </div>
-            <Activity
-              className="absolute -right-4 -top-4 text-white/5"
-              size={160}
-            />
-          </div>
-
-          {/* ESTADO DE CAPACIDAD (BARRAS VERDES) */}
-          <div className="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <PieChart size={14} /> Capacidad de Bahías
-            </h3>
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between text-xs font-bold mb-2">
-                  <span className="text-slate-500 uppercase">
-                    Lugares Disponibles
-                  </span>
-                  <span className="text-emerald-500">
-                    {stats?.capacidad_disponible}
-                  </span>
+                <h3 className="text-5xl font-black mb-6 tracking-tighter">
+                  ${stats?.recaudacion_hoy || 0}
+                </h3>
+                <div className="flex justify-between items-center bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
+                  <div>
+                    <p className="text-[9px] font-bold opacity-60 uppercase">
+                      Ocupación
+                    </p>
+                    <p className="text-xl font-black">
+                      {stats?.porcentaje_ocupacion}%
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold opacity-60 uppercase">
+                      Disponibles
+                    </p>
+                    <p className="text-xl font-black text-emerald-300">
+                      {stats?.capacidad_disponible}
+                    </p>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                  <div
-                    className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all duration-1000"
-                    style={{
-                      width: `${(stats?.capacidad_disponible / (stats?.autos_adentro + stats?.capacidad_disponible)) * 100}%`,
-                    }}
-                  ></div>
+                <Activity
+                  className="absolute -right-4 -top-4 text-white/5"
+                  size={160}
+                />
+              </div>
+
+              {/* ESTADO DE CAPACIDAD (BARRAS VERDES) */}
+              <div className="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <PieChart size={14} /> Capacidad de Bahías
+                </h3>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between text-xs font-bold mb-2">
+                      <span className="text-slate-500 uppercase">
+                        Lugares Disponibles
+                      </span>
+                      <span className="text-emerald-500">
+                        {stats?.capacidad_disponible}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all duration-1000"
+                        style={{
+                          width: `${(stats?.capacidad_disponible / (stats?.autos_adentro + stats?.capacidad_disponible)) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* BOTÓN REPORTE */}
-          <button
-            onClick={() => toast.info("Generando reporte Excel del día...")}
-            className="w-full bg-slate-900 hover:bg-black text-white rounded-[2rem] p-6 transition-all group flex flex-col items-center justify-center border-2 border-slate-800"
-          >
-            <div className="bg-white/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
-              <Activity className="text-indigo-400" size={24} />
-            </div>
-            <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em] mb-1">
-              Business Intelligence
-            </p>
-            <p className="text-base font-extrabold">GENERAR REPORTE PDF</p>
-          </button>
+              {/* BOTÓN REPORTE */}
+              <button
+                onClick={() => toast.info("Generando reporte Excel del día...")}
+                className="w-full bg-slate-900 hover:bg-black text-white rounded-[2rem] p-6 transition-all group flex flex-col items-center justify-center border-2 border-slate-800"
+              >
+                <div className="bg-white/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                  <Activity className="text-indigo-400" size={24} />
+                </div>
+                <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em] mb-1">
+                  Business Intelligence
+                </p>
+                <p className="text-base font-extrabold">GENERAR REPORTE PDF</p>
+              </button>
+            </>
+          )}
         </aside>
       </main>
     </div>
