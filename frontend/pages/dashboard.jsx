@@ -36,9 +36,43 @@ const Dashboard = ({ onLogout }) => {
   };
 
   useEffect(() => {
+    // Si no hay token, ni lo intentamos
+    if (!localStorage.getItem("token")) return;
+
     fetchData();
     const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
+
+    let socket;
+    const connect = () => {
+      // Usamos localhost para ser consistentes con axios
+      socket = new WebSocket("ws://localhost:8000/ws");
+
+      socket.onopen = () => console.log("✅ WS Conectado");
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.event === "NUEVO_INGRESO" || data.event === "NUEVA_SALIDA") {
+          toast.info(`Movimiento detectado: ${data.patente}`);
+          fetchData();
+        }
+      };
+
+      socket.onclose = (e) => {
+        // Solo avisamos si no fue un cierre intencional
+        if (!e.wasClean) {
+          console.log("WS Reintentando en 5s...");
+          setTimeout(connect, 5000);
+        }
+      };
+      socket.onerror = () => socket.close();
+    };
+
+    connect();
+
+    return () => {
+      clearInterval(interval);
+      if (socket) socket.close();
+    };
   }, []);
 
   const handleCheckout = async (patente) => {

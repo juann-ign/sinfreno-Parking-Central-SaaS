@@ -31,10 +31,16 @@ def ingreso(
     return nueva_estadia
     
 @router.post("/salida", response_model=schemas.EstadiaOut)
-def salida(patente: str, db: Session = Depends(dependencies.get_db),
+async def salida(patente: str, background_tasks: BackgroundTasks, db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.get_current_user)
     ):
-    return parking_service.registrar_salida_vehiculo(db, patente, current_user.id)
+    estadia = parking_service.registrar_salida_vehiculo(db, patente, current_user.id)
+
+    background_tasks.add_task(
+        manager.broadcast, 
+        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "torre_id": estadia.torre_id, "tipo": estadia.tipo}
+    )
+    return estadia
 
 @router.get("/activas", response_model=list[schemas.EstadiaOut])
 def listar_activas(
