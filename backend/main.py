@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.core.exceptions import SinfrenoException
 from app.api.v1 import parking, auth, stats
 from app.core.config import settings
+from app.core.websocket_manager import manager
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -16,10 +16,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Aquí incluimos los routers de cada módulo
+# --- RUTAS DE API ---
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(parking.router, prefix=settings.API_V1_STR)
 app.include_router(stats.router, prefix=settings.API_V1_STR)
+
+# --- PUNTO DE CONEXIÓN WEBSOCKET ---
+# Debe estar fuera de los prefijos /api/v1 para que coincida con ws://localhost:8000/ws
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Espera mensajes (mantiene la conexión viva)
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
 
 @app.get("/")
 def health_check():
@@ -27,10 +41,6 @@ def health_check():
 
 @app.exception_handler(SinfrenoException)
 async def sinfreno_exception_handler(request: Request, exc: SinfrenoException):
-    """
-    Este es el traductor: toma un error de lógica de negocio
-    y lo convierte en una respuesta JSON que el frontend puede leer.
-    """
     return JSONResponse(
         status_code=400,
         content={"error_code": exc.__class__.__name__, "detail": str(exc)},

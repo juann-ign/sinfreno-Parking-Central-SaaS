@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
+  const handleLogin = () => setIsLoggedIn(true);
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
@@ -21,20 +22,14 @@ function App() {
         <Routes>
           {/* Si no está logueado, cualquier ruta lo manda al Login */}
           {!isLoggedIn ? (
-            <Route
-              path="*"
-              element={<Login onLoginSuccess={() => setIsLoggedIn(true)} />}
-            />
+            <Route path="*" element={<Login onLoginSuccess={handleLogin} />} />
           ) : (
             <>
               <Route
                 path="/dashboard"
                 element={<Dashboard onLogout={handleLogout} />}
               />
-              <Route
-                path="/history"
-                element={<History onLogout={handleLogout} />}
-              />
+              <Route path="/history" element={<History />} />
               {/* Ruta por dedecto: Dashboard */}
               <Route path="*" element={<Navigate to="/dashboard" />} />
             </>
