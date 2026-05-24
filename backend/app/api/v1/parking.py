@@ -38,7 +38,7 @@ async def salida(patente: str, background_tasks: BackgroundTasks, db: Session = 
 
     background_tasks.add_task(
         manager.broadcast, 
-        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "torre_id": estadia.torre_id, "tipo": estadia.tipo}
+        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "torre_id": estadia.torre_id, "tipo": estadia.tipo_vehiculo}
     )
     return estadia
 

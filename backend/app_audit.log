@@ -68,3 +68,16 @@
 2026-05-24 01:05:24,037 | INFO | parking_service | INGRESO: Vehículo AMU137 en Torre 1 por Usuario ID 1
 2026-05-24 01:06:07,378 | INFO | parking_service | INGRESO: Vehículo AAJ132 en Torre 1 por Usuario ID 1
 2026-05-24 01:06:26,640 | INFO | parking_service | INGRESO: Vehículo JIJ134A en Torre 1 por Usuario ID 1
+2026-05-24 01:26:45,636 | INFO | parking_service | INGRESO: Vehículo LAD431 en Torre 1 por Usuario ID 1
+2026-05-24 01:28:04,233 | INFO | parking_service | INGRESO: Vehículo AAD433 en Torre 1 por Usuario ID 1
+2026-05-24 01:28:16,904 | INFO | parking_service | INGRESO: Vehículo NOO111 en Torre 1 por Usuario ID 1
+2026-05-24 01:35:47,368 | INFO | parking_service | INGRESO: Vehículo SIN2434 en Torre 1 por Usuario ID 1
+2026-05-24 01:36:09,845 | INFO | parking_service | INGRESO: Vehículo DDA2334 en Torre 1 por Usuario ID 1
+2026-05-24 01:36:35,975 | INFO | parking_service | INGRESO: Vehículo DADSA2 en Torre 1 por Usuario ID 1
+2026-05-24 01:37:14,480 | INFO | parking_service | INGRESO: Vehículo DSAS22 en Torre 1 por Usuario ID 1
+2026-05-24 01:37:24,210 | INFO | parking_service | INGRESO: Vehículo DDD244 en Torre 1 por Usuario ID 1
+2026-05-24 01:37:41,706 | INFO | parking_service | INGRESO: Vehículo DDF244 en Torre 1 por Usuario ID 1
+2026-05-24 01:40:50,059 | INFO | parking_service | INGRESO: Vehículo BYEBYE1 en Torre 1 por Usuario ID 1
+2026-05-24 02:55:35,411 | INFO | parking_service | SALIDA: Vehículo ABC134 egresó por Torre 1 por Usuario ID 1
+2026-05-24 02:55:40,872 | INFO | parking_service | INGRESO: Vehículo DAS23213 en Torre 1 por Usuario ID 1
+2026-05-24 02:56:03,622 | INFO | parking_service | SALIDA: Vehículo BNMB76 egresó por Torre 1 por Usuario ID 1

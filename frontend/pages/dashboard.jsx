@@ -150,10 +150,18 @@ const Dashboard = ({ onLogout }) => {
       const response = await api.post(
         `/parking/salida?patente=${encodeURIComponent(patente)}`,
       );
-      toast.success(`Cobrado: $${response.data.monto}`);
+      // Notificación de cobro exitoso
+      toast.success(`Vehículo ${patente} egresó correctamente.`, {
+        description: `Cobrado: $${response.data.monto}`,
+        duration: 5000,
+      });
+
       fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error en salida");
+      console.error("Error en salida:", error);
+      toast.error(
+        error.response?.data?.detail || "Error al procesar la salida",
+      );
     }
   };
 
