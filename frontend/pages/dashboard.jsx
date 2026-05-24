@@ -9,6 +9,8 @@ import {
   LogOut,
   History as HistoryIcon,
   Activity,
+  Search,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -18,11 +20,14 @@ const Dashboard = ({ onLogout }) => {
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [filterTerm, setFilterTerm] = useState(""); // <--- Nuevo: Para buscar en la tabla
+  // --- ESTADOS DE BÚSQUEDA Y FOCO ---
+  const [filterTerm, setFilterTerm] = useState("");
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  // --- REFERENCIAS (MEMORIA TÉCNICA) ---
   const socketRef = useRef(null);
   const lastEventRef = useRef(null); // <--- Referencia para evitar duplicados
   const timerRef = useRef(null);
-
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -47,10 +52,12 @@ const Dashboard = ({ onLogout }) => {
     if (timerRef.current) clearTimeout(timerRef.current);
 
     setFilterTerm(patente);
+    setIsFocusMode(true);
 
     // A los 5 segundos, limpiamos el buscador automáticamente
     timerRef.current = setTimeout(() => {
       setFilterTerm("");
+      setIsFocusMode(false);
       timerRef.current = null;
     }, 5000);
   };
@@ -113,7 +120,7 @@ const Dashboard = ({ onLogout }) => {
         }
       };
 
-      socket.onerror = () => socket.close();
+      socket.onclose = () => setTimeout(connect, 5000);
       socketRef.current = socket; // Guardamos el socket en la referencia
     };
 
@@ -184,32 +191,46 @@ const Dashboard = ({ onLogout }) => {
         <div className="lg:col-span-8 space-y-8">
           <EntryForm onEntrySuccess={fetchData} />
 
-          <div className="space-y-4">
-            {/* Buscador para la tabla de activos */}
-            <div className="flex justify-end">
+          {/* BARRA DE BÚSQUEDA DE ALTO IMPACTO */}
+          <div className="bg-white p-4 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4">
+            <div className="relative flex-1 w-full">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400">
+                <Search size={22} />
+              </div>
               <input
                 type="text"
-                placeholder="Filtrar activos..."
-                className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 w-48 transition-all"
+                placeholder="BUSCAR VEHÍCULO POR PATENTE..."
+                className={`w-full pl-14 pr-4 py-5 rounded-[1.5rem] border-2 transition-all font-black text-xl outline-none ${
+                  isFocusMode
+                    ? "border-amber-400 bg-amber-50 text-amber-900 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
+                    : "border-slate-100 bg-slate-50 focus:border-indigo-500 focus:bg-white"
+                }`}
                 value={filterTerm}
-                onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setFilterTerm(e.target.value.toUpperCase());
+                  setIsFocusMode(false); // Si el usuario escribe, quitamos el modo automático
+                }}
               />
-              {filterTerm && (
-                <button
-                  onClick={() => setFilterTerm("")}
-                  className="ml-2 text-[10px] font-black text-slate-400 hover:text-red-500 uppercase"
-                >
-                  Limpiar
-                </button>
-              )}
             </div>
 
-            <ActiveTable
-              vehicles={filteredVehicles} // <--- Pasamos la lista filtrada
-              onCheckout={handleCheckout}
-              isLoading={loading}
-            />
+            {(filterTerm !== "" || isFocusMode) && (
+              <button
+                onClick={() => {
+                  setFilterTerm("");
+                  setIsFocusMode(false);
+                }}
+                className="w-full md:w-auto px-8 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.15em] hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <X size={18} /> MOSTRAR TODOS
+              </button>
+            )}
           </div>
+
+          <ActiveTable
+            vehicles={filteredVehicles}
+            onCheckout={handleCheckout}
+            isLoading={loading}
+          />
         </div>
 
         {/* COLUMNA DERECHA (ESTRATEGIA) */}
