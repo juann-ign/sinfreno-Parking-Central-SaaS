@@ -44,7 +44,7 @@ const EntryForm = ({ onEntrySuccess }) => {
       });
       setPatente("");
       setStatus("empty");
-      toast.success(`Ingreso exitoso: ${patente}`);
+      //toast.success(`Ingreso exitoso: ${patente}`);
       onEntrySuccess();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error en ingreso");

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api from "../api/axios";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
@@ -17,6 +17,12 @@ const Dashboard = ({ onLogout }) => {
   const [stats, setStats] = useState(null);
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [filterTerm, setFilterTerm] = useState(""); // <--- Nuevo: Para buscar en la tabla
+  const socketRef = useRef(null);
+  const lastEventRef = useRef(null); // <--- Referencia para evitar duplicados
+  const timerRef = useRef(null);
+
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -35,45 +41,98 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
+  // 2. Función para manejar el Modo Foco (Filtrar y limpiar solo)
+  const activateFocusMode = (patente) => {
+    // Si ya había un cronómetro corriendo, lo frenamos
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    setFilterTerm(patente);
+
+    // A los 5 segundos, limpiamos el buscador automáticamente
+    timerRef.current = setTimeout(() => {
+      setFilterTerm("");
+      timerRef.current = null;
+    }, 5000);
+  };
+
+  // 3. El useEffect blindado
   useEffect(() => {
-    // Si no hay token, ni lo intentamos
     if (!localStorage.getItem("token")) return;
 
     fetchData();
     const interval = setInterval(fetchData, 60000);
 
-    let socket;
     const connect = () => {
-      // Usamos localhost para ser consistentes con axios
-      socket = new WebSocket("ws://localhost:8000/ws");
+      // ESCUDO 1: Si ya hay un socket conectando o abierto, no creamos otro
+      if (
+        socketRef.current &&
+        (socketRef.current.readyState === WebSocket.OPEN ||
+          socketRef.current.readyState === WebSocket.CONNECTING)
+      ) {
+        return;
+      }
+
+      const socket = new WebSocket("ws://localhost:8000/ws");
 
       socket.onopen = () => console.log("✅ WS Conectado");
 
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        if (data.event === "NUEVO_INGRESO" || data.event === "NUEVA_SALIDA") {
-          toast.info(`Movimiento detectado: ${data.patente}`);
-          fetchData();
-        }
+
+        // ESCUDO 2: Anti-Duplicados por Contenido
+        // Creamos una "llave" única para este evento (ej: NUEVO_INGRESO-ABC123)
+        const eventKey = `${data.event}-${data.patente}`;
+
+        // Si recibimos la misma llave en menos de 2 segundos, la ignoramos
+        if (lastEventRef.current === eventKey) return;
+
+        lastEventRef.current = eventKey;
+        setTimeout(() => {
+          lastEventRef.current = null;
+        }, 2000);
+
+        // LANZAR NOTIFICACIÓN (Una sola vez)
+        toast.info(`Movimiento: ${data.patente}`, {
+          description:
+            data.event === "NUEVO_INGRESO"
+              ? "Ingresó ahora"
+              : "Salió del predio",
+          action: {
+            label: "VER",
+            onClick: () => activateFocusMode(data.patente), // <--- Activa filtro con autolimpieza
+          },
+        });
+
+        fetchData();
       };
 
       socket.onclose = (e) => {
-        // Solo avisamos si no fue un cierre intencional
         if (!e.wasClean) {
-          console.log("WS Reintentando en 5s...");
+          console.log("WS Reintentando...");
           setTimeout(connect, 5000);
         }
       };
+
       socket.onerror = () => socket.close();
+      socketRef.current = socket; // Guardamos el socket en la referencia
     };
 
     connect();
 
     return () => {
       clearInterval(interval);
-      if (socket) socket.close();
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
     };
   }, []);
+
+  // Filtramos los vehículos según lo que el usuario busque o clickee en la noti
+  const filteredVehicles = activeVehicles.filter((v) =>
+    v.patente.toLowerCase().includes(filterTerm.toLowerCase()),
+  );
 
   const handleCheckout = async (patente) => {
     if (!patente) {
@@ -125,12 +184,32 @@ const Dashboard = ({ onLogout }) => {
         <div className="lg:col-span-8 space-y-8">
           <EntryForm onEntrySuccess={fetchData} />
 
-          {/* Dejamos que ActiveTable maneje su propio loading interno para que el diseño no salte */}
-          <ActiveTable
-            vehicles={activeVehicles}
-            onCheckout={handleCheckout}
-            isLoading={loading}
-          />
+          <div className="space-y-4">
+            {/* Buscador para la tabla de activos */}
+            <div className="flex justify-end">
+              <input
+                type="text"
+                placeholder="Filtrar activos..."
+                className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 w-48 transition-all"
+                value={filterTerm}
+                onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
+              />
+              {filterTerm && (
+                <button
+                  onClick={() => setFilterTerm("")}
+                  className="ml-2 text-[10px] font-black text-slate-400 hover:text-red-500 uppercase"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            <ActiveTable
+              vehicles={filteredVehicles} // <--- Pasamos la lista filtrada
+              onCheckout={handleCheckout}
+              isLoading={loading}
+            />
+          </div>
         </div>
 
         {/* COLUMNA DERECHA (ESTRATEGIA) */}
