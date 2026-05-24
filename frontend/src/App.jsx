@@ -17,7 +17,13 @@ function App() {
   return (
     <BrowserRouter>
       <div className="font-sans antialiased text-gray-900">
-        <Toaster position="top-right" richColors closeButton />
+        <Toaster
+          position="top-right"
+          richColors
+          expand={false}
+          duration={5000}
+          visibleToasts={3}
+        />
 
         <Routes>
           {/* Si no está logueado, cualquier ruta lo manda al Login */}
