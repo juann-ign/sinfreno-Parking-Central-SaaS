@@ -2,7 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import api from "../api/axios";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
-import { SkeletonCard } from "../components/Skeletons"; // Cambiado a SkeletonCard
+import { SkeletonCard } from "../components/Skeletons";
+import RevenueChart from "../components/RevenueChart";
+import OccupancyPieChart from "../components/OccupancyPieChart";
 import {
   Car,
   PieChart,
@@ -20,6 +22,9 @@ const Dashboard = ({ onLogout }) => {
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Guardaremos aquí el array de {hora: X, monto: Y}
+  const [hourlyData, setHourlyData] = useState([]);
+
   // --- ESTADOS DE BÚSQUEDA Y FOCO ---
   const [filterTerm, setFilterTerm] = useState("");
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -32,12 +37,14 @@ const Dashboard = ({ onLogout }) => {
 
   const fetchData = async () => {
     try {
-      const [statsRes, activeRes] = await Promise.all([
+      const [statsRes, activeRes, hourlyRes] = await Promise.all([
         api.get("/stats/summary"),
         api.get("/parking/activas"),
+        api.get("/stats/revenue-hourly"),
       ]);
       setStats(statsRes.data);
       setActiveVehicles(activeRes.data);
+      setHourlyData(hourlyRes.data);
     } catch (error) {
       console.error("Error cargando datos", error);
     } finally {
@@ -239,6 +246,13 @@ const Dashboard = ({ onLogout }) => {
             onCheckout={handleCheckout}
             isLoading={loading}
           />
+          {/* --- SECCIÓN DE GRÁFICO DE RECAUDACIÓN --- */}
+          {/* Solo lo mostramos si no está cargando */}
+          {!loading && (
+            <div className="mt-8">
+              <RevenueChart data={hourlyData} />
+            </div>
+          )}
         </div>
 
         {/* COLUMNA DERECHA (ESTRATEGIA) */}
@@ -281,41 +295,13 @@ const Dashboard = ({ onLogout }) => {
 
           {/* CARD DE CAPACIDAD */}
           {loading ? (
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-200 animate-pulse">
-              <div className="h-4 w-32 bg-slate-100 rounded mb-8"></div>
-              <div className="space-y-4">
-                <div className="h-2 w-full bg-slate-100 rounded"></div>
-                <div className="h-2 w-full bg-slate-100 rounded"></div>
-              </div>
-            </div>
+            <div className="h-[300px] bg-white rounded-[2rem] animate-pulse"></div>
           ) : (
-            <div className="bg-white rounded-[2rem] p-6 border border-slate-200 shadow-sm">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                <PieChart size={14} /> Capacidad de Bahías
-              </h3>
-              <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className="text-slate-500 uppercase">
-                      Lugares Disponibles
-                    </span>
-                    <span className="text-emerald-500">
-                      {stats?.capacidad_disponible}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                    <div
-                      className="bg-emerald-500 h-full rounded-full transition-all duration-1000"
-                      style={{
-                        width: `${(stats?.capacidad_disponible / (stats?.autos_adentro + stats?.capacidad_disponible)) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <OccupancyPieChart
+              occupied={stats?.autos_adentro || 0}
+              available={stats?.capacidad_disponible || 0}
+            />
           )}
-
           {/* BOTÓN REPORTE (Siempre visible fuera de los ternarios) */}
           <button
             onClick={() => toast.info("Generando reporte...")}
