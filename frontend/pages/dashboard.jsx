@@ -173,8 +173,8 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden font-sans">
-      {/* HEADER: Sin cambios, pero aseguramos ancho total */}
+    <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden">
+      {/* HEADER: (Altura fija: 64px) */}
       <nav className="h-16 w-full bg-white border-b border-slate-200 px-8 flex justify-between items-center shrink-0 z-50">
         <div className="flex items-center gap-3">
           <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-100">
@@ -200,41 +200,29 @@ const Dashboard = ({ onLogout }) => {
         </div>
       </nav>
 
-      {/* CONTENEDOR GLOBAL CON PADDING: 
-          Aquí añadimos p-6 para que nada toque los bordes de la pantalla.
-      */}
+      {/* CONTENEDOR GLOBAL (p-6 para respiración) */}
       <div className="flex-1 flex overflow-hidden p-6 gap-6">
-        {/* COLUMNA IZQUIERDA (OPERATIVA) */}
+        {/* COLUMNA IZQUIERDA: OPERATIVA (70%) */}
         <section className="flex-[7] flex flex-col gap-6 min-w-0">
-          {/* Formulario de ingreso: Ahora más integrado */}
           <div className="shrink-0">
             <EntryForm onEntrySuccess={fetchData} />
           </div>
 
-          {/* Barra de Búsqueda de Alto Impacto */}
-          <div className="shrink-0 relative group">
+          <div className="shrink-0 relative">
             <Search
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400"
               size={24}
             />
             <input
               type="text"
               placeholder="BUSCAR PATENTE EN PLANTA..."
-              className="w-full pl-16 pr-6 py-6 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-black text-2xl transition-all tracking-tight"
+              className="w-full pl-16 pr-6 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-black text-xl transition-all"
               value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
             />
-            {filterTerm && (
-              <button
-                onClick={() => setFilterTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500"
-              >
-                <X size={20} />
-              </button>
-            )}
           </div>
 
-          {/* Tabla de Activos: flex-1 para que use todo el alto sobrante */}
+          {/* Tabla: Toma todo el espacio central */}
           <div className="flex-1 min-h-0 bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
             <ActiveTable
               vehicles={filteredVehicles}
@@ -244,37 +232,32 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </section>
 
-        {/* COLUMNA DERECHA (ESTRATEGIA): 
-            Eliminamos el gráfico de barras para que todo entre perfecto.
+        {/* COLUMNA DERECHA: ESTRATEGIA (30%) 
+            IMPORTANTE: flex flex-col h-full para controlar el espacio.
         */}
-        <aside className="flex-[3] flex flex-col gap-6 min-w-[320px]">
-          {/* Card de Dinero: Rediseñada para ser más limpia */}
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-slate-200 shrink-0">
-            <div className="flex justify-between items-start mb-4">
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">
-                Caja del Día
+        <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
+          {/* 1. Caja del Día (Altura fija) */}
+          <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                Caja Hoy
               </p>
-              <Activity size={20} className="text-indigo-400" />
+              <Activity size={18} className="text-indigo-400" />
             </div>
-            <h3 className="text-5xl font-black mb-6 tracking-tighter">
+            <h3 className="text-4xl font-black mb-4 tracking-tighter">
               ${stats?.recaudacion_hoy || 0}
             </h3>
-
-            <div className="space-y-3">
-              <div className="flex justify-between text-xs font-bold border-t border-white/10 pt-4">
-                <span className="opacity-50">OCUPACIÓN</span>
-                <span>{stats?.porcentaje_ocupacion}%</span>
-              </div>
-              <div className="flex justify-between text-xs font-bold">
-                <span className="opacity-50">DISPONIBLES</span>
-                <span className="text-emerald-400">
-                  {stats?.capacidad_disponible}
-                </span>
-              </div>
+            <div className="flex justify-between text-[10px] font-black border-t border-white/10 pt-3">
+              <span className="opacity-50 uppercase">Disponibles</span>
+              <span className="text-emerald-400">
+                {stats?.capacidad_disponible} LUGARES
+              </span>
             </div>
           </div>
 
-          {/* Gráfico de Torta: Lo dejamos como el elemento visual central del aside */}
+          {/* 2. Gráfico de Ocupación (Flexible: flex-1)
+              Este gráfico crecerá para llenar el espacio vacío.
+          */}
           <div className="flex-1 min-h-0">
             <OccupancyPieChart
               occupied={stats?.autos_adentro || 0}
@@ -282,10 +265,17 @@ const Dashboard = ({ onLogout }) => {
             />
           </div>
 
-          {/* Acción Secundaria: PDF - Ahora es un link elegante, no un botón gigante */}
-          <button className="shrink-0 flex items-center justify-center gap-3 py-5 rounded-[1.5rem] border-2 border-slate-200 text-slate-500 font-black text-[10px] tracking-widest uppercase hover:bg-slate-50 hover:text-slate-800 hover:border-slate-300 transition-all">
-            <HistoryIcon size={16} />
-            Descargar Reporte del Día
+          {/* 3. Gráfico de Barras (Altura fija pero compacta: h-48)
+              Lo devolvemos para llenar el hueco y dar info estratégica.
+          */}
+          <div className="h-64  shrink-0">
+            <RevenueChart data={hourlyData} />
+          </div>
+
+          {/* 4. Botón de Reporte (Ancla inferior) */}
+          <button className="shrink-0 w-full bg-white border-2 border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-black text-[10px] tracking-[0.2em] uppercase hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2">
+            <HistoryIcon size={14} />
+            Reporte Completo
           </button>
         </aside>
       </div>
