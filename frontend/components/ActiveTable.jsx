@@ -5,14 +5,14 @@ import { LogOut, Clock, MapPin } from "lucide-react";
 const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-        <h3 className="font-black text-slate-700 uppercase tracking-tighter text-lg">
+      <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+        <h3 className="font-arvo text-lg font-bold text-slate-800 uppercase tracking-tight">
           Vehículos en Planta
         </h3>
         {isLoading ? (
           <div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse"></div>
         ) : (
-          <span className="bg-indigo-100 text-indigo-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">
+          <span className="font-sans bg-slate-50 text-slate-400 text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">
             {vehicles.length} Activos
           </span>
         )}
