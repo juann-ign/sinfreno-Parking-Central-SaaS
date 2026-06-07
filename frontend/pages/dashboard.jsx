@@ -175,25 +175,27 @@ const Dashboard = ({ onLogout }) => {
   return (
     <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden">
       {/* HEADER: (Altura fija: 64px) */}
-      <nav className="h-16 w-full bg-white border-b border-slate-200 px-8 flex justify-between items-center shrink-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-100">
-            <Car size={20} />
+      <nav className="h-20 w-full bg-white border-b border-slate-100 px-10 flex justify-between items-center shrink-0 z-50">
+        <div className="flex items-center gap-4">
+          <div className="bg-indigo-600 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-100">
+            <Car size={22} strokeWidth={2.5} />
           </div>
-          <h1 className="text-xl font-black text-slate-800 tracking-tighter uppercase">
-            Sinfreno <span className="text-indigo-600 text-xs">SaaS</span>
+          {/* Arvo para la marca: Imponente */}
+          <h1 className="font-arvo text-2xl font-bold text-slate-900 tracking-tight">
+            Sinfreno<span className="text-indigo-600">.</span>
           </h1>
         </div>
-        <div className="flex gap-8">
+        <div className="flex items-center gap-8">
+          {/* Inter para acciones: Funcional */}
           <button
             onClick={() => navigate("/history")}
-            className="text-[11px] font-black text-slate-400 hover:text-indigo-600 flex items-center gap-2 tracking-[0.1em] transition-all"
+            className="font-sans text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center gap-2 tracking-[0.15em] transition-all"
           >
             <HistoryIcon size={16} /> HISTORIAL
           </button>
           <button
             onClick={onLogout}
-            className="text-[11px] font-black text-red-400 hover:text-red-600 flex items-center gap-2 tracking-[0.1em] transition-all border-l pl-8"
+            className="font-sans text-xs font-bold text-rose-400 hover:text-rose-500 flex items-center gap-2 tracking-[0.15em] transition-all border-l pl-8 ml-2"
           >
             <LogOut size={16} /> SALIR
           </button>
@@ -216,7 +218,7 @@ const Dashboard = ({ onLogout }) => {
             <input
               type="text"
               placeholder="BUSCAR PATENTE EN PLANTA..."
-              className="w-full pl-16 pr-6 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-black text-xl transition-all"
+              className="w-full pl-16 pr-8 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-sans font-semibold text-xl  transition-all"
               value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
             />
@@ -268,7 +270,7 @@ const Dashboard = ({ onLogout }) => {
           {/* 3. Gráfico de Barras (Altura fija pero compacta: h-48)
               Lo devolvemos para llenar el hueco y dar info estratégica.
           */}
-          <div className="h-64  shrink-0">
+          <div className="h-60  shrink-0">
             <RevenueChart data={hourlyData} />
           </div>
 
