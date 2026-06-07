@@ -4,8 +4,8 @@ import { LogOut, Clock, MapPin } from "lucide-react";
 
 const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-slate-200 flex flex-col h-full">
-      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+    <div className="flex flex-col h-full bg-white">
+      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
         <h3 className="font-black text-slate-700 uppercase tracking-tighter text-lg">
           Vehículos en Planta
         </h3>
@@ -18,7 +18,7 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
         )}
       </div>
 
-      <div className="overflow-y-auto flex-1 custom-scroll max-h-[500px]">
+      <div className="overflow-y-auto flex-1 custom-scroll px-2">
         <table className="w-full text-left">
           <thead className="bg-white sticky top-0 z-10">
             <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">

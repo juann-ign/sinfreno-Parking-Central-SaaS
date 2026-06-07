@@ -173,152 +173,130 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      {/* HEADER */}
-      <nav className="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-50">
+    <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden">
+      {/* HEADER: (Altura fija: 64px) */}
+      <nav className="h-16 w-full bg-white border-b border-slate-200 px-8 flex justify-between items-center shrink-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 p-2 rounded-xl text-white">
+          <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-100">
             <Car size={20} />
           </div>
-          <h1 className="text-xl font-black text-slate-800 tracking-tighter">
-            SINFRENO <span className="text-indigo-600 text-xs">PRO</span>
+          <h1 className="text-xl font-black text-slate-800 tracking-tighter uppercase">
+            Sinfreno <span className="text-indigo-600 text-xs">SaaS</span>
           </h1>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-8">
           <button
             onClick={() => navigate("/history")}
-            className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2 transition-colors"
+            className="text-[11px] font-black text-slate-400 hover:text-indigo-600 flex items-center gap-2 tracking-[0.1em] transition-all"
           >
             <HistoryIcon size={16} /> HISTORIAL
           </button>
           <button
             onClick={onLogout}
-            className="text-xs font-bold text-red-400 hover:text-red-600 flex items-center gap-2 transition-colors border-l pl-4"
+            className="text-[11px] font-black text-red-400 hover:text-red-600 flex items-center gap-2 tracking-[0.1em] transition-all border-l pl-8"
           >
             <LogOut size={16} /> SALIR
           </button>
         </div>
       </nav>
 
-      {/* GRID PRINCIPAL */}
-      <main className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-[1600px] mx-auto w-full">
-        {/* COLUMNA IZQUIERDA (OPERATIVA) */}
-        <div className="lg:col-span-8 space-y-8">
-          <EntryForm onEntrySuccess={fetchData} />
-
-          {/* BARRA DE BÚSQUEDA DE ALTO IMPACTO */}
-          <div className="bg-white p-4 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4">
-            <div className="relative flex-1 w-full">
-              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400">
-                <Search size={22} />
-              </div>
-              <input
-                type="text"
-                placeholder="BUSCAR VEHÍCULO POR PATENTE..."
-                className={`w-full pl-14 pr-4 py-5 rounded-[1.5rem] border-2 transition-all font-black text-xl outline-none ${
-                  isFocusMode
-                    ? "border-amber-400 bg-amber-50 text-amber-900 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
-                    : "border-slate-100 bg-slate-50 focus:border-indigo-500 focus:bg-white"
-                }`}
-                value={filterTerm}
-                onChange={(e) => {
-                  setFilterTerm(e.target.value.toUpperCase());
-                  setIsFocusMode(false); // Si el usuario escribe, quitamos el modo automático
-                }}
-              />
-            </div>
-
-            {(filterTerm !== "" || isFocusMode) && (
-              <button
-                onClick={() => {
-                  setFilterTerm("");
-                  setIsFocusMode(false);
-                }}
-                className="w-full md:w-auto px-8 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.15em] hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
-              >
-                <X size={18} /> MOSTRAR TODOS
-              </button>
-            )}
+      {/* CONTENEDOR GLOBAL (p-6 para respiración) */}
+      <div className="flex-1 flex overflow-hidden p-6 gap-6">
+        {/* COLUMNA IZQUIERDA: OPERATIVA (70%) */}
+        <section className="flex-[7] flex flex-col gap-6 min-w-0">
+          <div className="shrink-0">
+            <EntryForm onEntrySuccess={fetchData} />
           </div>
 
-          <ActiveTable
-            vehicles={filteredVehicles}
-            onCheckout={handleCheckout}
-            isLoading={loading}
-          />
-          {/* --- SECCIÓN DE GRÁFICO DE RECAUDACIÓN --- */}
-          {/* Solo lo mostramos si no está cargando */}
-          {!loading && (
-            <div className="mt-8">
-              <RevenueChart data={hourlyData} />
-            </div>
-          )}
-        </div>
+          <div className="shrink-0 relative">
+            <Search
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400"
+              size={24}
+            />
+            <input
+              type="text"
+              placeholder="BUSCAR PATENTE EN PLANTA..."
+              className="w-full pl-16 pr-6 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-black text-xl transition-all"
+              value={filterTerm}
+              onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
+            />
+          </div>
 
-        {/* COLUMNA DERECHA (ESTRATEGIA) */}
-        <aside className="lg:col-span-4 space-y-6">
-          {/* CARD DE RECAUDACIÓN */}
-          {loading ? (
-            <SkeletonCard />
-          ) : (
-            <div className="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200 overflow-hidden relative">
-              <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-2">
-                Recaudación Hoy
+          {/* Tabla: Toma todo el espacio central */}
+          <div className="flex-1 min-h-0 bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+            <ActiveTable
+              vehicles={filteredVehicles}
+              onCheckout={handleCheckout}
+              isLoading={loading}
+            />
+          </div>
+        </section>
+
+        {/* COLUMNA DERECHA: ESTRATEGIA (30%) 
+            IMPORTANTE: flex flex-col h-full para controlar el espacio.
+        */}
+        <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
+          {/* 1. Caja del Día (Altura fija) */}
+          <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                Caja Hoy
               </p>
-              <h3 className="text-5xl font-black mb-6 tracking-tighter">
-                ${stats?.recaudacion_hoy || 0}
-              </h3>
-              <div className="flex justify-between items-center bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                <div>
-                  <p className="text-[9px] font-bold opacity-60 uppercase">
-                    Ocupación
-                  </p>
-                  <p className="text-xl font-black">
-                    {stats?.porcentaje_ocupacion}%
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[9px] font-bold opacity-60 uppercase">
-                    Disponibles
-                  </p>
-                  <p className="text-xl font-black text-emerald-300">
-                    {stats?.capacidad_disponible}
-                  </p>
-                </div>
-              </div>
-              <Activity
-                className="absolute -right-4 -top-4 text-white/5"
-                size={160}
-              />
+              <Activity size={18} className="text-indigo-400" />
             </div>
-          )}
+            <h3 className="text-4xl font-black mb-4 tracking-tighter">
+              ${stats?.recaudacion_hoy || 0}
+            </h3>
+            <div className="flex justify-between text-[10px] font-black border-t border-white/10 pt-3">
+              <span className="opacity-50 uppercase">Disponibles</span>
+              <span className="text-emerald-400">
+                {stats?.capacidad_disponible} LUGARES
+              </span>
+            </div>
+          </div>
 
-          {/* CARD DE CAPACIDAD */}
-          {loading ? (
-            <div className="h-[300px] bg-white rounded-[2rem] animate-pulse"></div>
-          ) : (
+          {/* 2. Gráfico de Ocupación (Flexible: flex-1)
+              Este gráfico crecerá para llenar el espacio vacío.
+          */}
+          <div className="flex-1 min-h-0">
             <OccupancyPieChart
               occupied={stats?.autos_adentro || 0}
               available={stats?.capacidad_disponible || 0}
             />
-          )}
-          {/* BOTÓN REPORTE (Siempre visible fuera de los ternarios) */}
-          <button
-            onClick={() => toast.info("Generando reporte...")}
-            className="w-full bg-slate-900 hover:bg-black text-white rounded-[2rem] p-6 transition-all group flex flex-col items-center justify-center border-2 border-slate-800"
-          >
-            <div className="bg-white/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
-              <Activity className="text-indigo-400" size={24} />
-            </div>
-            <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em] mb-1">
-              Business Intelligence
-            </p>
-            <p className="text-base font-extrabold">GENERAR REPORTE PDF</p>
+          </div>
+
+          {/* 3. Gráfico de Barras (Altura fija pero compacta: h-48)
+              Lo devolvemos para llenar el hueco y dar info estratégica.
+          */}
+          <div className="h-64  shrink-0">
+            <RevenueChart data={hourlyData} />
+          </div>
+
+          {/* 4. Botón de Reporte (Ancla inferior) */}
+          <button className="shrink-0 w-full bg-white border-2 border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-black text-[10px] tracking-[0.2em] uppercase hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2">
+            <HistoryIcon size={14} />
+            Reporte Completo
           </button>
         </aside>
-      </main>
+      </div>
     </div>
   );
 };
 
 export default Dashboard;
+
+{
+  /* BOTÓN REPORTE (Siempre visible fuera de los ternarios) */
+}
+<button
+  onClick={() => toast.info("Generando reporte...")}
+  className="w-full bg-slate-900 hover:bg-black text-white rounded-[2rem] p-6 transition-all group flex flex-col items-center justify-center border-2 border-slate-800"
+>
+  <div className="bg-white/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+    <Activity className="text-indigo-400" size={24} />
+  </div>
+  <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em] mb-1">
+    Business Intelligence
+  </p>
+  <p className="text-base font-extrabold">GENERAR REPORTE PDF</p>
+</button>;

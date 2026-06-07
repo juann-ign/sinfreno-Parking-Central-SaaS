@@ -30,7 +30,7 @@ const OccupancyPieChart = ({ occupied, available }) => {
   const COLORS = ["#6366f1", "#e2e8f0"]; // Un gris un pelín más oscuro para el disponible
 
   return (
-    <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 h-[400px] flex flex-col overflow-hidden">
+    <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 h-full min-h-0 flex flex-col overflow-hidden">
       {/* HEADER: Reducimos padding y margin para dar espacio al gráfico */}
       <div className="mb-2 shrink-0">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
