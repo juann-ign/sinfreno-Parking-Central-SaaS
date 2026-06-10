@@ -86,3 +86,4 @@
 2026-05-26 14:27:56,941 | INFO | parking_service | SALIDA: Vehículo NNMBNMB egresó por Torre 1 por Usuario ID 1
 2026-06-06 23:10:22,287 | INFO | parking_service | INGRESO: Vehículo DASDD332 en Torre 1 por Usuario ID 1
 2026-06-06 23:11:25,582 | INFO | parking_service | SALIDA: Vehículo AAA242 egresó por Torre 1 por Usuario ID 1
+2026-06-07 18:54:41,760 | INFO | parking_service | SALIDA: Vehículo CAMION1 egresó por Torre 1 por Usuario ID 1

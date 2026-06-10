@@ -31,6 +31,17 @@ def login(
     access_token = security.create_access_token(subject=user.id)
     
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-    }
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user_info": {
+                "email": user.email,
+                "rol": user.rol,
+                "permisos": user.permisos.split(","), # Enviamos array al front: ["ingreso", "salida"]
+                "sucursal": {
+                    "nombre": user.sucursal.nombre,
+                    "tarifa": user.sucursal.tarifa_hora,
+                    "logo": user.sucursal.empresa.logo_url,
+                    "color": user.sucursal.empresa.color_primario
+                }
+            }
+        }
