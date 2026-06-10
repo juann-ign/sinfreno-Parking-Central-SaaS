@@ -27,8 +27,14 @@ export const AuthProvider = ({ children }) => {
 
   const hasPermission = (permission) => {
     if (!user) return false;
-    if (user.rol === "ADMIN") return true;
-    return user.permisos?.includes(permission) || false;
+
+    const rolSuperior = user.rol?.toUpperCase();
+    if (rolSuperior === "ADMIN") return true;
+
+    // Usamos .map(p => p.trim()) para limpiar CUALQUIER espacio rebelde
+    const permisosLimpios = user.permisos?.map((p) => p.trim()) || [];
+
+    return permisosLimpios.includes(permission);
   };
 
   return (

@@ -43,11 +43,14 @@ const Dashboard = ({ onLogout }) => {
       const [statsRes, activeRes, hourlyRes] = await Promise.all([
         api.get("/stats/summary"),
         api.get("/parking/activas"),
-        api.get("/stats/revenue-hourly"),
       ]);
       setStats(statsRes.data);
       setActiveVehicles(activeRes.data);
-      setHourlyData(hourlyRes.data);
+      // Pedido que SOLO el admin puede hacer (Evitamos el error 403)
+      if (hasPermission("ver_stats")) {
+        const hourlyRes = await api.get("/stats/revenue-hourly");
+        setHourlyData(hourlyRes.data);
+      }
     } catch (error) {
       console.error("Error cargando datos", error);
     } finally {
@@ -177,7 +180,7 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden">
-      {/* HEADER: (Altura fija: 64px) */}
+      {/* HEADER */}
       <nav className="h-20 w-full bg-white border-b border-slate-100 px-10 flex justify-between items-center shrink-0 z-50">
         <div className="flex items-center gap-4">
           <div
@@ -186,14 +189,14 @@ const Dashboard = ({ onLogout }) => {
           >
             <Car size={22} strokeWidth={2.5} />
           </div>
-          {/* Arvo para la marca: Imponente */}
           <h1 className="font-arvo text-2xl font-bold text-slate-900 tracking-tight">
             {user?.sucursal?.nombre || "Sinfreno"}
             <span className="text-indigo-600">.</span>
           </h1>
         </div>
+
         <div className="flex items-center gap-8">
-          {/* SOLO MOSTRAR HISTORIAL SI TIENE PERMISO */}
+          {/* BOTÓN HISTORIAL: Solo Admin */}
           {hasPermission("ver_historial") && (
             <button
               onClick={() => navigate("/history")}
@@ -211,7 +214,7 @@ const Dashboard = ({ onLogout }) => {
         </div>
       </nav>
 
-      {/* CONTENEDOR GLOBAL (p-6 para respiración) */}
+      {/* CONTENEDOR GLOBAL */}
       <div className="flex-1 flex overflow-hidden p-6 gap-6">
         {/* COLUMNA IZQUIERDA: OPERATIVA (70%) */}
         <section className="flex-[7] flex flex-col gap-6 min-w-0">
@@ -227,13 +230,12 @@ const Dashboard = ({ onLogout }) => {
             <input
               type="text"
               placeholder="BUSCAR PATENTE EN PLANTA..."
-              className="w-full pl-16 pr-8 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-sans font-semibold text-xl  transition-all"
+              className="w-full pl-16 pr-8 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-sans font-semibold text-xl transition-all"
               value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
             />
           </div>
 
-          {/* Tabla: Toma todo el espacio central */}
           <div className="flex-1 min-h-0 bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
             <ActiveTable
               vehicles={filteredVehicles}
@@ -243,17 +245,14 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </section>
 
-        {/* COLUMNA DERECHA (Estratégica) - ¡SOLO PARA ADMINS O CON PERMISO! */}
-        {hasPermission("ver_stats") ? (
-          <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
-            {/* 1. Caja del Día (Altura fija) */}
+        {/* COLUMNA DERECHA: ESTRATÉGICA (30%) */}
+        <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
+          {/* 1. CAJA HOY: Solo Admin */}
+          {hasPermission("ver_stats") && (
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
-              <div className="flex justify-between items-start mb-2">
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                  Caja Hoy
-                </p>
-                <Activity size={18} className="text-indigo-400" />
-              </div>
+              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                Caja Hoy
+              </p>
               <h3 className="text-4xl font-black mb-4 tracking-tighter">
                 ${stats?.recaudacion_hoy || 0}
               </h3>
@@ -264,62 +263,48 @@ const Dashboard = ({ onLogout }) => {
                 </span>
               </div>
             </div>
+          )}
 
-            {/* 2. Gráfico de Ocupación (Flexible: flex-1)
-              Este gráfico crecerá para llenar el espacio vacío.
-          */}
-            <div className="flex-1 min-h-0">
+          {/* 2. OCUPACIÓN: Admin y Operador */}
+          {hasPermission("ver_ocupacion") && (
+            <div className="flex-1 flex flex-col min-h-0">
               <OccupancyPieChart
                 occupied={stats?.autos_adentro || 0}
                 available={stats?.capacidad_disponible || 0}
               />
             </div>
+          )}
 
-            {/* 3. Gráfico de Barras (Altura fija pero compacta: h-48)
-              Lo devolvemos para llenar el hueco y dar info estratégica.
-          */}
-            <div className="h-60  shrink-0">
+          {/* 3. GRÁFICO HORARIO: Solo Admin */}
+          {hasPermission("ver_stats") && (
+            <div className="h-60 shrink-0">
               <RevenueChart data={hourlyData} />
             </div>
+          )}
 
-            {/* 4. Botón de Reporte (Ancla inferior) */}
+          {/* 4. BOTÓN REPORTE: Solo Admin */}
+          {hasPermission("ver_stats") && (
             <button className="shrink-0 w-full bg-white border-2 border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-black text-[10px] tracking-[0.2em] uppercase hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2">
               <HistoryIcon size={14} />
               Reporte Completo
             </button>
-          </aside>
-        ) : (
-          <aside className="flex-[3] flex flex-col items-center justify-center bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-10 text-center">
-            <div className="bg-slate-50 p-6 rounded-full mb-4">
-              <Car size={40} className="text-slate-200" />
+          )}
+
+          {/* MODO OPERADOR: Mensaje visual si no es admin */}
+          {!hasPermission("ver_stats") && (
+            <div className="p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-center">
+              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
+                Terminal Operativa
+              </p>
+              <p className="text-xs font-bold text-indigo-900">
+                Sede: {user?.sucursal?.nombre}
+              </p>
             </div>
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">
-              Modo Operador Activo
-            </p>
-            <p className="text-slate-300 text-[10px] mt-2">
-              Las estadísticas financieras están restringidas por la gerencia.
-            </p>
-          </aside>
-        )}
+          )}
+        </aside>
       </div>
     </div>
   );
 };
 
 export default Dashboard;
-
-{
-  /* BOTÓN REPORTE (Siempre visible fuera de los ternarios) */
-}
-<button
-  onClick={() => toast.info("Generando reporte...")}
-  className="w-full bg-slate-900 hover:bg-black text-white rounded-[2rem] p-6 transition-all group flex flex-col items-center justify-center border-2 border-slate-800"
->
-  <div className="bg-white/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
-    <Activity className="text-indigo-400" size={24} />
-  </div>
-  <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em] mb-1">
-    Business Intelligence
-  </p>
-  <p className="text-base font-extrabold">GENERAR REPORTE PDF</p>
-</button>;
