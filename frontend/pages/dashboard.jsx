@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useAuth } from "../src/context/AuthContext";
 import api from "../api/axios";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
@@ -18,6 +19,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = ({ onLogout }) => {
+  const { hasPermission, user } = useAuth();
+
   const [stats, setStats] = useState(null);
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -177,22 +180,28 @@ const Dashboard = ({ onLogout }) => {
       {/* HEADER: (Altura fija: 64px) */}
       <nav className="h-20 w-full bg-white border-b border-slate-100 px-10 flex justify-between items-center shrink-0 z-50">
         <div className="flex items-center gap-4">
-          <div className="bg-indigo-600 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-100">
+          <div
+            className="p-2.5 rounded-2xl text-white shadow-lg"
+            style={{ backgroundColor: user?.sucursal?.color || "#4f46e5" }}
+          >
             <Car size={22} strokeWidth={2.5} />
           </div>
           {/* Arvo para la marca: Imponente */}
           <h1 className="font-arvo text-2xl font-bold text-slate-900 tracking-tight">
-            Sinfreno<span className="text-indigo-600">.</span>
+            {user?.sucursal?.nombre || "Sinfreno"}
+            <span className="text-indigo-600">.</span>
           </h1>
         </div>
         <div className="flex items-center gap-8">
-          {/* Inter para acciones: Funcional */}
-          <button
-            onClick={() => navigate("/history")}
-            className="font-sans text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center gap-2 tracking-[0.15em] transition-all"
-          >
-            <HistoryIcon size={16} /> HISTORIAL
-          </button>
+          {/* SOLO MOSTRAR HISTORIAL SI TIENE PERMISO */}
+          {hasPermission("ver_historial") && (
+            <button
+              onClick={() => navigate("/history")}
+              className="font-sans text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center gap-2 tracking-[0.15em] transition-all"
+            >
+              <HistoryIcon size={16} /> HISTORIAL
+            </button>
+          )}
           <button
             onClick={onLogout}
             className="font-sans text-xs font-bold text-rose-400 hover:text-rose-500 flex items-center gap-2 tracking-[0.15em] transition-all border-l pl-8 ml-2"
@@ -234,52 +243,64 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </section>
 
-        {/* COLUMNA DERECHA: ESTRATEGIA (30%) 
-            IMPORTANTE: flex flex-col h-full para controlar el espacio.
-        */}
-        <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
-          {/* 1. Caja del Día (Altura fija) */}
-          <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                Caja Hoy
-              </p>
-              <Activity size={18} className="text-indigo-400" />
+        {/* COLUMNA DERECHA (Estratégica) - ¡SOLO PARA ADMINS O CON PERMISO! */}
+        {hasPermission("ver_stats") ? (
+          <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
+            {/* 1. Caja del Día (Altura fija) */}
+            <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
+              <div className="flex justify-between items-start mb-2">
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                  Caja Hoy
+                </p>
+                <Activity size={18} className="text-indigo-400" />
+              </div>
+              <h3 className="text-4xl font-black mb-4 tracking-tighter">
+                ${stats?.recaudacion_hoy || 0}
+              </h3>
+              <div className="flex justify-between text-[10px] font-black border-t border-white/10 pt-3">
+                <span className="opacity-50 uppercase">Disponibles</span>
+                <span className="text-emerald-400">
+                  {stats?.capacidad_disponible} LUGARES
+                </span>
+              </div>
             </div>
-            <h3 className="text-4xl font-black mb-4 tracking-tighter">
-              ${stats?.recaudacion_hoy || 0}
-            </h3>
-            <div className="flex justify-between text-[10px] font-black border-t border-white/10 pt-3">
-              <span className="opacity-50 uppercase">Disponibles</span>
-              <span className="text-emerald-400">
-                {stats?.capacidad_disponible} LUGARES
-              </span>
-            </div>
-          </div>
 
-          {/* 2. Gráfico de Ocupación (Flexible: flex-1)
+            {/* 2. Gráfico de Ocupación (Flexible: flex-1)
               Este gráfico crecerá para llenar el espacio vacío.
           */}
-          <div className="flex-1 min-h-0">
-            <OccupancyPieChart
-              occupied={stats?.autos_adentro || 0}
-              available={stats?.capacidad_disponible || 0}
-            />
-          </div>
+            <div className="flex-1 min-h-0">
+              <OccupancyPieChart
+                occupied={stats?.autos_adentro || 0}
+                available={stats?.capacidad_disponible || 0}
+              />
+            </div>
 
-          {/* 3. Gráfico de Barras (Altura fija pero compacta: h-48)
+            {/* 3. Gráfico de Barras (Altura fija pero compacta: h-48)
               Lo devolvemos para llenar el hueco y dar info estratégica.
           */}
-          <div className="h-60  shrink-0">
-            <RevenueChart data={hourlyData} />
-          </div>
+            <div className="h-60  shrink-0">
+              <RevenueChart data={hourlyData} />
+            </div>
 
-          {/* 4. Botón de Reporte (Ancla inferior) */}
-          <button className="shrink-0 w-full bg-white border-2 border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-black text-[10px] tracking-[0.2em] uppercase hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2">
-            <HistoryIcon size={14} />
-            Reporte Completo
-          </button>
-        </aside>
+            {/* 4. Botón de Reporte (Ancla inferior) */}
+            <button className="shrink-0 w-full bg-white border-2 border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-black text-[10px] tracking-[0.2em] uppercase hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2">
+              <HistoryIcon size={14} />
+              Reporte Completo
+            </button>
+          </aside>
+        ) : (
+          <aside className="flex-[3] flex flex-col items-center justify-center bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-10 text-center">
+            <div className="bg-slate-50 p-6 rounded-full mb-4">
+              <Car size={40} className="text-slate-200" />
+            </div>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">
+              Modo Operador Activo
+            </p>
+            <p className="text-slate-300 text-[10px] mt-2">
+              Las estadísticas financieras están restringidas por la gerencia.
+            </p>
+          </aside>
+        )}
       </div>
     </div>
   );

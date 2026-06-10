@@ -3,10 +3,14 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // Cargamos el usuario desde el localStorage si existe
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user_info");
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (!savedUser || savedUser === "undefined") return null;
+    try {
+      return JSON.parse(savedUser);
+    } catch (e) {
+      return null;
+    }
   });
 
   const login = (userData) => {
@@ -18,14 +22,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user_info");
+    window.location.href = "/";
   };
 
-  // FUNCIÓN CLAVE: Chequea si el usuario tiene un permiso específico
   const hasPermission = (permission) => {
-    if (!user || !user.permisos) return false;
-    // Si es ADMIN, tiene permiso total (atajo)
+    if (!user) return false;
     if (user.rol === "ADMIN") return true;
-    return user.permisos.includes(permission);
+    return user.permisos?.includes(permission) || false;
   };
 
   return (
@@ -35,5 +38,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook para usar el contexto fácilmente
 export const useAuth = () => useContext(AuthContext);
