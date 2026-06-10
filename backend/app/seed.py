@@ -71,14 +71,14 @@ def seed():
                 password_hash=hash_ope,
                 rol="OPERADOR",
                 # Permisos limitados: solo flujo operativo
-                permisos="ingreso,salida", 
+                permisos="ingreso,salida,ver_ocupacion", 
                 sucursal_id=sucursal.id
             )
             db.add(operador)
         else:
             print(f"Actualizando permisos y hash de Operador...")
             operador.password_hash = hash_ope
-            operador.permisos = "ingreso,salida"
+            operador.permisos = "ingreso,salida,ver_ocupacion"
 
         db.commit()
         print("✅ PROCESO COMPLETADO: Base de datos sincronizada con modo SaaS Pro.")

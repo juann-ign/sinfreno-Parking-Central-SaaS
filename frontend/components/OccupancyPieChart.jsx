@@ -30,7 +30,19 @@ const OccupancyPieChart = ({ occupied, available }) => {
   const COLORS = ["#6366f1", "#e2e8f0"]; // Un gris un pelín más oscuro para el disponible
 
   return (
-    <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 h-full min-h-0 flex flex-col overflow-hidden">
+    <div
+      className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 
+                    w-full mx-auto
+                    flex flex-col overflow-hidden
+                    min-h-[350px] max-h-[500px] aspect-[4/5] md:aspect-square"
+    >
+      {/* 
+          EXPLICACIÓN DE LAS CLASES:
+          - min-h-[350px]: Evita que se vea muy chico cuando hay muchas cosas.
+          - max-h-[500px]: Evita que se estire demasiado cuando está solo (caso Operario).
+          - aspect-[4/5]: Le da una forma vertical elegante.
+          - md:aspect-square: En pantallas más grandes se vuelve cuadrado.
+      */}{" "}
       {/* HEADER: Reducimos padding y margin para dar espacio al gráfico */}
       <div className="mb-2 shrink-0">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
@@ -40,7 +52,6 @@ const OccupancyPieChart = ({ occupied, available }) => {
           Ocupación Real
         </p>
       </div>
-
       {/* CONTENEDOR DEL GRÁFICO: Usamos 'relative' y 'flex-1' para que ocupe todo el resto */}
       <div className="flex-1 relative min-h-0 w-full">
         {/* TEXTO CENTRAL: Lo centramos matemáticamente */}
@@ -79,7 +90,6 @@ const OccupancyPieChart = ({ occupied, available }) => {
           </PieChart>
         </ResponsiveContainer>
       </div>
-
       {/* LEYENDA INFERIOR */}
       <div className="grid grid-cols-2 gap-4 mt-2 border-t border-slate-50 pt-4 shrink-0">
         <div className="flex items-center gap-3">
