@@ -20,7 +20,8 @@ class Sucursal(Base):
     nombre = Column(String)
     tarifa_hora = Column(Float)
     empresa_id = Column(Integer, ForeignKey("empresas.id"))
-
+    # Tiempo de gracia en minutos (ej: 10 min) antes de cobrar la primera hora
+    tiempo_cortesia_min = Column(Integer, default=5)
     empresa = relationship("Empresa", back_populates="sucursales")
     torres = relationship("Torre", back_populates="sucursal")
     usuarios = relationship("Usuario", back_populates="sucursal")
@@ -30,6 +31,8 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True)
     password_hash = Column(String)
+    # Guardaremos una lista separada por comas: "ingreso,salida,stats,config"
+    permisos = Column(String, default="ingreso,salida")
     rol = Column(String) # superAdmin, adminSede o operador
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
 
