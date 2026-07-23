@@ -15,6 +15,12 @@ def seed():
             db.commit()
             db.refresh(empresa)
 
+        # --- EMPRESA 2 PARA TEST DE SEGURIDAD ---
+        empresa2 = db_models.Empresa(nombre="Parking El Vecino", cuit="30-99999999-9")
+        db.add(empresa2)
+        db.commit()
+        db.refresh(empresa2)
+
         # 2. Buscar o Crear Sucursal (Configuración de Negocio)
         sucursal = db.query(db_models.Sucursal).filter_by(nombre="Sede Central").first()
         if not sucursal:
@@ -28,6 +34,11 @@ def seed():
             db.add(sucursal)
             db.commit()
             db.refresh(sucursal)
+
+        sucursal2 = db_models.Sucursal(nombre="Sede Norte", tarifa_hora=2000.0, tiempo_cortesia_min=10, empresa_id=empresa2.id)
+        db.add(sucursal2)
+        db.commit()
+        db.refresh(sucursal2)
 
         # 3. Buscar o Crear Torre
         torre = db.query(db_models.Torre).filter_by(numero=1, sucursal_id=sucursal.id).first()
@@ -57,6 +68,16 @@ def seed():
             print(f"Actualizando permisos y hash de Admin...")
             admin.password_hash = hash_admin
             admin.permisos = "ingreso,salida,ver_stats,ver_historial,config_sucursal"
+
+        admin2 = db_models.Usuario(
+            email="vecino@test.com", 
+            password_hash=get_password_hash("admin123"), 
+            rol="ADMIN", 
+            sucursal_id=sucursal2.id,
+            permisos="ingreso,salida,ver_stats,ver_historial,config_sucursal"
+        )
+        db.add(admin2)
+        db.commit()
 
         # 5. CREACIÓN/ACTUALIZACIÓN DE USUARIO OPERADOR
         email_ope = "empleado@sinfreno.com"

@@ -116,19 +116,25 @@ const Dashboard = ({ onLogout }) => {
           lastEventRef.current = null;
         }, 2000);
 
-        // LANZAR NOTIFICACIÓN (Una sola vez)
-        toast.info(`Movimiento: ${data.patente}`, {
-          description:
-            data.event === "NUEVO_INGRESO"
-              ? "Ingresó ahora"
-              : "Salió del predio",
-          action: {
-            label: "VER",
-            onClick: () => activateFocusMode(data.patente), // <--- Activa filtro con autolimpieza
-          },
-        });
+        // 1. Notificación Universal (Todos en la sucursal lo ven)
+        if (data.event === "NUEVO_INGRESO") {
+          toast.success(`¡Ingreso detectado! Patente: ${data.patente}`);
+          fetchData(); // Refresca tablas y gráficos
+        }
 
-        fetchData();
+        if (data.event === "NUEVA_SALIDA") {
+          toast.info(`Vehículo saliendo: ${data.patente}`);
+          fetchData(); // Refresca tablas y gráficos
+        }
+
+        // 2. Sincronización de Configuración (White-label en tiempo real)
+        if (data.event === "CONFIG_UPDATED") {
+          toast.warning(
+            "El administrador actualizó la configuración de la sede.",
+          );
+          // Forzamos a la app a pedir los datos de nuevo (colores, tarifas)
+          window.location.reload(); // Forma rápida. Opción pro: llamar a un fetchUserConfig()
+        }
       };
 
       socket.onclose = (e) => {

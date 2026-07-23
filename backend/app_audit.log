@@ -94,3 +94,7 @@
 2026-06-10 02:52:13,162 | INFO | parking_service | SALIDA: Vehículo DALECAM1 egresó por Torre 1 por Usuario ID 1
 2026-06-12 15:21:08,147 | INFO | parking_service | SALIDA: Vehículo DAS134 egresó por Torre 1 por Usuario ID 1
 2026-06-12 15:22:31,946 | INFO | parking_service | INGRESO: Vehículo ABC111 en Torre 1 por Usuario ID 1
+2026-07-23 22:34:14,349 | INFO | parking_service | SALIDA: Vehículo AA433AD egresó por Torre <app.models.db_models.Torre object at 0x737ec0f57a10> por Usuario ID 1
+2026-07-23 22:39:39,122 | INFO | parking_service | INGRESO: Vehículo NICO43 en Torre 1 por Usuario ID 1
+2026-07-23 22:41:09,755 | INFO | parking_service | INGRESO: Vehículo DAF234 en Torre 1 por Usuario ID 2
+2026-07-23 22:41:54,308 | INFO | parking_service | SALIDA: Vehículo CAM213 egresó por Torre <app.models.db_models.Torre object at 0x737ec0bd5410> por Usuario ID 1

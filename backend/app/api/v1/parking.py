@@ -24,7 +24,7 @@ def ingreso(
     # Esto no bloquea la respuesta al cliente
     background_tasks.add_task(
         manager.broadcast, 
-        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "torre_id": data.torre_id, "tipo": data.tipo},
+        {"event": "NUEVO_INGRESO", "patente": data.patente.upper()},
         current_user.sucursal_id
     )
 
@@ -39,7 +39,8 @@ async def salida(patente: str, background_tasks: BackgroundTasks, db: Session = 
 
     background_tasks.add_task(
         manager.broadcast, 
-        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "torre_id": estadia.torre_id, "tipo": estadia.tipo_vehiculo}
+        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "torre_id": estadia.torre_id, "tipo": estadia.tipo_vehiculo},
+        current_user.sucursal_id
     )
     return estadia
 
@@ -64,6 +65,7 @@ def listar_historial(
 @router.patch("/config", response_model=schemas.SucursalOut)
 def update_config(
     obj_in: schemas.SucursalUpdate,
+    background_tasks: BackgroundTasks, 
     db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
 ):
@@ -85,6 +87,12 @@ def update_config(
         empresa = sucursal.empresa
         if obj_in.logo_url is not None: empresa.logo_url = obj_in.logo_url
         if obj_in.color_primario is not None: empresa.color_primario = obj_in.color_primario
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "CONFIG_UPDATED"},
+        current_user.sucursal_id
+    )
 
     db.commit()
     db.refresh(sucursal)
