@@ -91,10 +91,15 @@ const Dashboard = ({ onLogout }) => {
       ) {
         return;
       }
+      // 1. Obtenemos el ID de la sucursal del usuario que inició sesión
+      const sucursalId = user?.sucursal?.id;
 
-      const socket = new WebSocket("ws://localhost:8000/ws");
+      if (!sucursalId) return; // Si no hay sucursal, no intentamos conectar
 
-      socket.onopen = () => console.log("✅ WS Conectado");
+      const socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
+
+      socket.onopen = () =>
+        console.log("Conectado a la sucursal: ", sucursalId);
 
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
