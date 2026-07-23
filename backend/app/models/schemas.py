@@ -126,3 +126,12 @@ class PeakHour(BaseModel):
     
     class Config:
         from_attributes = True
+
+# Nuevo esquema para actualizar la sucursal
+class SucursalUpdate(BaseModel):
+    nombre: Optional[str] = None
+    tarifa_hora: Optional[float] = Field(None, gt=0)
+    tiempo_cortesia_min: Optional[int] = Field(None, ge=0)
+    # White-label (vienen de la tabla Empresa a través de la relación)
+    logo_url: Optional[str] = None
+    color_primario: Optional[str] = None

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login"; // Asegurate que sea minúscula si el archivo es login.jsx
 import Dashboard from "../pages/Dashboard";
 import History from "../pages/History";
+import Settings from "../pages/Settings";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -18,6 +19,7 @@ const RootNavigation = () => {
     <Routes>
       <Route path="/dashboard" element={<Dashboard onLogout={logout} />} />
       <Route path="/history" element={<History />} />
+      <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
