@@ -23,17 +23,17 @@ app.include_router(stats.router, prefix=settings.API_V1_STR)
 
 # --- PUNTO DE CONEXIÓN WEBSOCKET ---
 # Debe estar fuera de los prefijos /api/v1 para que coincida con ws://localhost:8000/ws
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+@app.websocket("/ws/{sucursal_id}")
+async def websocket_endpoint(websocket: WebSocket, sucursal_id: int):
+    await manager.connect(websocket, sucursal_id)
     try:
         while True:
             # Espera mensajes (mantiene la conexión viva)
             await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        manager.disconnect(websocket, sucursal_id)
     except Exception:
-        manager.disconnect(websocket)
+        manager.disconnect(websocket, sucursal_id)
 
 @app.get("/")
 def health_check():

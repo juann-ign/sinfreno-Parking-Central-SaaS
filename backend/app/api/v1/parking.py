@@ -24,7 +24,8 @@ def ingreso(
     # Esto no bloquea la respuesta al cliente
     background_tasks.add_task(
         manager.broadcast, 
-        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "torre_id": data.torre_id, "tipo": data.tipo}
+        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "torre_id": data.torre_id, "tipo": data.tipo},
+        current_user.sucursal_id
     )
 
     # Usamos current_user.id extraído del JWT
