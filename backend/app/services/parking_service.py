@@ -68,18 +68,22 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     if not estadia:
         raise EstadiaNoEncontradaError(patente)
 
-    # Recuperamos el torre_id directamente del objeto que encontramos en la DB
-    torre_id= estadia.torre_id 
+     # 2.1 Obtenemos la sucursal y su tiempo de gracia configurado
+    sucursal = estadia.torre.sucursal
+    minutos_gracia = sucursal.tiempo_cortesia_min
 
-    # 2. Cálculos de tiempo y dinero
+    # 2.2 Convertimos minutos a segundos para comparar
+    segundos_gracia = minutos_gracia * 60
+
+    # 2.3 Calculamos la duración real
     fecha_salida = datetime.now(timezone.utc)
     # Aseguramos que ambas fechas tengan el mismo 'vibe' (offset-aware)
     entrada_tz = estadia.fecha_entrada.replace(tzinfo=timezone.utc)
     duracion = fecha_salida - entrada_tz
     segundos_totales = duracion.total_seconds()
 
-    # --- LÓGICA DE NEGOCIO: Franja de Cortesía (5 minutos) ---
-    if segundos_totales < 300: 
+    # 2.4 Lógica de cobro dinámica
+    if segundos_totales < segundos_gracia: 
         monto_final = 0.0
     else:
         horas_a_cobrar = ceil(segundos_totales / 3600)
@@ -102,7 +106,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     estadia.usuario_salida_id = usuario_egreso_id
     estadia.estado = "FINALIZADO"
 
-    logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {torre_id} por Usuario ID {usuario_egreso_id}")
+    logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {estadia.torre} por Usuario ID {usuario_egreso_id}")
     
     db.commit()
     db.refresh(estadia)
