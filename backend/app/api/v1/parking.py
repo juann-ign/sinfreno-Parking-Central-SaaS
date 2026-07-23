@@ -59,3 +59,32 @@ def listar_historial(
     current_user: db_models.Usuario = Depends(dependencies.get_current_user)
 ):
     return parking_service.obtener_historial_paginado(db, current_user.sucursal_id, page, size, patente)
+
+@router.patch("/config", response_model=schemas.SucursalOut)
+def update_config(
+    obj_in: schemas.SucursalUpdate,
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+):
+    # 1. Buscamos la sucursal del usuario actual
+    sucursal = db.query(db_models.Sucursal).filter(
+        db_models.Sucursal.id == current_user.sucursal_id
+    ).first()
+
+    # 2. Actualizamos los campos de la sucursal
+    if obj_in.tarifa_hora is not None:
+        sucursal.tarifa_hora = obj_in.tarifa_hora
+    if obj_in.tiempo_cortesia_min is not None:
+        sucursal.tiempo_cortesia_min = obj_in.tiempo_cortesia_min
+    if obj_in.nombre is not None:
+        sucursal.nombre = obj_in.nombre
+
+    # 3. White-label: Estos campos viven en la tabla 'Empresa'
+    if obj_in.logo_url is not None or obj_in.color_primario is not None:
+        empresa = sucursal.empresa
+        if obj_in.logo_url is not None: empresa.logo_url = obj_in.logo_url
+        if obj_in.color_primario is not None: empresa.color_primario = obj_in.color_primario
+
+    db.commit()
+    db.refresh(sucursal)
+    return sucursal

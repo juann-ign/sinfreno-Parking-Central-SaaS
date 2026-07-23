@@ -39,7 +39,7 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
         
-    user = db.query(db_models.Usuario).filter(db_models.Usuario.id == user_id).first()
+    user = db.query(db_models.Usuario).filter(db_models.Usuario.id == int(user_id)).first()
     if not user:
         raise credentials_exception
     return user
@@ -75,19 +75,19 @@ def get_user_tenant(
 
 class RoleChecker:
     def __init__(self, allowed_roles: list[str]):
-        """
-        Al instanciar la clase, definimos qué roles permitimos.
-        Ejemplo: RoleChecker(["admin", "superAdmin"])
-        """
-        self.allowed_roles = allowed_roles
+        # Guardamos los roles permitidos siempre en MAYÚSCULAS para comparar parejo
+        self.allowed_roles = [role.upper() for role in allowed_roles]
 
     def __call__(self, current_user: db_models.Usuario = Depends(get_current_active_user)):
-        """
-        Este método se ejecuta cada vez que alguien llama al endpoint.
-        """
-        if current_user.rol not in self.allowed_roles:
+        # Convertimos el rol del usuario de la DB a mayúsculas antes de comparar
+        user_role = current_user.rol.upper() if current_user.rol else ""
+        
+        if user_role not in self.allowed_roles:
+            # DEBUG TEMPORAL: Esto te ayudará a ver qué rol tiene el usuario en la consola de Docker
+            print(f"ACCESO DENEGADO: Usuario {current_user.email} tiene rol '{user_role}' pero se requiere uno de {self.allowed_roles}")
+            
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tienes permisos suficientes para realizar esta acción."
+                detail=f"No tienes permisos suficientes. Tu rol es {user_role}."
             )
         return current_user
