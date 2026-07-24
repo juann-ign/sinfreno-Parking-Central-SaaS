@@ -16,7 +16,7 @@ def seed():
             db.refresh(empresa)
 
         # --- EMPRESA 2 PARA TEST DE SEGURIDAD ---
-        empresa2 = db_models.Empresa(nombre="Parking El Vecino", cuit="30-99999999-9")
+        empresa2 = db_models.Empresa(nombre="Parking El Vecino", cuit="30-99999998-9")
         db.add(empresa2)
         db.commit()
         db.refresh(empresa2)
@@ -46,6 +46,13 @@ def seed():
             print("Creando Torre 1...")
             torre = db_models.Torre(numero=1, capacidad=50, sucursal_id=sucursal.id)
             db.add(torre)
+
+        # 3.1 Crear torre Vecino
+        torre2 = db.query(db_models.Torre).filter_by(numero=2, sucursal_id=sucursal2.id).first()
+        if not torre2:
+            print("Creando Torre 2...")
+            torre2 = db_models.Torre(numero=2, capacidad=50, sucursal_id=sucursal2.id)
+            db.add(torre2)   
 
         # 4. CREACIÓN/ACTUALIZACIÓN DE USUARIO ADMINISTRADOR
         email_admin = "admin@sinfreno.com"
