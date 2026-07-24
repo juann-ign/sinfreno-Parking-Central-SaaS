@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = ({ onLogout }) => {
-  const { hasPermission, user } = useAuth();
+  const { user, hasPermission } = useAuth();
 
   const [stats, setStats] = useState(null);
   const [activeVehicles, setActiveVehicles] = useState([]);
@@ -54,8 +54,7 @@ const Dashboard = ({ onLogout }) => {
     } catch (error) {
       console.error("Error cargando datos", error);
     } finally {
-      // Mantenemos el pequeño delay para suavizar la transición del skeleton
-      setTimeout(() => setLoading(false), 800);
+      setLoading(false);
     }
   };
 
@@ -77,124 +76,60 @@ const Dashboard = ({ onLogout }) => {
 
   // 3. El useEffect blindado
   useEffect(() => {
-    if (!localStorage.getItem("token")) return;
+    const sucursalId = user?.sucursal?.id;
+    if (!sucursalId) return;
 
-    fetchData();
-    const interval = setInterval(fetchData, 60000);
-
+    let socket;
     const connect = () => {
-      // ESCUDO 1: Si ya hay un socket conectando o abierto, no creamos otro
-      if (
-        socketRef.current &&
-        (socketRef.current.readyState === WebSocket.OPEN ||
-          socketRef.current.readyState === WebSocket.CONNECTING)
-      ) {
-        return;
-      }
-      // 1. Obtenemos el ID de la sucursal del usuario que inició sesión
-      const sucursalId = user?.sucursal?.id;
-
-      if (!sucursalId) return; // Si no hay sucursal, no intentamos conectar
-
-      const socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
-
-      socket.onopen = () =>
-        console.log("Conectado a la sucursal: ", sucursalId);
+      socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
 
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log("RECIBIDO:", data); // Para debugear
+        console.log("⚡ EVENTO RECIBIDO:", data);
 
-        switch (data.event) {
-          case "NUEVO_INGRESO":
-            toast.success(`🚗 INGRESO: ${data.patente}`, {
-              description: "Se ha registrado un nuevo vehículo",
-              style: {
-                background: "#ecfdf5",
-                color: "#065f46",
-                border: "1px solid #10b981",
-              },
-            });
-            fetchData(); // Refresca listas y gráficos
-            break;
+        // Centralizamos la lógica de reacción
+        if (data.event === "REFRESH_ALL") {
+          if (data.event === "NUEVO_INGRESO") {
+            toast.success(`🚗 INGRESO: ${data.patente}`);
+          } else if (data.event === "NUEVA_SALIDA") {
+            toast.info(`💰 SALIDA: ${data.patente} ($${data.monto})`);
+          }
+          fetchData();
+        }
 
-          case "NUEVA_SALIDA":
-            toast.info(`💰 SALIDA: ${data.patente}`, {
-              description: `Cobrado: $${data.monto}`,
-              style: {
-                background: "#eff6ff",
-                color: "#1e40af",
-                border: "1px solid #3b82f6",
-              },
-            });
-            fetchData();
-            break;
-
-          case "CONFIG_UPDATED":
-            toast.warning("⚙️ CONFIGURACIÓN ACTUALIZADA", {
-              description:
-                "Se aplicarán los nuevos cambios visuales y de tarifas.",
-            });
-            // Esperamos 2 segundos para que el usuario lea y refrescamos
-            setTimeout(() => window.location.reload(), 2000);
-            break;
-
-          default:
-            console.log("Evento desconocido:", data.event);
+        if (data.event === "CONFIG_UPDATED") {
+          toast.warning("⚙️ Configuración actualizada");
+          setTimeout(() => window.location.reload(), 1000);
         }
       };
 
-      socket.onclose = (e) => {
-        if (!e.wasClean) {
-          console.log("WS Reintentando...");
-          setTimeout(connect, 5000);
-        }
+      socket.onclose = () => {
+        console.log("🔌 Socket cerrado. Reintentando...");
+        setTimeout(connect, 3000);
       };
-
-      socket.onclose = () => setTimeout(connect, 5000);
-      socketRef.current = socket; // Guardamos el socket en la referencia
     };
 
     connect();
+    fetchData();
 
-    return () => {
-      clearInterval(interval);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
-      }
-    };
-  }, []);
-
-  // Filtramos los vehículos según lo que el usuario busque o clickee en la noti
-  const filteredVehicles = activeVehicles.filter((v) =>
-    v.patente.toLowerCase().includes(filterTerm.toLowerCase()),
-  );
+    return () => socket?.close();
+  }, [user?.sucursal?.id]);
 
   const handleCheckout = async (patente) => {
-    if (!patente) {
-      toast.error("No se pudo leer la patente");
-      return;
-    }
     try {
-      const response = await api.post(
-        `/parking/salida?patente=${encodeURIComponent(patente)}`,
-      );
-      // Notificación de cobro exitoso
-      toast.success(`Vehículo ${patente} egresó correctamente.`, {
-        description: `Cobrado: $${response.data.monto}`,
-        duration: 5000,
-      });
-
-      fetchData();
+      // LLAMADA SILENCIOSA: El servidor se encarga de avisar por WebSocket
+      await api.post(`/parking/salida?patente=${encodeURIComponent(patente)}`);
     } catch (error) {
-      console.error("Error en salida:", error);
       toast.error(
         error.response?.data?.detail || "Error al procesar la salida",
       );
     }
   };
+
+  // Filtramos los vehículos según lo que el usuario busque o clickee en la noti
+  const filteredVehicles = activeVehicles.filter((v) =>
+    v.patente.toLowerCase().includes(filterTerm.toLowerCase()),
+  );
 
   return (
     <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden">
