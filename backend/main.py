@@ -32,8 +32,6 @@ async def websocket_endpoint(websocket: WebSocket, sucursal_id: int):
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket, sucursal_id)
-    except Exception:
-        manager.disconnect(websocket, sucursal_id)
 
 @app.get("/")
 def health_check():
