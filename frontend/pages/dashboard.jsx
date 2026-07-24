@@ -103,37 +103,44 @@ const Dashboard = ({ onLogout }) => {
 
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        console.log("RECIBIDO:", data); // Para debugear
 
-        // ESCUDO 2: Anti-Duplicados por Contenido
-        // Creamos una "llave" única para este evento (ej: NUEVO_INGRESO-ABC123)
-        const eventKey = `${data.event}-${data.patente}`;
+        switch (data.event) {
+          case "NUEVO_INGRESO":
+            toast.success(`🚗 INGRESO: ${data.patente}`, {
+              description: "Se ha registrado un nuevo vehículo",
+              style: {
+                background: "#ecfdf5",
+                color: "#065f46",
+                border: "1px solid #10b981",
+              },
+            });
+            fetchData(); // Refresca listas y gráficos
+            break;
 
-        // Si recibimos la misma llave en menos de 2 segundos, la ignoramos
-        if (lastEventRef.current === eventKey) return;
+          case "NUEVA_SALIDA":
+            toast.info(`💰 SALIDA: ${data.patente}`, {
+              description: `Cobrado: $${data.monto}`,
+              style: {
+                background: "#eff6ff",
+                color: "#1e40af",
+                border: "1px solid #3b82f6",
+              },
+            });
+            fetchData();
+            break;
 
-        lastEventRef.current = eventKey;
-        setTimeout(() => {
-          lastEventRef.current = null;
-        }, 2000);
+          case "CONFIG_UPDATED":
+            toast.warning("⚙️ CONFIGURACIÓN ACTUALIZADA", {
+              description:
+                "Se aplicarán los nuevos cambios visuales y de tarifas.",
+            });
+            // Esperamos 2 segundos para que el usuario lea y refrescamos
+            setTimeout(() => window.location.reload(), 2000);
+            break;
 
-        // 1. Notificación Universal (Todos en la sucursal lo ven)
-        if (data.event === "NUEVO_INGRESO") {
-          toast.success(`¡Ingreso detectado! Patente: ${data.patente}`);
-          fetchData(); // Refresca tablas y gráficos
-        }
-
-        if (data.event === "NUEVA_SALIDA") {
-          toast.info(`Vehículo saliendo: ${data.patente}`);
-          fetchData(); // Refresca tablas y gráficos
-        }
-
-        // 2. Sincronización de Configuración (White-label en tiempo real)
-        if (data.event === "CONFIG_UPDATED") {
-          toast.warning(
-            "El administrador actualizó la configuración de la sede.",
-          );
-          // Forzamos a la app a pedir los datos de nuevo (colores, tarifas)
-          window.location.reload(); // Forma rápida. Opción pro: llamar a un fetchUserConfig()
+          default:
+            console.log("Evento desconocido:", data.event);
         }
       };
 

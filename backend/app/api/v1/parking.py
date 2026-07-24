@@ -17,7 +17,7 @@ def ingreso(
 ):
     # 1. Ejecutamos la lógica de DB (sincrónica)
     nueva_estadia = parking_service.registrar_ingreso_vehiculo(
-        db=db, patente=data.patente, torre_id=data.torre_id, usuario_ingreso_id=current_user.id, tipo=data.tipo
+        db, data.patente, data.torre_id, current_user.id, current_user.sucursal_id, data.tipo
     )
 
     # 2. Programamos la notificación WebSocket como tarea de fondo
@@ -39,7 +39,7 @@ async def salida(patente: str, background_tasks: BackgroundTasks, db: Session = 
 
     background_tasks.add_task(
         manager.broadcast, 
-        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "torre_id": estadia.torre_id, "tipo": estadia.tipo_vehiculo},
+        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "monto": estadia.monto},
         current_user.sucursal_id
     )
     return estadia
