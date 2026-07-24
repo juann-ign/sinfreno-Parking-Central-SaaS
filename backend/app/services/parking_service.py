@@ -7,11 +7,16 @@ from app.core.websocket_manager import manager
 from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaError
 from app.core.logger import logger 
 
-def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int, tipo: str = "AUTO"):
+def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int, sucursal_id_usuario: int, tipo: str = "AUTO"):
     # 1. Validar Torre y su capacidad
-    torre = db.query(db_models.Torre).filter(db_models.Torre.id == torre_id).first()
+    # 1. VALIDACIÓN DE SEGURIDAD: ¿Esta torre es de MI sucursal?
+    torre = db.query(db_models.Torre).filter(
+        db_models.Torre.id == torre_id,
+        db_models.Torre.sucursal_id == sucursal_id_usuario # <--- OBLIGATORIO
+    ).first()
+    
     if not torre:
-        raise HTTPException(status_code=404, detail="Torre no encontrada.")
+        raise HTTPException(status_code=403, detail="No tienes acceso a esta torre o no existe.")
     
     # Contar cuántos vehículos están actualmente en esa torre
     ocupacion_actual = db.query(db_models.Estadia).filter(

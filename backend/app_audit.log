@@ -98,3 +98,14 @@
 2026-07-23 22:39:39,122 | INFO | parking_service | INGRESO: Vehículo NICO43 en Torre 1 por Usuario ID 1
 2026-07-23 22:41:09,755 | INFO | parking_service | INGRESO: Vehículo DAF234 en Torre 1 por Usuario ID 2
 2026-07-23 22:41:54,308 | INFO | parking_service | SALIDA: Vehículo CAM213 egresó por Torre <app.models.db_models.Torre object at 0x737ec0bd5410> por Usuario ID 1
+2026-07-23 23:51:01,690 | INFO | parking_service | INGRESO: Vehículo AAA343 en Torre 1 por Usuario ID 3
+2026-07-23 23:54:04,443 | INFO | parking_service | INGRESO: Vehículo JIJO134 en Torre 1 por Usuario ID 2
+2026-07-24 00:02:50,455 | INFO | parking_service | INGRESO: Vehículo BAN124 en Torre 1 por Usuario ID 1
+2026-07-24 00:02:56,960 | INFO | parking_service | SALIDA: Vehículo AAA343 egresó por Torre <app.models.db_models.Torre object at 0x77f905bf0e50> por Usuario ID 1
+2026-07-24 00:03:09,401 | INFO | parking_service | SALIDA: Vehículo JIJO134 egresó por Torre <app.models.db_models.Torre object at 0x77f905723c50> por Usuario ID 1
+2026-07-24 00:03:45,063 | INFO | parking_service | INGRESO: Vehículo DAD244 en Torre 1 por Usuario ID 2
+2026-07-24 00:04:11,211 | INFO | parking_service | SALIDA: Vehículo BAN124 egresó por Torre <app.models.db_models.Torre object at 0x77f905b65290> por Usuario ID 3
+2026-07-24 00:04:31,757 | INFO | parking_service | INGRESO: Vehículo JAJ245 en Torre 1 por Usuario ID 3
+2026-07-24 00:05:23,138 | INFO | parking_service | SALIDA: Vehículo DAD244 egresó por Torre <app.models.db_models.Torre object at 0x77f905705f90> por Usuario ID 1
+2026-07-24 00:18:54,632 | INFO | parking_service | INGRESO: Vehículo VIH452 en Torre 1 por Usuario ID 1
+2026-07-24 00:19:55,397 | INFO | parking_service | SALIDA: Vehículo JAJ245 egresó por Torre <app.models.db_models.Torre object at 0x7a72eb3cee90> por Usuario ID 3
