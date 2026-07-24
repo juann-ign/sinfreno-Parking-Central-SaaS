@@ -111,7 +111,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     estadia.usuario_salida_id = usuario_egreso_id
     estadia.estado = "FINALIZADO"
 
-    logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {estadia.torre} por Usuario ID {usuario_egreso_id}")
+    logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {estadia.torre_id} por Usuario ID {usuario_egreso_id}")
     
     db.commit()
     db.refresh(estadia)

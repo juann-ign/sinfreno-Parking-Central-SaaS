@@ -109,3 +109,25 @@
 2026-07-24 00:05:23,138 | INFO | parking_service | SALIDA: Vehículo DAD244 egresó por Torre <app.models.db_models.Torre object at 0x77f905705f90> por Usuario ID 1
 2026-07-24 00:18:54,632 | INFO | parking_service | INGRESO: Vehículo VIH452 en Torre 1 por Usuario ID 1
 2026-07-24 00:19:55,397 | INFO | parking_service | SALIDA: Vehículo JAJ245 egresó por Torre <app.models.db_models.Torre object at 0x7a72eb3cee90> por Usuario ID 3
+2026-07-24 14:19:18,122 | INFO | parking_service | INGRESO: Vehículo JUN124 en Torre 1 por Usuario ID 1
+2026-07-24 14:26:12,361 | INFO | parking_service | INGRESO: Vehículo WOO235 en Torre 2 por Usuario ID 2
+2026-07-24 14:26:29,277 | INFO | parking_service | INGRESO: Vehículo WOO414 en Torre 1 por Usuario ID 1
+2026-07-24 14:26:42,558 | INFO | parking_service | INGRESO: Vehículo JUNE42 en Torre 1 por Usuario ID 1
+2026-07-24 14:26:57,991 | INFO | parking_service | INGRESO: Vehículo RAWR21 en Torre 1 por Usuario ID 1
+2026-07-24 14:28:18,862 | INFO | parking_service | INGRESO: Vehículo OGE452 en Torre 1 por Usuario ID 3
+2026-07-24 14:28:37,709 | INFO | parking_service | INGRESO: Vehículo PGE511 en Torre 1 por Usuario ID 3
+2026-07-24 14:29:19,320 | INFO | parking_service | INGRESO: Vehículo SMA921 en Torre 1 por Usuario ID 3
+2026-07-24 14:29:31,045 | INFO | parking_service | SALIDA: Vehículo WOO414 egresó por Torre <app.models.db_models.Torre object at 0x7baed79e6b10> por Usuario ID 3
+2026-07-24 15:38:28,248 | INFO | parking_service | INGRESO: Vehículo JAJ123 en Torre 1 por Usuario ID 3
+2026-07-24 15:38:59,144 | INFO | parking_service | INGRESO: Vehículo WOO431 en Torre 1 por Usuario ID 1
+2026-07-24 15:39:32,668 | INFO | parking_service | SALIDA: Vehículo SMA921 egresó por Torre <app.models.db_models.Torre object at 0x73a944fd6290> por Usuario ID 1
+2026-07-24 15:40:44,892 | INFO | parking_service | SALIDA: Vehículo PGE511 egresó por Torre <app.models.db_models.Torre object at 0x73a944fea590> por Usuario ID 3
+2026-07-24 15:40:56,098 | INFO | parking_service | SALIDA: Vehículo JUNE42 egresó por Torre <app.models.db_models.Torre object at 0x73a944fd67d0> por Usuario ID 3
+2026-07-24 15:44:53,555 | INFO | parking_service | SALIDA: Vehículo RAWR21 egresó por Torre 1 por Usuario ID 3
+2026-07-24 15:52:19,595 | INFO | parking_service | INGRESO: Vehículo WOO241 en Torre 1 por Usuario ID 3
+2026-07-24 15:52:44,629 | INFO | parking_service | INGRESO: Vehículo AAA245 en Torre 1 por Usuario ID 1
+2026-07-24 15:53:13,721 | INFO | parking_service | SALIDA: Vehículo OGE452 egresó por Torre 1 por Usuario ID 3
+2026-07-24 16:09:48,644 | INFO | parking_service | INGRESO: Vehículo DADA44 en Torre 1 por Usuario ID 3
+2026-07-24 16:09:55,118 | INFO | parking_service | INGRESO: Vehículo DADDDDD2 en Torre 1 por Usuario ID 1
+2026-07-24 16:10:04,528 | INFO | parking_service | SALIDA: Vehículo DADA44 egresó por Torre 1 por Usuario ID 3
+2026-07-24 16:10:09,548 | INFO | parking_service | SALIDA: Vehículo AAA245 egresó por Torre 1 por Usuario ID 3
