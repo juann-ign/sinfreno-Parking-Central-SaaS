@@ -131,3 +131,57 @@
 2026-07-24 16:09:55,118 | INFO | parking_service | INGRESO: Vehículo DADDDDD2 en Torre 1 por Usuario ID 1
 2026-07-24 16:10:04,528 | INFO | parking_service | SALIDA: Vehículo DADA44 egresó por Torre 1 por Usuario ID 3
 2026-07-24 16:10:09,548 | INFO | parking_service | SALIDA: Vehículo AAA245 egresó por Torre 1 por Usuario ID 3
+2026-07-24 16:20:29,375 | INFO | parking_service | INGRESO: Vehículo DAD312 en Torre 1 por Usuario ID 3
+2026-07-24 16:26:22,310 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-24 16:26:25,003 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-24 16:26:29,637 | INFO | parking_service | SALIDA: Vehículo JAJ123 egresó por Torre 1 por Usuario ID 1
+2026-07-24 16:26:29,690 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-24 22:02:30,546 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 22:02:30,603 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:15:28,848 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-24 23:15:28,863 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:15:28,866 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-24 23:15:32,230 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-24 23:15:39,639 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:15:39,656 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:15:39,680 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:15:41,665 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:15:41,737 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:15:42,622 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-24 23:15:53,777 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:15:53,780 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:15:53,787 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:15:56,783 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-24 23:16:04,731 | INFO | parking_service | SALIDA: Vehículo WOO431 egresó por Torre 1 por Usuario ID 1
+2026-07-24 23:16:04,754 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-24 23:16:11,198 | INFO | parking_service | SALIDA: Vehículo WOO241 egresó por Torre 1 por Usuario ID 1
+2026-07-24 23:16:11,209 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-24 23:16:17,618 | INFO | parking_service | SALIDA: Vehículo DADDDDD2 egresó por Torre 1 por Usuario ID 3
+2026-07-24 23:16:17,630 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-24 23:16:24,777 | INFO | parking_service | SALIDA: Vehículo DAD312 egresó por Torre 1 por Usuario ID 1
+2026-07-24 23:16:24,789 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-24 23:16:30,541 | INFO | parking_service | INGRESO: Vehículo FAC245 en Torre 1 por Usuario ID 3
+2026-07-24 23:16:30,543 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-24 23:16:43,524 | INFO | parking_service | INGRESO: Vehículo WOO463 en Torre 1 por Usuario ID 3
+2026-07-24 23:16:43,527 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-24 23:16:59,319 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:16:59,322 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:17:07,356 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: CONFIG_UPDATED
+2026-07-24 23:17:15,066 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:17:15,076 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:17:15,086 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:17:18,081 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-24 23:17:22,422 | INFO | parking_service | INGRESO: Vehículo DFA245 en Torre 1 por Usuario ID 1
+2026-07-24 23:17:22,424 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-24 23:17:27,029 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:17:27,031 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:17:27,180 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:17:27,185 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:17:27,190 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:17:30,320 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-24 23:19:55,201 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:19:55,271 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:20:03,633 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:20:03,636 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-24 23:20:03,652 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-24 23:20:06,651 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4

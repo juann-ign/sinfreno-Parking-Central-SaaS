@@ -39,20 +39,23 @@ const Dashboard = ({ onLogout }) => {
   const navigate = useNavigate();
 
   const fetchData = async () => {
+    setLoading(true); // Mostrar skeletons al refrescar
     try {
-      const [statsRes, activeRes, hourlyRes] = await Promise.all([
+      const [statsRes, activeRes] = await Promise.all([
         api.get("/stats/summary"),
         api.get("/parking/activas"),
       ]);
       setStats(statsRes.data);
       setActiveVehicles(activeRes.data);
-      // Pedido que SOLO el admin puede hacer (Evitamos el error 403)
+
+      // Solo pedir esto si es admin
       if (hasPermission("ver_stats")) {
         const hourlyRes = await api.get("/stats/revenue-hourly");
         setHourlyData(hourlyRes.data);
       }
     } catch (error) {
       console.error("Error cargando datos", error);
+      toast.error("Error al sincronizar datos");
     } finally {
       setLoading(false);
     }
@@ -76,41 +79,33 @@ const Dashboard = ({ onLogout }) => {
 
   // 3. El useEffect blindado
   useEffect(() => {
+    if (!user) return;
+
     const sucursalId = user?.sucursal?.id;
-    if (!sucursalId) return;
+
+    fetchData();
 
     let socket;
-    const connect = () => {
-      socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
+    if (sucursalId) {
+      const connect = () => {
+        socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
 
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log("⚡ EVENTO RECIBIDO:", data);
-
-        // Centralizamos la lógica de reacción
-        if (data.event === "REFRESH_ALL") {
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          // Centralizamos la lógica de reacción
           if (data.event === "NUEVO_INGRESO") {
             toast.success(`🚗 INGRESO: ${data.patente}`);
+            fetchData();
           } else if (data.event === "NUEVA_SALIDA") {
             toast.info(`💰 SALIDA: ${data.patente} ($${data.monto})`);
+            fetchData();
           }
-          fetchData();
-        }
+        };
 
-        if (data.event === "CONFIG_UPDATED") {
-          toast.warning("⚙️ Configuración actualizada");
-          setTimeout(() => window.location.reload(), 1000);
-        }
+        socket.onclose = () => setTimeout(connect, 3000);
       };
-
-      socket.onclose = () => {
-        console.log("🔌 Socket cerrado. Reintentando...");
-        setTimeout(connect, 3000);
-      };
-    };
-
-    connect();
-    fetchData();
+      connect();
+    }
 
     return () => socket?.close();
   }, [user?.sucursal?.id]);
