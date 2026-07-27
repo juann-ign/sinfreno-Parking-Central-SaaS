@@ -14,9 +14,36 @@ import {
   Activity,
   Search,
   X,
+  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+
+// Devuelve "10:42" con hora local argentina
+const getHora = () =>
+  new Date().toLocaleTimeString("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+// Recibe la horaIngreso del backend (ISO string) y devuelve "2 hs 15 min" / "45 min"
+// Si el backend no manda horaIngreso todavía, la función devuelve null y no se muestra
+const getDuracion = (horaIngreso) => {
+  if (!horaIngreso) return null;
+  const diff = Date.now() - new Date(horaIngreso).getTime();
+  const hs = Math.floor(diff / 3600000);
+  const min = Math.floor((diff % 3600000) / 60000);
+  return hs > 0 ? `${hs} hs ${min} min` : `${min} min`;
+};
+
+// ─── Mapa de ícono Lucide por tipo de vehículo ───
+// Usamos los íconos que ya importa el proyecto (Car está importado arriba)
+// Si en el futuro tenés íconos de moto/camioneta, cambiá acá sin tocar el socket
+const iconoPorTipo = {
+  AUTO: <Car size={16} strokeWidth={2} />,
+  MOTO: <Car size={16} strokeWidth={2} />, // reemplazar cuando haya ícono de moto
+  CAMIONETA: <Car size={16} strokeWidth={2} />, // ídem camioneta
+};
 
 const Dashboard = ({ onLogout }) => {
   const { user, hasPermission } = useAuth();
@@ -24,10 +51,8 @@ const Dashboard = ({ onLogout }) => {
   const [stats, setStats] = useState(null);
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-
   // Guardaremos aquí el array de {hora: X, monto: Y}
   const [hourlyData, setHourlyData] = useState([]);
-
   // --- ESTADOS DE BÚSQUEDA Y FOCO ---
   const [filterTerm, setFilterTerm] = useState("");
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -39,20 +64,23 @@ const Dashboard = ({ onLogout }) => {
   const navigate = useNavigate();
 
   const fetchData = async () => {
+    setLoading(true); // Mostrar skeletons al refrescar
     try {
-      const [statsRes, activeRes, hourlyRes] = await Promise.all([
+      const [statsRes, activeRes] = await Promise.all([
         api.get("/stats/summary"),
         api.get("/parking/activas"),
       ]);
       setStats(statsRes.data);
       setActiveVehicles(activeRes.data);
-      // Pedido que SOLO el admin puede hacer (Evitamos el error 403)
+
+      // Solo pedir esto si es admin
       if (hasPermission("ver_stats")) {
         const hourlyRes = await api.get("/stats/revenue-hourly");
         setHourlyData(hourlyRes.data);
       }
     } catch (error) {
       console.error("Error cargando datos", error);
+      toast.error("Error al sincronizar datos");
     } finally {
       setLoading(false);
     }
@@ -76,41 +104,175 @@ const Dashboard = ({ onLogout }) => {
 
   // 3. El useEffect blindado
   useEffect(() => {
+    if (!user) return;
+
     const sucursalId = user?.sucursal?.id;
-    if (!sucursalId) return;
+
+    fetchData();
 
     let socket;
-    const connect = () => {
-      socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
+    if (sucursalId) {
+      const connect = () => {
+        socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
 
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log("⚡ EVENTO RECIBIDO:", data);
-
-        // Centralizamos la lógica de reacción
-        if (data.event === "REFRESH_ALL") {
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          // Centralizamos la lógica de reacción
           if (data.event === "NUEVO_INGRESO") {
-            toast.success(`🚗 INGRESO: ${data.patente}`);
+            toast(
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  width: "100%",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {iconoPorTipo[data.tipo] ?? <Car size={16} />}
+                    Vehículo ingresado
+                  </span>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                    {getHora()}
+                  </span>
+                </div>
+                <span style={{ fontSize: 13, color: "#64748b" }}>
+                  <code style={{ fontFamily: "monospace", fontWeight: 600 }}>
+                    {data.patente}
+                  </code>
+                  {" · "}
+                  {data.tipo.charAt(0) + data.tipo.slice(1).toLowerCase()}
+                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: 2,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+                    <button
+                      onClick={() => toast.dismiss()}
+                      style={{
+                        fontSize: 11,
+                        padding: "3px 8px",
+                        borderRadius: 6,
+                        border: "0.5px solid #22c55e",
+                        background: "transparent",
+                        color: "#16a34a",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Ver ticket
+                    </button>
+                    <button
+                      onClick={() => toast.dismiss()}
+                      style={{
+                        fontSize: 11,
+                        padding: "3px 8px",
+                        borderRadius: 6,
+                        border: "0.5px solid #cbd5e1",
+                        background: "transparent",
+                        color: "#64748b",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Editar
+                    </button>
+                  </div>
+                </div>
+              </div>,
+              { duration: 6000 },
+            );
+            fetchData();
           } else if (data.event === "NUEVA_SALIDA") {
-            toast.info(`💰 SALIDA: ${data.patente} ($${data.monto})`);
+            const duracion = getDuracion(data.horaIngreso);
+            toast(
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <DollarSign size={16} />
+                    Salida registrada
+                  </span>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                    {getHora()}
+                  </span>
+                </div>
+                <span style={{ fontSize: 13, color: "#64748b" }}>
+                  <code style={{ fontFamily: "monospace", fontWeight: 600 }}>
+                    {data.patente}
+                  </code>
+                  {duracion && ` · ${duracion}`}
+                </span>
+                <span
+                  style={{ fontSize: 13, fontWeight: 600, color: "#4f46e5" }}
+                >
+                  ${Number(data.monto).toLocaleString("es-AR")} cobrados
+                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: 2,
+                  }}
+                >
+                  <button
+                    onClick={() => toast.dismiss()}
+                    style={{
+                      fontSize: 11,
+                      padding: "3px 8px",
+                      borderRadius: 6,
+                      border: "0.5px solid #4f46e5",
+                      background: "transparent",
+                      color: "#4f46e5",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Ver comprobante
+                  </button>
+                </div>
+              </div>,
+              { duration: 8000 },
+            );
+            fetchData();
           }
-          fetchData();
-        }
+        };
 
-        if (data.event === "CONFIG_UPDATED") {
-          toast.warning("⚙️ Configuración actualizada");
-          setTimeout(() => window.location.reload(), 1000);
-        }
+        socket.onclose = () => setTimeout(connect, 3000);
       };
-
-      socket.onclose = () => {
-        console.log("🔌 Socket cerrado. Reintentando...");
-        setTimeout(connect, 3000);
-      };
-    };
-
-    connect();
-    fetchData();
+      connect();
+    }
 
     return () => socket?.close();
   }, [user?.sucursal?.id]);

@@ -38,6 +38,7 @@ def login(
                 "rol": user.rol,
                 "permisos": user.permisos.split(","), # Enviamos array al front: ["ingreso", "salida"]
                 "sucursal": {
+                    "id": user.sucursal_id,
                     "nombre": user.sucursal.nombre,
                     "tarifa": user.sucursal.tarifa_hora,
                     "logo": user.sucursal.empresa.logo_url,

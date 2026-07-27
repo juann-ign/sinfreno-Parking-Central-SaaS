@@ -5,7 +5,11 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user_info");
-    if (!savedUser || savedUser === "undefined") return null;
+    const token = localStorage.getItem("token");
+
+    // Si falta cualquiera de los dos, no está logueado
+    if (!savedUser || !token || savedUser === "undefined") return null;
+
     try {
       return JSON.parse(savedUser);
     } catch (e) {
