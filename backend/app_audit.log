@@ -185,3 +185,979 @@
 2026-07-24 23:20:03,636 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
 2026-07-24 23:20:03,652 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
 2026-07-24 23:20:06,651 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 00:54:58,076 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-25 00:54:58,081 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 00:54:58,093 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-25 00:54:58,521 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 00:54:59,782 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 00:55:01,084 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 00:55:10,531 | INFO | parking_service | INGRESO: Vehículo JJJ431 en Torre 1 por Usuario ID 3
+2026-07-25 00:55:10,534 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 00:55:38,905 | INFO | parking_service | INGRESO: Vehículo WOW455 en Torre 1 por Usuario ID 3
+2026-07-25 00:55:38,908 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 00:59:43,093 | INFO | parking_service | INGRESO: Vehículo ELY472 en Torre 1 por Usuario ID 1
+2026-07-25 00:59:43,099 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:01:28,313 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:01:28,329 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:01:28,498 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:01:28,502 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:01:28,510 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:01:31,485 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 01:01:33,891 | INFO | parking_service | INGRESO: Vehículo ADA455 en Torre 1 por Usuario ID 3
+2026-07-25 01:01:33,893 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:01:40,264 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:01:40,268 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:01:40,699 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:01:40,704 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:01:40,718 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:01:43,702 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 01:01:50,676 | INFO | parking_service | INGRESO: Vehículo DAD474 en Torre 1 por Usuario ID 1
+2026-07-25 01:01:50,678 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:18:30,746 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:18:30,776 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:18:31,010 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:18:31,013 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 01:18:31,028 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:18:31,995 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:18:31,997 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:18:32,502 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 01:18:32,523 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:18:32,553 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 01:18:33,882 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:18:35,519 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 01:18:39,291 | INFO | parking_service | INGRESO: Vehículo ELD234 en Torre 1 por Usuario ID 3
+2026-07-25 01:18:39,295 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:18:50,058 | INFO | parking_service | SALIDA: Vehículo FAC245 egresó por Torre 1 por Usuario ID 3
+2026-07-25 01:18:50,088 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 01:19:29,252 | INFO | parking_service | SALIDA: Vehículo WOO463 egresó por Torre 1 por Usuario ID 3
+2026-07-25 01:19:29,266 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 01:19:40,349 | INFO | parking_service | SALIDA: Vehículo DFA245 egresó por Torre 1 por Usuario ID 3
+2026-07-25 01:19:40,359 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 01:19:56,792 | INFO | parking_service | INGRESO: Vehículo KAN455 en Torre 1 por Usuario ID 3
+2026-07-25 01:19:56,794 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:22:38,774 | INFO | parking_service | INGRESO: Vehículo DDD245 en Torre 1 por Usuario ID 1
+2026-07-25 01:22:38,776 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:23:23,034 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:23:23,043 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:23:23,181 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:23:23,186 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:23:23,194 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:23:25,441 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:23:25,448 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:23:25,843 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 01:23:25,872 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 01:23:25,892 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 01:23:26,194 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 01:23:28,860 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 01:23:33,336 | INFO | parking_service | INGRESO: Vehículo JDA214 en Torre 1 por Usuario ID 1
+2026-07-25 01:23:33,339 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:23:40,940 | INFO | parking_service | SALIDA: Vehículo WOW455 egresó por Torre 1 por Usuario ID 3
+2026-07-25 01:23:40,952 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 01:25:15,355 | INFO | parking_service | INGRESO: Vehículo DAA211 en Torre 1 por Usuario ID 3
+2026-07-25 01:25:15,358 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:25:30,170 | INFO | parking_service | SALIDA: Vehículo DAA211 egresó por Torre 1 por Usuario ID 3
+2026-07-25 01:25:30,183 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 01:26:55,204 | INFO | parking_service | INGRESO: Vehículo DAD943 en Torre 1 por Usuario ID 3
+2026-07-25 01:26:55,208 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 01:27:05,509 | INFO | parking_service | SALIDA: Vehículo ELY472 egresó por Torre 1 por Usuario ID 3
+2026-07-25 01:27:05,524 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 02:09:43,813 | INFO | parking_service | INGRESO: Vehículo DDD244 en Torre 1 por Usuario ID 3
+2026-07-25 02:09:43,824 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 02:09:47,747 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:09:47,749 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:09:47,971 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 02:09:47,978 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:09:47,987 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 02:09:50,976 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 02:10:03,799 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:10:03,804 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:10:05,779 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:10:05,781 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:10:07,363 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-25 02:10:07,381 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:10:07,401 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-25 02:10:07,705 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 02:10:07,741 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 02:10:07,757 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:10:10,284 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 02:10:10,540 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 02:10:14,125 | INFO | parking_service | SALIDA: Vehículo JJJ431 egresó por Torre 1 por Usuario ID 1
+2026-07-25 02:10:14,146 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 02:10:22,351 | INFO | parking_service | INGRESO: Vehículo DAD245 en Torre 1 por Usuario ID 1
+2026-07-25 02:10:22,353 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 02:12:17,314 | INFO | parking_service | INGRESO: Vehículo LOV355 en Torre 1 por Usuario ID 3
+2026-07-25 02:12:17,316 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 02:12:28,275 | INFO | parking_service | INGRESO: Vehículo DADA55 en Torre 1 por Usuario ID 1
+2026-07-25 02:12:28,278 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 02:12:34,433 | INFO | parking_service | SALIDA: Vehículo ELD234 egresó por Torre 1 por Usuario ID 1
+2026-07-25 02:12:34,444 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-25 02:13:18,456 | INFO | parking_service | INGRESO: Vehículo DDD454 en Torre 1 por Usuario ID 1
+2026-07-25 02:13:18,458 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 02:19:30,523 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:19:30,560 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:19:31,481 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 02:19:31,494 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 02:19:31,563 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:19:32,843 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:19:32,847 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:19:33,149 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 02:19:33,160 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:19:33,168 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-25 02:19:34,219 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 3
+2026-07-25 02:19:36,161 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 4
+2026-07-25 02:19:45,734 | INFO | parking_service | INGRESO: Vehículo DAA666 en Torre 1 por Usuario ID 1
+2026-07-25 02:19:45,737 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-25 02:20:17,679 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:20:17,682 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:20:18,350 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-25 02:20:18,351 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:36,079 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:36,087 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:24:36,139 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:36,357 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:36,591 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:36,605 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:36,622 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:36,817 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:37,025 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:37,039 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:37,053 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:37,218 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:37,393 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:37,575 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:37,751 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:37,933 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:38,096 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:38,103 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:38,123 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:38,248 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:38,453 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:38,503 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:38,530 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:38,577 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:38,717 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:38,877 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:39,064 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:39,073 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:39,104 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:39,225 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:39,388 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:39,414 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:39,435 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:39,548 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:39,736 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:39,743 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:39,766 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:39,941 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:40,107 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:40,125 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:40,134 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:40,275 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:40,449 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:40,461 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:40,469 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:40,619 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:40,790 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:40,806 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:40,817 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:40,983 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:41,207 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:41,232 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:41,267 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:41,370 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:41,569 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:41,583 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:41,604 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:41,762 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:41,923 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:42,124 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:42,310 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:42,527 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:42,694 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:42,705 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:42,712 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:42,947 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:43,161 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:43,411 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:43,604 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:44,052 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:44,363 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:44,566 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:44,782 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:44,986 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:45,170 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:45,188 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:45,200 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:45,371 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:45,668 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:45,683 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:45,700 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:45,850 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:46,100 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:46,275 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:46,502 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:46,511 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:46,520 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:46,715 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:46,964 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:47,176 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:47,408 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:47,591 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:47,857 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:48,073 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:48,319 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:48,332 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:48,348 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:48,501 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:48,735 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:48,755 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:48,767 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:48,965 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:49,207 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:49,218 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:49,235 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:49,457 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:49,743 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:49,755 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:49,772 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:49,984 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:50,236 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:50,256 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:50,270 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:50,475 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:50,734 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:50,746 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:50,758 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:50,952 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:51,222 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:51,237 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:51,274 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:51,414 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:51,823 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:51,827 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:51,847 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:52,125 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:52,457 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:52,460 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:52,477 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:52,788 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:53,103 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:53,136 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:24:53,140 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:53,386 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:53,749 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:53,774 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:53,801 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:54,061 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:54,332 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:54,637 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:55,020 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:55,284 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:55,551 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:55,565 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:55,573 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:55,908 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:24:56,265 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:24:56,289 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:24:56,295 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:20,982 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:20,984 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:21,007 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:21,144 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:21,310 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:21,489 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:21,660 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:21,786 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:21,961 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:22,090 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:22,216 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:22,230 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:22,238 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:22,360 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:22,512 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:22,639 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:22,760 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:22,772 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:22,797 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:22,878 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:22,998 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:23,013 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:23,024 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:23,232 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:23,409 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:23,425 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:23,448 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:23,568 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:23,722 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:23,739 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:23,765 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:23,877 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:24,040 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:24,055 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:24,079 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:24,187 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:24,335 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:24,511 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:24,673 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:24,851 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:25,059 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:25,291 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:25,527 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:25,535 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:25,551 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:25,782 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:26,054 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:26,072 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:26,090 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:26,255 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:26,483 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:26,678 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:26,918 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:26,943 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:26,951 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:27,111 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,091 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:52,248 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,382 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:52,392 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,404 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:52,503 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,614 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:52,621 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,635 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:52,773 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,898 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:52,903 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:52,915 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,048 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:53,189 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,322 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:53,471 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,478 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:53,495 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,595 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:53,713 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,724 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:53,737 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,847 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:53,979 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:53,994 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:54,003 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:54,072 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:54,194 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:54,204 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:54,215 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:54,344 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:54,474 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:54,591 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:54,705 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:54,835 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:54,987 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:54,999 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:55,014 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:55,164 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:55,328 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:55,467 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:55,615 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:55,769 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:55,931 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:56,075 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:56,221 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:56,408 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:56,578 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:56,589 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:56,603 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:25:56,726 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:25:56,942 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:16,518 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:16,523 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:16,575 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:16,796 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:16,950 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:16,955 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:16,971 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:17,066 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:17,172 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:17,176 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:17,184 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:17,489 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:17,539 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:17,704 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:17,852 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:17,854 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:26:17,858 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:18,249 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:18,322 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:18,484 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:18,614 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:18,771 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:18,934 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,105 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:19,223 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,232 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:19,254 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,386 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:19,532 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,536 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:19,540 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,674 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:19,796 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,800 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:19,811 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:19,944 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:20,068 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:20,072 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:20,083 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:20,210 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:20,395 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:20,402 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:20,410 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:20,559 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:20,674 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:20,683 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:20,705 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:20,875 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,008 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,016 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,038 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,146 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,265 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,273 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,293 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,460 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,603 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,613 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,618 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,743 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,878 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:21,889 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:21,916 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,046 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:22,163 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,167 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:22,180 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,342 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:22,454 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,457 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:22,473 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,643 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:22,717 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,721 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:22,740 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:22,908 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,053 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,056 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,067 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,154 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,280 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,290 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,305 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,476 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,580 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,587 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,598 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,753 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,856 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:23,862 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:23,870 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:24,068 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:24,117 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:24,126 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:24,139 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:24,319 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:24,464 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:24,636 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:24,772 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:24,938 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,072 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,082 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,087 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,228 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,353 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,359 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,381 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,527 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,626 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,634 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,642 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,829 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,947 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:25,953 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:25,967 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,123 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:26,239 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,244 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:26,256 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,444 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:26,538 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,541 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:26,558 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,672 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:26,768 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,773 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:26,792 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:26,952 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,051 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,057 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,066 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,222 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,301 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,304 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,329 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,494 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,601 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,605 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,626 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,750 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,888 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:27,891 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:27,893 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,046 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,154 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,158 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,174 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,296 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,419 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,536 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,661 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,668 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,679 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,822 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,978 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:28,988 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:28,999 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:29,113 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:29,344 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:29,371 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:26:29,388 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:29,689 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:29,829 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:29,842 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:29,862 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:30,012 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:30,122 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:30,131 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:30,137 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:30,352 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:30,428 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:30,556 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:30,696 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:30,706 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 17:26:30,711 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:30,866 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:31,048 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:31,225 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:31,385 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:31,515 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:31,657 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:31,665 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:31,680 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:31,830 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:31,962 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:32,121 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:32,280 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:32,477 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:32,547 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:32,658 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:32,807 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:32,921 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,020 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:33,025 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,036 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:33,160 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,301 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:33,306 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,312 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:33,455 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,604 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:33,753 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,866 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:33,871 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:33,880 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,028 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,159 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,178 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,184 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,382 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,438 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,446 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,459 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,666 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,713 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,724 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,732 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,846 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,977 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:34,982 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:34,987 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:35,136 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:35,236 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:35,238 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:35,251 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:35,365 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:35,488 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:35,493 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:35,512 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:35,596 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:51,266 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:51,432 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:51,549 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:51,552 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:51,566 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:51,659 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:51,754 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:51,917 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,044 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,053 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,059 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,216 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,260 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,264 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,285 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,443 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,548 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,555 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,569 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,721 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,837 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:52,841 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:52,853 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,065 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,114 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,124 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,134 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,274 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,422 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,425 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,452 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,668 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,736 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,749 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,753 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,925 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,985 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:53,988 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:53,996 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,170 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:54,221 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,226 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:54,230 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,425 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:54,509 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,517 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:54,525 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,647 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:54,746 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,749 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:54,764 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:54,939 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:55,052 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:55,056 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:55,069 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:55,211 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:55,335 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:55,538 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:55,615 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:55,761 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:55,838 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:55,848 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:55,859 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,018 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,066 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,071 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,081 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,248 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,363 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,370 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,378 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,535 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,665 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,668 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,671 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,818 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,942 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:56,949 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:56,965 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,103 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,195 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,199 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,215 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,343 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,453 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,457 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,465 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,544 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,617 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,620 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,635 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,767 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,849 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,857 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:57,865 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:57,997 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,105 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,109 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,128 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,245 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,279 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,283 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,295 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,383 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,479 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,486 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,493 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,591 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,661 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,663 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,682 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,841 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,948 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:58,956 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:58,965 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,090 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,238 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,246 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,252 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,368 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,442 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,446 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,460 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,614 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,702 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,705 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,729 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:26:59,897 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:26:59,953 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,093 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,194 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,201 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,214 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,337 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,424 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,429 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,445 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,572 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,654 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,658 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,668 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,760 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:00,850 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:00,977 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,065 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,068 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,082 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,205 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,277 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,283 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,297 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,420 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,502 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,506 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,516 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,687 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,781 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,784 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:01,795 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:01,919 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,015 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,017 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,032 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,191 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,289 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,293 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,306 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,457 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,562 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,568 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,580 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,711 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,782 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,785 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,799 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,872 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,952 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:02,955 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:02,968 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,050 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,183 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,185 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,194 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,387 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,426 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,429 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,441 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,576 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,649 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,651 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,668 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,779 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,882 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:03,886 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:03,897 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,070 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,111 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,120 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,127 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,199 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,278 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,285 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,296 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,372 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,456 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,463 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,474 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,581 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,676 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,679 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,692 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,812 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,901 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,904 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:04,919 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:04,995 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,072 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,076 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,090 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,211 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,298 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,304 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,313 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,464 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,537 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,539 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,555 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,681 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,755 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,760 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:05,774 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:05,900 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,465 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:07,467 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,484 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:07,599 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,627 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:07,631 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,644 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:07,719 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,811 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:07,887 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,981 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:07,984 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:07,999 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,131 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,237 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,314 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,395 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,398 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,412 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,487 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,552 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,556 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,573 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,718 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,812 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,816 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:08,831 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:08,941 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,044 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,049 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,066 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,180 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,267 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,271 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,288 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,371 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,454 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,456 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,472 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,599 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,696 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,706 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,713 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,831 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,946 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:09,961 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:09,972 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,111 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,186 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,192 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,210 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,354 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,427 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,431 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,449 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,532 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,616 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,618 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,633 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,739 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:10,851 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:10,975 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,051 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,056 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,071 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,183 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,266 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,268 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,284 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,435 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,541 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,549 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,568 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,709 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,794 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:11,801 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:11,809 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,068 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:12,139 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,145 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:12,149 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,411 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:12,469 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,472 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:12,483 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,646 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:12,779 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,782 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:12,786 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:12,946 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:13,049 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:13,053 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:27:13,062 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:27:13,241 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 17:32:12,472 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 17:32:15,460 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 23:10:57,284 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:10:58,709 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:11:02,392 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:11:02,436 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:11:02,444 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:11:45,258 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 23:12:57,018 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:12:57,030 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:12:57,527 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:12:57,533 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:12:57,571 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:13:00,530 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 23:13:10,412 | INFO | parking_service | INGRESO: Vehículo TRI522 en Torre 1 por Usuario ID 1
+2026-07-27 23:13:10,417 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-27 23:14:44,854 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:14:44,860 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:14:45,141 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:14:48,108 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 23:14:49,726 | INFO | parking_service | INGRESO: Vehículo DDD213 en Torre 1 por Usuario ID 1
+2026-07-27 23:14:49,729 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-27 23:14:53,019 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:14:53,021 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:15:11,677 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:15:11,682 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:15:11,710 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:15:14,521 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:15:24,900 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:15:24,914 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-27 23:15:24,932 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-27 23:15:27,908 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-07-27 23:15:34,330 | INFO | parking_service | INGRESO: Vehículo JJJJJJ2 en Torre 1 por Usuario ID 3
+2026-07-27 23:15:34,333 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-27 23:15:41,367 | INFO | parking_service | SALIDA: Vehículo JDA214 egresó por Torre 1 por Usuario ID 3
+2026-07-27 23:15:41,384 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA

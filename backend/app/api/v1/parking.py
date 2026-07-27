@@ -19,7 +19,7 @@ async def ingreso(
     )
      # Notificación inmediata por WebSocket
     await manager.broadcast( 
-        {"event": "NUEVO_INGRESO", "patente": data.patente.upper()},
+        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "tipo": data.tipo},
         current_user.sucursal_id
     )
 

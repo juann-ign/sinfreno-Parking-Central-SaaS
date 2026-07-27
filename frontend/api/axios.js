@@ -19,6 +19,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("user_info");
       // Solo redirigir si no estamos ya en el login
       if (window.location.pathname !== "/") {
         window.location.href = "/";

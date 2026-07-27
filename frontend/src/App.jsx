@@ -30,7 +30,12 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <div className="font-sans antialiased text-gray-900">
-          <Toaster position="top-right" richColors />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: { padding: "12px 16px" }, // controlás vos el padding
+            }}
+          />
           <RootNavigation />
         </div>
       </BrowserRouter>
