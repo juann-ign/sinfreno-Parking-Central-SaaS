@@ -1,81 +1,170 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TableRowSkeleton } from "./Skeletons";
-import { LogOut, Clock, MapPin } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { differenceInMinutes } from "date-fns";
+import { useAuth } from "../src/context/AuthContext";
+import { Clock } from "lucide-react";
+
+const TimeBadge = ({ entryDate }) => {
+  const { user } = useAuth();
+  const courtesyMin = Number(user?.sucursal?.tiempo_cortesia_min) || 10;
+
+  const getMinutes = () => {
+    const now = new Date();
+    // FORZAMOS UTC: Si la fecha no termina en Z, se la agregamos
+    const utcDate = entryDate.endsWith("Z") ? entryDate : `${entryDate}Z`;
+    const entry = new Date(utcDate);
+
+    const diff = differenceInMinutes(now, entry);
+    // Si diff es negativo (por segundos de diferencia entre server/client), es 0
+    return diff < 0 ? 0 : diff;
+  };
+
+  const [minutes, setMinutes] = useState(getMinutes());
+
+  useEffect(() => {
+    setMinutes(getMinutes());
+    const interval = setInterval(() => {
+      const m = getMinutes();
+      console.log(
+        `DEBUG: Patente: ${m} min transcurridos | Cortesía: ${courtesyMin}`,
+      );
+      setMinutes(m);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [entryDate, courtesyMin]);
+
+  let colorClass = "";
+  let label = "";
+
+  if (minutes < courtesyMin) {
+    colorClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
+    label = "RECIÉN INGRESADO";
+  } else if (minutes < 60) {
+    colorClass = "bg-indigo-50 text-indigo-600 border-indigo-100";
+    label = `${minutes} MINUTOS`;
+  } else {
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
+    const remMinutes = minutes % 60;
+
+    colorClass =
+      days >= 1
+        ? "bg-rose-600 text-white border-rose-700 shadow-sm"
+        : "bg-rose-50 text-rose-600 border-rose-200";
+
+    label = days >= 1 ? `${days}D ${hours}H` : `${hours}H ${remMinutes}M`;
+  }
+
+  return (
+    <div
+      className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border uppercase tracking-wider transition-all duration-500 ${colorClass}`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full bg-current mr-2 ${minutes < courtesyMin ? "animate-pulse" : ""}`}
+      />
+      {label}
+    </div>
+  );
+};
 
 const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
+  const { user } = useAuth();
+
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-        <h3 className="font-arvo text-lg font-bold text-slate-800 uppercase tracking-tight">
-          Vehículos en Planta
-        </h3>
-        {isLoading ? (
-          <div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse"></div>
-        ) : (
-          <span className="font-sans bg-slate-50 text-slate-400 text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">
-            {vehicles.length} Activos
-          </span>
-        )}
+    <div className="flex flex-col h-full bg-white overflow-hidden">
+      <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0 font-sans">
+        <div className="flex items-center gap-4">
+          <h3 className="font-arvo text-lg font-bold text-slate-800 uppercase tracking-tight">
+            Vehículos en Planta
+          </h3>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <Clock size={12} className="text-indigo-500" />
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+              Cortesía:{" "}
+              <span className="text-indigo-600 font-black">
+                {user?.sucursal?.tiempo_cortesia_min ?? 0} min
+              </span>
+            </span>
+          </div>
+        </div>
+        <span className="font-sans bg-white border border-slate-200 text-slate-400 text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-[0.2em] shadow-sm">
+          {vehicles.length} Activos
+        </span>
       </div>
 
-      <div className="overflow-y-auto flex-1 custom-scroll px-2">
-        <table className="w-full text-left">
-          <thead className="bg-white sticky top-0 z-10">
-            <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-              <th className="px-6 py-4">Vehículo</th>
-              <th className="px-6 py-4">Ubicación</th>
-              <th className="px-6 py-4 text-center">Ingreso</th>
-              <th className="px-6 py-4 text-right">Acción</th>
+      <div className="overflow-y-auto flex-1 custom-scroll">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-white sticky top-0 z-20">
+            <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
+              <th className="px-8 py-5">Vehículo</th>
+              <th className="px-8 py-5">Ubicación</th>
+              <th className="px-8 py-5">Tiempo Transcurrido</th>
+              <th className="px-8 py-5 text-right">Acción</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
-            {isLoading
-              ? // Si está cargando, muestra 5 filas de skeleton
-                [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)
-              : // Si no, muestra los vehículos reales
+          <tbody className="relative">
+            <AnimatePresence mode="popLayout" initial={true}>
+              {!isLoading &&
                 vehicles.map((v) => (
-                  <tr
+                  <motion.tr
                     key={v.id}
-                    className="hover:bg-indigo-50/30 transition-colors group border-b border-slate-50"
+                    layout
+                    // ANIMACIÓN DE ENTRADA CORREGIDA: Usamos opacity y y-offset
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.95,
+                      transition: { duration: 0.2 },
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                    className="hover:bg-slate-50/80 transition-colors group border-b border-slate-50"
                   >
-                    <td className="px-6 py-4">
-                      <span className="text-xl">
-                        {v.tipo_vehiculo === "MOTO"
-                          ? "🏍️"
-                          : v.tipo_vehiculo === "CAMIONETA"
-                            ? "🚐"
-                            : v.tipo_vehiculo === "AUTO"
-                              ? "🚗"
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl group-hover:bg-white transition-all shadow-sm">
+                          {v.tipo_vehiculo === "MOTO"
+                            ? "🏍️"
+                            : v.tipo_vehiculo === "CAMIONETA"
+                              ? "🚐"
                               : "🚗"}
-                      </span>
-                      <p className="font-black text-slate-800 text-lg leading-none">
-                        {v.patente}
-                      </p>
-                      <p className="text-[10px] font-bold text-indigo-500 uppercase mt-1">
-                        {v.tipo_vehiculo}
-                      </p>
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-800 text-lg leading-none uppercase tracking-tight">
+                            {v.patente}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase mt-1.5 tracking-widest">
+                            {v.tipo_vehiculo}
+                          </p>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-slate-600 italic">
-                      Torre {v.torre_id}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg text-xs">
-                        {new Date(v.fecha_entrada).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                    <td className="px-8 py-6">
+                      <span className="text-sm font-black text-slate-600 tracking-tight italic uppercase">
+                        Torre {v.torre_id}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-8 py-6">
+                      <TimeBadge entryDate={v.fecha_entrada} />
+                    </td>
+                    <td className="px-8 py-6 text-right">
                       <button
                         onClick={() => onCheckout(v.patente)}
-                        className="text-red-500 hover:text-red-700 text-xs uppercase tracking-widest underline decoration-2 underline-offset-4 font-black"
+                        className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-indigo-100"
                       >
-                        Cobrar Salida
+                        Cobrar
                       </button>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
+            </AnimatePresence>
+            {isLoading &&
+              [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)}
           </tbody>
         </table>
       </div>
