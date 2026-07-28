@@ -1,300 +1,307 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "../src/context/AuthContext";
 import api from "../api/axios";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
-import { SkeletonCard } from "../components/Skeletons";
 import RevenueChart from "../components/RevenueChart";
 import OccupancyPieChart from "../components/OccupancyPieChart";
 import {
   Car,
-  PieChart,
   LogOut,
   History as HistoryIcon,
-  Activity,
   Search,
-  X,
   DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-// Devuelve "10:42" con hora local argentina
 const getHora = () =>
   new Date().toLocaleTimeString("es-AR", {
     hour: "2-digit",
     minute: "2-digit",
   });
 
-// Recibe la horaIngreso del backend (ISO string) y devuelve "2 hs 15 min" / "45 min"
-// Si el backend no manda horaIngreso todavía, la función devuelve null y no se muestra
-const getDuracion = (horaIngreso) => {
-  if (!horaIngreso) return null;
-  const diff = Date.now() - new Date(horaIngreso).getTime();
-  const hs = Math.floor(diff / 3600000);
-  const min = Math.floor((diff % 3600000) / 60000);
-  return hs > 0 ? `${hs} hs ${min} min` : `${min} min`;
-};
-
-// ─── Mapa de ícono Lucide por tipo de vehículo ───
-// Usamos los íconos que ya importa el proyecto (Car está importado arriba)
-// Si en el futuro tenés íconos de moto/camioneta, cambiá acá sin tocar el socket
-const iconoPorTipo = {
-  AUTO: <Car size={16} strokeWidth={2} />,
-  MOTO: <Car size={16} strokeWidth={2} />, // reemplazar cuando haya ícono de moto
-  CAMIONETA: <Car size={16} strokeWidth={2} />, // ídem camioneta
-};
-
 const Dashboard = ({ onLogout }) => {
   const { user, hasPermission } = useAuth();
-
   const [stats, setStats] = useState(null);
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  // Guardaremos aquí el array de {hora: X, monto: Y}
   const [hourlyData, setHourlyData] = useState([]);
-  // --- ESTADOS DE BÚSQUEDA Y FOCO ---
   const [filterTerm, setFilterTerm] = useState("");
-  const [isFocusMode, setIsFocusMode] = useState(false);
 
-  // --- REFERENCIAS (MEMORIA TÉCNICA) ---
   const socketRef = useRef(null);
-  const lastEventRef = useRef(null); // <--- Referencia para evitar duplicados
-  const timerRef = useRef(null);
+  const lastProcessedEventRef = useRef("");
   const navigate = useNavigate();
 
-  const fetchData = async () => {
-    setLoading(true); // Mostrar skeletons al refrescar
-    try {
-      const [statsRes, activeRes] = await Promise.all([
-        api.get("/stats/summary"),
-        api.get("/parking/activas"),
-      ]);
-      setStats(statsRes.data);
-      setActiveVehicles(activeRes.data);
+  // Función de carga de datos (Memorizada para evitar re-renders)
+  const fetchData = useCallback(
+    async (showLoading = false) => {
+      if (showLoading) setLoading(true);
+      try {
+        const [statsRes, activeRes] = await Promise.all([
+          api.get("/stats/summary"),
+          api.get("/parking/activas"),
+        ]);
+        setStats(statsRes.data);
+        setActiveVehicles(activeRes.data);
 
-      // Solo pedir esto si es admin
-      if (hasPermission("ver_stats")) {
-        const hourlyRes = await api.get("/stats/revenue-hourly");
-        setHourlyData(hourlyRes.data);
+        if (hasPermission("ver_stats")) {
+          const hourlyRes = await api.get("/stats/revenue-hourly");
+          setHourlyData(hourlyRes.data);
+        }
+      } catch (error) {
+        console.error("Error cargando datos", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error cargando datos", error);
-      toast.error("Error al sincronizar datos");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [hasPermission],
+  );
 
-  // 2. Función para manejar el Modo Foco (Filtrar y limpiar solo)
-  const activateFocusMode = (patente) => {
-    // Si ya había un cronómetro corriendo, lo frenamos
-    if (timerRef.current) clearTimeout(timerRef.current);
-
-    setFilterTerm(patente);
-    setIsFocusMode(true);
-
-    // A los 5 segundos, limpiamos el buscador automáticamente
-    timerRef.current = setTimeout(() => {
-      setFilterTerm("");
-      setIsFocusMode(false);
-      timerRef.current = null;
-    }, 5000);
-  };
-
-  // 3. El useEffect blindado
+  // 1. Carga inicial de datos
   useEffect(() => {
-    if (!user) return;
+    fetchData(true);
+  }, [fetchData]);
 
+  // 2. Lógica de WebSocket
+  useEffect(() => {
     const sucursalId = user?.sucursal?.id;
+    if (!sucursalId) return;
 
-    fetchData();
+    const connect = () => {
+      if (socketRef.current?.readyState === WebSocket.OPEN) return;
 
-    let socket;
-    if (sucursalId) {
-      const connect = () => {
-        socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
+      const socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
+      socketRef.current = socket;
 
-        socket.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          // Centralizamos la lógica de reacción
-          if (data.event === "NUEVO_INGRESO") {
-            toast(
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        // Evitar duplicados (Mismo evento en menos de 2 seg)
+        const eventKey = `${data.event}-${data.patente}`;
+        if (lastProcessedEventRef.current === eventKey) return;
+        lastProcessedEventRef.current = eventKey;
+        setTimeout(() => {
+          lastProcessedEventRef.current = "";
+        }, 2000);
+
+        // CORRECCIÓN: "NUV" -> "NUEVA_SALIDA"
+        if (data.event === "NUEVO_INGRESO" || data.event === "NUEVA_SALIDA") {
+          const isIngreso = data.event === "NUEVO_INGRESO";
+
+          toast.custom(
+            (t) => (
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  width: "100%",
+                  width: 320,
+                  background: "#ffffff",
+                  border: `2px solid ${isIngreso ? "#10b981" : "#4f46e5"}`,
+                  borderRadius: 14,
+                  padding: "12px 14px",
+                  position: "relative",
+                  boxSizing: "border-box",
+                  fontFamily: "inherit",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      fontSize: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    {iconoPorTipo[data.tipo] ?? <Car size={16} />}
-                    Vehículo ingresado
-                  </span>
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
-                    {getHora()}
-                  </span>
-                </div>
-                <span style={{ fontSize: 13, color: "#64748b" }}>
-                  <code style={{ fontFamily: "monospace", fontWeight: 600 }}>
-                    {data.patente}
-                  </code>
-                  {" · "}
-                  {data.tipo.charAt(0) + data.tipo.slice(1).toLowerCase()}
-                </span>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginTop: 2,
-                  }}
-                >
-                  <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
-                    <button
-                      onClick={() => toast.dismiss()}
-                      style={{
-                        fontSize: 11,
-                        padding: "3px 8px",
-                        borderRadius: 6,
-                        border: "0.5px solid #22c55e",
-                        background: "transparent",
-                        color: "#16a34a",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Ver ticket
-                    </button>
-                    <button
-                      onClick={() => toast.dismiss()}
-                      style={{
-                        fontSize: 11,
-                        padding: "3px 8px",
-                        borderRadius: 6,
-                        border: "0.5px solid #cbd5e1",
-                        background: "transparent",
-                        color: "#64748b",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Editar
-                    </button>
-                  </div>
-                </div>
-              </div>,
-              { duration: 6000 },
-            );
-            fetchData();
-          } else if (data.event === "NUEVA_SALIDA") {
-            const duracion = getDuracion(data.horaIngreso);
-            toast(
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      fontSize: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <DollarSign size={16} />
-                    Salida registrada
-                  </span>
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
-                    {getHora()}
-                  </span>
-                </div>
-                <span style={{ fontSize: 13, color: "#64748b" }}>
-                  <code style={{ fontFamily: "monospace", fontWeight: 600 }}>
-                    {data.patente}
-                  </code>
-                  {duracion && ` · ${duracion}`}
-                </span>
+                {/* HORA */}
                 <span
-                  style={{ fontSize: 13, fontWeight: 600, color: "#4f46e5" }}
+                  style={{
+                    position: "absolute",
+                    top: 12,
+                    right: 14,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#64748b",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
                 >
-                  ${Number(data.monto).toLocaleString("es-AR")} cobrados
+                  {getHora()}
                 </span>
+
+                {/* TÍTULO + EMOJI TIPO */}
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
                     alignItems: "center",
-                    marginTop: 2,
+                    gap: 6,
+                    paddingRight: 40,
                   }}
                 >
-                  <button
-                    onClick={() => toast.dismiss()}
+                  <span style={{ fontSize: 14 }}>
+                    {isIngreso
+                      ? ({ AUTO: "🚗", MOTO: "🏍️", CAMIONETA: "🚐" }[
+                          data.tipo
+                        ] ?? "🚗")
+                      : "💸"}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.12em",
+                      color: "#0f172a",
+                    }}
+                  >
+                    {isIngreso ? "Ingreso de vehículo" : "Salida registrada"}
+                  </span>
+                </div>
+
+                {/* PATENTE */}
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 22,
+                    fontWeight: 900,
+                    color: "#0f172a",
+                    lineHeight: 1.1,
+                    marginTop: 6,
+                  }}
+                >
+                  {data.patente}
+                </div>
+
+                {/* TIPO DE VEHÍCULO (solo en ingreso) */}
+                {isIngreso && (
+                  <div
                     style={{
                       fontSize: 11,
-                      padding: "3px 8px",
-                      borderRadius: 6,
-                      border: "0.5px solid #4f46e5",
-                      background: "transparent",
-                      color: "#4f46e5",
-                      cursor: "pointer",
+                      fontWeight: 600,
+                      color: "#475569",
+                      marginTop: 3,
                     }}
                   >
-                    Ver comprobante
+                    {{
+                      AUTO: "🚗 Auto",
+                      MOTO: "🏍️ Motocicleta",
+                      CAMIONETA: "🚐 Camioneta",
+                    }[data.tipo] ?? "🚗 Auto"}
+                  </div>
+                )}
+
+                {/* MONTO + TIPO (solo en salida) */}
+                {!isIngreso && (
+                  <>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#475569",
+                        marginTop: 3,
+                      }}
+                    >
+                      {{
+                        AUTO: "🚗 Auto",
+                        MOTO: "🏍️ Motocicleta",
+                        CAMIONETA: "🚐 Camioneta",
+                      }[data.tipo] ?? "🚗 Auto"}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 5,
+                        marginTop: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                          color: "#64748b",
+                        }}
+                      >
+                        cobrado
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 18,
+                          fontWeight: 900,
+                          color: "#4f46e5",
+                        }}
+                      >
+                        ${Number(data.monto).toLocaleString("es-AR")}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {/* BOTONES */}
+                <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
+                  <button
+                    onClick={() => toast.dismiss(t)}
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 800,
+                      padding: "5px 10px",
+                      borderRadius: 7,
+                      border: "1px solid #e2e8f0",
+                      background: "transparent",
+                      color: "#64748b",
+                      cursor: "pointer",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Cerrar
+                  </button>
+                  <button
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 800,
+                      padding: "5px 10px",
+                      borderRadius: 7,
+                      border: "none",
+                      background: isIngreso ? "#10b981" : "#4f46e5",
+                      color: "#ffffff",
+                      cursor: "pointer",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {isIngreso ? "Ver ticket" : "Ver comprobante"}
                   </button>
                 </div>
-              </div>,
-              { duration: 8000 },
-            );
-            fetchData();
-          }
-        };
+              </div>
+            ),
+            { duration: 5000 },
+          );
 
-        socket.onclose = () => setTimeout(connect, 3000);
+          fetchData(); // Refrescar lista y stats
+        }
       };
-      connect();
-    }
 
-    return () => socket?.close();
-  }, [user?.sucursal?.id]);
+      socket.onclose = () => {
+        if (socketRef.current) setTimeout(connect, 3000);
+      };
+    };
+
+    connect();
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.onclose = null; // Evitar reconexión al desmontar
+        socketRef.current.close();
+      }
+    };
+  }, [user?.sucursal?.id, fetchData]);
 
   const handleCheckout = async (patente) => {
     try {
-      // LLAMADA SILENCIOSA: El servidor se encarga de avisar por WebSocket
       await api.post(`/parking/salida?patente=${encodeURIComponent(patente)}`);
+      // No llamamos a fetchData aquí porque el WebSocket lo hará por nosotros
     } catch (error) {
-      toast.error(
-        error.response?.data?.detail || "Error al procesar la salida",
-      );
+      toast.error(error.response?.data?.detail || "Error al procesar salida");
     }
   };
 
-  // Filtramos los vehículos según lo que el usuario busque o clickee en la noti
   const filteredVehicles = activeVehicles.filter((v) =>
     v.patente.toLowerCase().includes(filterTerm.toLowerCase()),
   );
 
   return (
-    <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden font-sans">
       {/* HEADER */}
       <nav className="h-20 w-full bg-white border-b border-slate-100 px-10 flex justify-between items-center shrink-0 z-50">
         <div className="flex items-center gap-4">
@@ -311,7 +318,6 @@ const Dashboard = ({ onLogout }) => {
         </div>
 
         <div className="flex items-center gap-8">
-          {/* BOTÓN HISTORIAL: Solo Admin */}
           {hasPermission("ver_historial") && (
             <button
               onClick={() => navigate("/history")}
@@ -329,12 +335,11 @@ const Dashboard = ({ onLogout }) => {
         </div>
       </nav>
 
-      {/* CONTENEDOR GLOBAL */}
+      {/* CONTENIDO PRINCIPAL */}
       <div className="flex-1 flex overflow-hidden p-6 gap-6">
-        {/* COLUMNA IZQUIERDA: OPERATIVA (70%) */}
         <section className="flex-[7] flex flex-col gap-6 min-w-0">
           <div className="shrink-0">
-            <EntryForm onEntrySuccess={fetchData} />
+            <EntryForm onEntrySuccess={() => fetchData()} />
           </div>
 
           <div className="shrink-0 relative">
@@ -360,9 +365,7 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </section>
 
-        {/* COLUMNA DERECHA: ESTRATÉGICA (30%) */}
         <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
-          {/* 1. CAJA HOY: Solo Admin */}
           {hasPermission("ver_stats") && (
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
               <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
@@ -380,7 +383,6 @@ const Dashboard = ({ onLogout }) => {
             </div>
           )}
 
-          {/* 2. OCUPACIÓN: Admin y Operador */}
           {hasPermission("ver_ocupacion") && (
             <div className="flex-1 flex flex-col min-h-0">
               <OccupancyPieChart
@@ -390,22 +392,12 @@ const Dashboard = ({ onLogout }) => {
             </div>
           )}
 
-          {/* 3. GRÁFICO HORARIO: Solo Admin */}
           {hasPermission("ver_stats") && (
             <div className="h-60 shrink-0">
               <RevenueChart data={hourlyData} />
             </div>
           )}
 
-          {/* 4. BOTÓN REPORTE: Solo Admin */}
-          {hasPermission("ver_stats") && (
-            <button className="shrink-0 w-full bg-white border-2 border-slate-200 text-slate-400 py-4 rounded-[1.5rem] font-black text-[10px] tracking-[0.2em] uppercase hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center justify-center gap-2">
-              <HistoryIcon size={14} />
-              Reporte Completo
-            </button>
-          )}
-
-          {/* MODO OPERADOR: Mensaje visual si no es admin */}
           {!hasPermission("ver_stats") && (
             <div className="p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-center">
               <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
