@@ -63,8 +63,9 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
 
     return nueva_estadia
 
+
 def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
-    # 1. Buscar estadía activa usando un JOIN (más eficiente)
+    # 1. Buscar estadía activa
     estadia = db.query(db_models.Estadia).join(db_models.Vehiculo).filter(
         db_models.Vehiculo.patente == patente.upper().strip(),
         db_models.Estadia.estado == "ACTIVO",
@@ -73,48 +74,51 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     if not estadia:
         raise EstadiaNoEncontradaError(patente)
 
-     # 2.1 Obtenemos la sucursal y su tiempo de gracia configurado
-    sucursal = estadia.torre.sucursal
-    minutos_gracia = sucursal.tiempo_cortesia_min
-
-    # 2.2 Convertimos minutos a segundos para comparar
-    segundos_gracia = minutos_gracia * 60
-
-    # 2.3 Calculamos la duración real
+    # 2. Cálculos de Tiempo
     fecha_salida = datetime.now(timezone.utc)
-    # Aseguramos que ambas fechas tengan el mismo 'vibe' (offset-aware)
     entrada_tz = estadia.fecha_entrada.replace(tzinfo=timezone.utc)
     duracion = fecha_salida - entrada_tz
     segundos_totales = duracion.total_seconds()
+    minutos_totales = segundos_totales / 60
 
-    # 2.4 Lógica de cobro dinámica
-    if segundos_totales < segundos_gracia: 
-        monto_final = 0.0
-    else:
-        horas_a_cobrar = ceil(segundos_totales / 3600)
-        tarifa_base = estadia.torre.sucursal.tarifa_hora
+    # 3. Reglas de Negocio
+    sucursal = estadia.torre.sucursal
+    tarifa_base = sucursal.tarifa_hora
+    minutos_gracia = sucursal.tiempo_cortesia_min
 
-        # Multiplicador por tipo de vehículo (Lógica simple para este ejemplo)
-        multiplicadores = {"AUTO": 1.0, "MOTO": 0.5, "CAMIONETA": 1.5}
-        factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
-        monto_bruto = horas_a_cobrar * tarifa_base * factor_tipo
+    monto_final = 0.0
 
-        porcentaje = estadia.torre.porcentaje_descuento if estadia.torre.porcentaje_descuento is not None else 0.0
+    # Lógica de Cobro por Fracciones
+    if minutos_totales > minutos_gracia:
+        if minutos_totales <= 60:
+            # Primera hora completa
+            monto_final = tarifa_base
+        else:
+            # Primera hora + fracciones de 15 min
+            minutos_adicionales = minutos_totales - 60
+            # ceil(minutos / 15) nos da cuántos bloques de 15 min hay
+            fracciones_15 = ceil(minutos_adicionales / 15)
+            monto_final = tarifa_base + (fracciones_15 * (tarifa_base / 4))
 
-        # Aplicar descuento dinámico de la torre
-        descuento = monto_bruto * porcentaje
-        monto_final = monto_bruto - descuento
+    # 4. Multiplicador por Tipo de Vehículo
+    multiplicadores = {"AUTO": 1.0, "MOTO": 0.5, "CAMIONETA": 1.5}
+    factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
+    monto_final *= factor_tipo
 
-    # 3. Actualizar registro
+    # 5. Descuento de la Torre
+    porcentaje_dto = estadia.torre.porcentaje_descuento or 0.0
+    monto_final = monto_final * (1 - porcentaje_dto)
+
+    # 6. Actualización en DB
     estadia.fecha_salida = fecha_salida
     estadia.monto = round(monto_final, 2)
     estadia.usuario_salida_id = usuario_egreso_id
     estadia.estado = "FINALIZADO"
 
-    logger.info(f"SALIDA: Vehículo {patente} egresó por Torre {estadia.torre_id} por Usuario ID {usuario_egreso_id}")
-    
     db.commit()
     db.refresh(estadia)
+    
+    logger.info(f"SALIDA PRO: {patente} | Duración: {int(minutos_totales)}min | Monto: ${estadia.monto}")
     return estadia
 
 def obtener_estadias_activas(db: Session, sucursal_id: int):

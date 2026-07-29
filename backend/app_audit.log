@@ -1385,3 +1385,11 @@
 2026-07-29 01:43:13,114 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
 2026-07-29 01:45:19,332 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
 2026-07-29 01:45:19,358 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:52:46,196 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 01:52:47,409 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:52:50,828 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 03:55:09,636 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 04:00:10,517 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 04:00:10,982 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 04:00:15,495 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 06:18:40,970 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
