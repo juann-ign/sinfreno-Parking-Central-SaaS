@@ -41,6 +41,7 @@ def login(
                     "id": user.sucursal_id,
                     "nombre": user.sucursal.nombre,
                     "tarifa": user.sucursal.tarifa_hora,
+                    "tiempo_cortesia_min": user.sucursal.tiempo_cortesia_min, 
                     "logo": user.sucursal.empresa.logo_url,
                     "color": user.sucursal.empresa.color_primario
                 }
