@@ -6,6 +6,7 @@ from math import ceil
 from app.core.websocket_manager import manager
 from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaError
 from app.core.logger import logger 
+from app.services.audit_service import registrar_evento
 
 def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int, sucursal_id_usuario: int, tipo: str = "AUTO"):
     # 1. Validar Torre y su capacidad
@@ -58,6 +59,14 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     db.add(nueva_estadia)
     db.commit()
     db.refresh(nueva_estadia)
+
+    registrar_evento(
+        db, 
+        usuario_id=usuario_ingreso_id, 
+        sucursal_id=sucursal_id_usuario,
+        accion="INGRESO_VEHICULO",
+        detalles=f"Vehículo {patente_up} ingresó a Torre {torre_id}"
+    )
     
     logger.info(f"INGRESO: Vehículo {patente_up} en Torre {torre_id} por Usuario ID {usuario_ingreso_id}")
 
@@ -117,7 +126,14 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
 
     db.commit()
     db.refresh(estadia)
-    
+
+    registrar_evento(
+        db,
+        usuario_id=usuario_egreso_id,
+        sucursal_id=estadia.torre.sucursal_id,
+        accion="COBRO_SALIDA",
+        detalles=f"Vehículo {patente} salió. Cobrado: ${estadia.monto}"
+    )
     logger.info(f"SALIDA PRO: {patente} | Duración: {int(minutos_totales)}min | Monto: ${estadia.monto}")
     return estadia
 

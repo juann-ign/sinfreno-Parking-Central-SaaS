@@ -100,3 +100,12 @@ def update_config(
     db.commit()
     db.refresh(sucursal)
     return sucursal
+
+@router.get("/auditoria", response_model=list[schemas.AuditoriaOut])
+def obtener_logs(
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+):
+    return db.query(db_models.Auditoria).filter(
+        db_models.Auditoria.sucursal_id == current_user.sucursal_id
+    ).order_by(db_models.Auditoria.fecha.desc()).limit(100).all()

@@ -135,3 +135,14 @@ class SucursalUpdate(BaseModel):
     # White-label (vienen de la tabla Empresa a través de la relación)
     logo_url: Optional[str] = None
     color_primario: Optional[str] = None
+
+class AuditoriaOut(BaseModel):
+    id: int
+    usuario_id: int
+    sucursal_id: int
+    accion: str
+    detalles: str
+    fecha: datetime
+
+    class Config:
+        from_attributes = True

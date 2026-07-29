@@ -89,3 +89,25 @@ class Estadia(Base):
     @property
     def tipo_vehiculo(self):
         return self.vehiculo.tipo if self.vehiculo else "AUTO"
+
+class Auditoria(Base):
+    __tablename__ = "auditoria"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
+    accion = Column(String)
+    detalles = Column(String)
+    fecha = Column(DateTime, default=datetime.datetime.utcnow)
+
+    usuario = relationship("Usuario")
+    sucursal = relationship("Sucursal")
+    id: int
+    usuario_id: int
+    sucursal_id: int
+    accion: str
+    detalles: str
+    fecha: datetime
+
+    class Config:
+        from_attributes = True
