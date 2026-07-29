@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../src/context/AuthContext";
-import {
-  Save,
-  Settings as SettingsIcon,
-  Palette,
-  Clock,
-  Car,
-  Bike,
-  Truck,
-  DollarSign,
-  ArrowLeft,
-  ChevronRight,
-} from "lucide-react";
-import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Save, ArrowLeft, Palette, Clock, DollarSign } from "lucide-react";
+import { toast } from "sonner";
 
 const Settings = () => {
   const { user, login } = useAuth();
@@ -51,169 +40,180 @@ const Settings = () => {
     setLoading(true);
     try {
       const response = await api.patch("/parking/config", formData);
-
-      // Actualizamos el contexto global para que el dashboard refleje cambios
       login({
         ...user,
         sucursal: {
           ...user.sucursal,
-          ...response.data, // Mezclamos todos los campos nuevos de la DB
+          ...response.data,
           color: formData.color_primario,
           logo: formData.logo_url,
         },
       });
-      toast.success("Configuración actualizada");
+      toast.success("CONFIGURACIÓN ACTUALIZADA");
     } catch (error) {
-      toast.error("Error al guardar");
+      toast.error("ERROR AL GUARDAR");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 lg:p-8 font-sans">
-      <div className="max-w-3xl mx-auto">
-        <header className="flex items-center gap-4 mb-8">
-          {/* BOTÓN VOLVER */}
+    <div className="min-h-screen bg-slate-50 font-sans">
+      {/* HEADER: CLON EXACTO DE HISTORY */}
+      <nav className="bg-white border-b border-slate-200 px-6 lg:px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/dashboard")}
-            className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition-all group"
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
           >
-            <ArrowLeft
-              size={24}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
+            <ArrowLeft size={24} />
           </button>
+          <h1 className="text-xl lg:text-xl font-black text-slate-800 uppercase tracking-tighter">
+            Configuración del <span className="text-indigo-600">Sistema</span>
+          </h1>
+        </div>
+      </nav>
 
-          <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200">
-            <SettingsIcon className="text-indigo-600" size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">
-              Panel de Control
-            </h1>
-            <p className="text-slate-500 text-sm font-bold">
-              Configuración de Negocio y Marca
-            </p>
-          </div>
-        </header>
+      <main className="p-4 lg:p-10 max-w-6xl mx-auto">
+        {/* CONTENEDOR ÚNICO GRANDE Y GEOMÉTRICO */}
+        <form
+          onSubmit={handleSave}
+          className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden"
+        >
+          {/* SECCIÓN 1: TARIFAS (GRILLA INTEGRADA) */}
+          <div className="p-8 lg:p-12 border-b border-slate-100">
+            <h2 className="font-arvo text-xl font-black text-slate-800 mb-8 uppercase flex items-center gap-3">
+              Tarifas por Vehículo
+            </h2>
 
-        <form onSubmit={handleSave} className="space-y-6 pb-20">
-          {/* SECCIÓN: TARIFAS POR CATEGORÍA */}
-          <div className="bg-white p-6 lg:p-8 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <ChevronRight size={14} className="text-indigo-500" /> Tarifas por
-              Vehículo
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-transparent focus-within:border-indigo-500 transition-all">
-                <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase mb-3">
-                  <Car size={14} /> Autos
-                </label>
-                <input
-                  type="number"
-                  className="w-full bg-transparent text-xl font-black outline-none"
-                  value={formData.tarifa_auto}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tarifa_auto: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-2xl border border-transparent focus-within:border-indigo-500 transition-all">
-                <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase mb-3">
-                  <Bike size={14} /> Motos
-                </label>
-                <input
-                  type="number"
-                  className="w-full bg-transparent text-xl font-black outline-none"
-                  value={formData.tarifa_moto}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tarifa_moto: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-2xl border border-transparent focus-within:border-indigo-500 transition-all">
-                <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase mb-3">
-                  <Truck size={14} /> Camionetas
-                </label>
-                <input
-                  type="number"
-                  className="w-full bg-transparent text-xl font-black outline-none"
-                  value={formData.tarifa_camioneta}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      tarifa_camioneta: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* SECCIÓN: REGLAS DE TIEMPO */}
-          <div className="bg-white p-6 lg:p-8 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <Clock size={14} className="text-indigo-500" /> Reglas de
-              Fraccionamiento
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">
-                  Minutos de Cortesía (Gracia)
-                </label>
-                <input
-                  type="number"
-                  className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                  value={formData.tiempo_cortesia_min}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      tiempo_cortesia_min: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">
-                  Fracción después de la hora (minutos)
-                </label>
-                <select
-                  className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
-                  value={formData.fraccion_minutos}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      fraccion_minutos: e.target.value,
-                    })
-                  }
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { label: "Autos", emoji: "🚗", key: "tarifa_auto" },
+                { label: "Motos", emoji: "🏍️", key: "tarifa_moto" },
+                { label: "Camionetas", emoji: "🚐", key: "tarifa_camioneta" },
+              ].map((item) => (
+                <div
+                  key={item.key}
+                  className="bg-slate-50 p-6 rounded-3xl border-2 border-transparent focus-within:border-indigo-500 focus-within:bg-white transition-all"
                 >
-                  <option value="15">Cada 15 minutos</option>
-                  <option value="30">Cada 30 minutos</option>
-                  <option value="60">Hora completa</option>
-                </select>
+                  <label className="block text-s font-black text-slate-700 uppercase mb-3">
+                    {item.emoji} {item.label}
+                  </label>
+                  <div className="flex items-center">
+                    <span className="text-2xl font-black text-indigo-600 mr-1.5 relative top-0.5 ">
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      className="w-full bg-transparent text-3xl font-black text-slate-900 outline-none"
+                      value={formData[item.key]}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [item.key]: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SECCIÓN 2: REGLAS Y MARCA (SIMETRÍA TOTAL) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+            {/* TIEMPOS */}
+            <div className="p-8 lg:p-12 flex flex-col justify-between">
+              <div>
+                <h2 className="font-arvo text-xl font-black text-slate-800 mb-8 uppercase flex items-center gap-3">
+                  Reglas de Tiempo
+                </h2>
+                <div className="space-y-8">
+                  <div className="group">
+                    <label className="block text-xs font-black text-slate-800 uppercase mb-3 tracking-widest">
+                      Minutos de Cortesía
+                    </label>
+                    <input
+                      type="number"
+                      className="w-full p-5 bg-slate-50 rounded-2xl font-black text-2xl text-slate-900 outline-none border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all"
+                      value={formData.tiempo_cortesia_min}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          tiempo_cortesia_min: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="group">
+                    <label className="block text-xs font-black text-slate-800 uppercase mb-3 tracking-widest">
+                      Fraccionamiento
+                    </label>
+                    <select
+                      className="w-full p-5 bg-slate-50 rounded-2xl font-black text-lg text-slate-900 outline-none border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all appearance-none cursor-pointer"
+                      value={formData.fraccion_minutos}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          fraccion_minutos: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="15">CADA 15 MINUTOS</option>
+                      <option value="30">CADA 30 MINUTOS</option>
+                      <option value="60">HORA COMPLETA</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MARCA */}
+            <div className="p-8 lg:p-12 flex flex-col items-center justify-center bg-slate-50/30">
+              <h2 className="font-arvo text-xl font-black text-slate-800 mb-8 uppercase text-center w-full">
+                Identidad Visual
+              </h2>
+              <div className="flex flex-col items-center gap-6">
+                <div className="relative group">
+                  <input
+                    type="color"
+                    className="w-40 h-40 rounded-[3rem] cursor-pointer bg-white border-8 border-white shadow-2xl transition-transform hover:scale-105"
+                    value={formData.color_primario}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        color_primario: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-black text-slate-800 uppercase tracking-[0.3em] mb-2">
+                    Código Hexadecimal
+                  </p>
+                  <p className="text-3xl font-black text-indigo-600 font-mono">
+                    {formData.color_primario.toUpperCase()}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 shadow-xl disabled:opacity-50"
-          >
-            {loading ? (
-              "Guardando..."
-            ) : (
-              <>
-                <Save size={18} /> Guardar Cambios
-              </>
-            )}
-          </button>
+          {/* FOOTER: BOTÓN DE GUARDADO INTEGRADO */}
+          <div className="p-8 lg:p-10 bg-slate-50 border-t border-slate-100 flex justify-center">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full max-w-md py-6 bg-slate-900 text-white rounded-3xl font-black text-sm uppercase tracking-[0.4em] hover:bg-indigo-600 transition-all flex items-center justify-center gap-4 shadow-xl active:scale-95 disabled:opacity-50"
+            >
+              {loading ? (
+                "PROCESANDO..."
+              ) : (
+                <>
+                  <Save size={20} /> GUARDAR CAMBIOS
+                </>
+              )}
+            </button>
+          </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 };
