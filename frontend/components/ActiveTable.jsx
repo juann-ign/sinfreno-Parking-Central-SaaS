@@ -69,103 +69,83 @@ const TimeBadge = ({ entryDate }) => {
 };
 
 const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
-  const { user } = useAuth();
-
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
-      <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0 font-sans">
-        <div className="flex items-center gap-4">
-          <h3 className="font-arvo text-lg font-bold text-slate-800 uppercase tracking-tight">
-            Vehículos en Planta
-          </h3>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl shadow-sm">
-            <Clock size={12} className="text-indigo-500" />
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-              Cortesía:{" "}
-              <span className="text-indigo-600 font-black">
-                {user?.sucursal?.tiempo_cortesia_min ?? 0} min
-              </span>
-            </span>
-          </div>
-        </div>
-        <span className="font-sans bg-white border border-slate-200 text-slate-400 text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-[0.2em] shadow-sm">
+      {/* Header adaptable */}
+      <div className="p-5 lg:p-8 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+        <h3 className="font-arvo text-base lg:text-lg font-bold text-slate-800 uppercase">
+          Vehículos en Planta
+        </h3>
+        <span className="bg-white border border-slate-200 text-slate-400 text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm">
           {vehicles.length} Activos
         </span>
       </div>
 
       <div className="overflow-y-auto flex-1 custom-scroll">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-white sticky top-0 z-20">
+          {/* OCULTAR THEAD EN MOBILE */}
+          <thead className="hidden lg:table-header-group bg-white sticky top-0 z-20">
             <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
               <th className="px-8 py-5">Vehículo</th>
               <th className="px-8 py-5">Ubicación</th>
-              <th className="px-8 py-5">Tiempo Transcurrido</th>
+              <th className="px-8 py-5">Tiempo</th>
               <th className="px-8 py-5 text-right">Acción</th>
             </tr>
           </thead>
-          <motion.tbody layout className="relative">
+
+          <motion.tbody layout className="flex flex-col lg:table-row-group">
             <AnimatePresence mode="popLayout">
-              {!isLoading &&
-                vehicles.map((v) => (
-                  <motion.tr
-                    key={v.id}
-                    layout
-                    // ANIMACIÓN DE ENTRADA CORREGIDA: Usamos opacity y y-offset
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{
-                      opacity: 0,
-                      scale: 0.9,
-                      x: 20,
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 35,
-                      mass: 1,
-                    }}
-                    className="hover:bg-slate-50/80 transition-colors group border-b border-slate-50"
-                  >
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl group-hover:bg-white transition-all shadow-sm">
-                          {v.tipo_vehiculo === "MOTO"
-                            ? "🏍️"
-                            : v.tipo_vehiculo === "CAMIONETA"
-                              ? "🚐"
-                              : "🚗"}
-                        </div>
-                        <div>
-                          <p className="font-black text-slate-800 text-lg leading-none uppercase tracking-tight">
-                            {v.patente}
-                          </p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase mt-1.5 tracking-widest">
-                            {v.tipo_vehiculo}
-                          </p>
-                        </div>
+              {vehicles.map((v) => (
+                <motion.tr
+                  key={v.id}
+                  layout
+                  className="flex flex-col lg:table-row border-b border-slate-100 p-4 lg:p-0 hover:bg-slate-50 transition-colors"
+                >
+                  {/* Vehículo */}
+                  <td className="px-4 lg:px-8 py-2 lg:py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-slate-100 flex items-center justify-center text-xl lg:text-2xl">
+                        {v.tipo_vehiculo === "MOTO"
+                          ? "🏍️"
+                          : v.tipo_vehiculo === "CAMIONETA"
+                            ? "🚐"
+                            : "🚗"}
                       </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className="text-sm font-black text-slate-800 tracking-tight italic uppercase">
-                        Torre {v.torre_id}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <TimeBadge entryDate={v.fecha_entrada} />
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <button
-                        onClick={() => onCheckout(v.patente)}
-                        className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-indigo-100"
-                      >
-                        Cobrar
-                      </button>
-                    </td>
-                  </motion.tr>
-                ))}
+                      <div>
+                        <p className="font-black text-slate-800 text-base lg:text-lg leading-none uppercase">
+                          {v.patente}
+                        </p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-widest lg:hidden">
+                          {v.tipo_vehiculo} • Torre {v.torre_id}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Ubicación - OCULTA EN MOBILE (se integra arriba) */}
+                  <td className="hidden lg:table-cell px-8 py-6">
+                    <span className="text-sm font-black text-slate-600 uppercase italic">
+                      Torre {v.torre_id}
+                    </span>
+                  </td>
+
+                  {/* Tiempo */}
+                  <td className="px-4 lg:px-8 py-2 lg:py-6">
+                    <TimeBadge entryDate={v.fecha_entrada} />
+                  </td>
+
+                  {/* Acción - Botón grande en mobile */}
+                  <td className="px-4 lg:px-8 py-4 lg:py-6 lg:text-right">
+                    <button
+                      onClick={() => onCheckout(v.patente)}
+                      className="w-full lg:w-auto bg-slate-900 text-white px-6 py-3 lg:py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 active:scale-95 transition-all shadow-lg"
+                    >
+                      Cobrar
+                    </button>
+                  </td>
+                </motion.tr>
+              ))}
             </AnimatePresence>
-            {isLoading &&
-              [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)}
           </motion.tbody>
         </table>
       </div>

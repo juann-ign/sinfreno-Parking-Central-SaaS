@@ -301,62 +301,85 @@ const Dashboard = ({ onLogout }) => {
   );
 
   return (
-    <div className="h-screen w-full flex flex-col bg-slate-50 overflow-hidden font-sans">
-      {/* HEADER */}
-      <nav className="h-20 w-full bg-white border-b border-slate-100 px-10 flex justify-between items-center shrink-0 z-50">
-        <div className="flex items-center gap-4">
+    // h-screen en desktop, auto en mobile para permitir scroll
+    <div className="min-h-screen lg:h-screen w-full flex flex-col bg-slate-50 overflow-x-hidden font-sans">
+      {/* HEADER: Adaptable */}
+      {/* HEADER: Siempre horizontal y compacto */}
+      <nav className="h-16 lg:h-20 w-full bg-white border-b border-slate-100 px-4 lg:px-10 flex justify-between items-center shrink-0 z-50">
+        {/* LADO IZQUIERDO: Logo y Título */}
+        <div className="flex items-center gap-2 lg:gap-4 min-w-0">
           <div
-            className="p-2.5 rounded-2xl text-white shadow-lg"
+            className="p-2 lg:p-2.5 rounded-xl lg:rounded-2xl text-white shadow-lg shrink-0"
             style={{ backgroundColor: user?.sucursal?.color || "#4f46e5" }}
           >
-            <Car size={22} strokeWidth={2.5} />
+            <Car size={18} lg:size={22} strokeWidth={2.5} />
           </div>
-          <h1 className="font-arvo text-2xl font-bold text-slate-900 tracking-tight">
+          {/* truncate evita que el nombre largo de la empresa rompa el layout en móviles */}
+          <h1 className="font-arvo text-lg lg:text-2xl font-bold text-slate-900 tracking-tight truncate">
             {user?.sucursal?.nombre || "Sinfreno"}
             <span className="text-indigo-600">.</span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-8">
+        {/* LADO DERECHO: Botones de Acción */}
+        <div className="flex items-center gap-1 sm:gap-3 lg:gap-8 shrink-0">
           {hasPermission("ver_historial") && (
             <button
               onClick={() => navigate("/history")}
-              className="font-sans text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center gap-2 tracking-[0.15em] transition-all"
+              className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-slate-50 lg:hover:bg-transparent transition-all"
             >
-              <HistoryIcon size={16} /> HISTORIAL
+              <div className="p-1.5 lg:p-0 bg-slate-50 lg:bg-transparent rounded-md lg:rounded-none text-slate-400 group-hover:text-indigo-600">
+                <HistoryIcon size={18} lg:size={16} />
+              </div>
+              {/* El texto se oculta en móviles muy pequeños para no amontonar */}
+              <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-slate-400 group-hover:text-indigo-600 tracking-[0.15em] transition-all">
+                HISTORIAL
+              </span>
             </button>
           )}
+
+          {/* Separador sutil solo visible en desktop */}
+          <div className="hidden lg:block h-6 w-px bg-slate-100 mx-2"></div>
+
           <button
             onClick={onLogout}
-            className="font-sans text-xs font-bold text-rose-400 hover:text-rose-500 flex items-center gap-2 tracking-[0.15em] transition-all border-l pl-8 ml-2"
+            className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-rose-50 lg:hover:bg-transparent transition-all"
           >
-            <LogOut size={16} /> SALIR
+            <div className="p-1.5 lg:p-0 bg-rose-50 lg:bg-transparent rounded-md lg:rounded-none text-rose-400 group-hover:text-rose-500">
+              <LogOut size={18} lg:size={16} />
+            </div>
+            <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-rose-400 group-hover:text-rose-500 tracking-[0.15em] transition-all">
+              SALIR
+            </span>
           </button>
         </div>
       </nav>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <div className="flex-1 flex overflow-hidden p-6 gap-6">
-        <section className="flex-[7] flex flex-col gap-6 min-w-0">
+      {/* CONTENIDO PRINCIPAL: Stack en mobile, Row en Desktop */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-4 lg:p-6 gap-6">
+        {/* COLUMNA OPERATIVA (Izquierda) */}
+        <section className="flex-1 lg:flex-[7] flex flex-col gap-6 min-w-0">
           <div className="shrink-0">
             <EntryForm onEntrySuccess={() => fetchData()} />
           </div>
 
           <div className="shrink-0 relative">
             <Search
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400"
-              size={24}
+              className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 text-slate-400"
+              size={20}
+              lg:size={24}
             />
             <input
               type="text"
-              placeholder="BUSCAR PATENTE EN PLANTA..."
-              className="w-full pl-16 pr-8 py-5 rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-sans font-semibold text-xl transition-all"
+              placeholder="BUSCAR PATENTE..."
+              className="w-full pl-12 lg:pl-16 pr-6 lg:pr-8 py-4 lg:py-5 rounded-2xl lg:rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-sans font-semibold text-lg lg:text-xl transition-all"
               value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
             />
           </div>
 
-          <div className="flex-1 min-h-0 bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+          {/* Tabla que se vuelve scrollable solo en desktop */}
+          <div className="lg:flex-1 min-h-[400px] bg-white rounded-[2rem] lg:rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
             <ActiveTable
               vehicles={filteredVehicles}
               onCheckout={handleCheckout}
@@ -365,13 +388,14 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </section>
 
-        <aside className="flex-[3] flex flex-col gap-4 min-w-[340px]">
+        {/* ASIDE (Derecha / Abajo en mobile) */}
+        <aside className="lg:flex-[3] flex flex-col gap-4 min-w-0 lg:min-w-[340px]">
           {hasPermission("ver_stats") && (
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
               <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
                 Caja Hoy
               </p>
-              <h3 className="text-4xl font-black mb-4 tracking-tighter">
+              <h3 className="text-3xl lg:text-4xl font-black mb-4 tracking-tighter">
                 ${stats?.recaudacion_hoy || 0}
               </h3>
               <div className="flex justify-between text-[10px] font-black border-t border-white/10 pt-3">
@@ -383,31 +407,19 @@ const Dashboard = ({ onLogout }) => {
             </div>
           )}
 
-          {hasPermission("ver_ocupacion") && (
-            <div className="flex-1 flex flex-col min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 flex-1">
+            {hasPermission("ver_ocupacion") && (
               <OccupancyPieChart
                 occupied={stats?.autos_adentro || 0}
                 available={stats?.capacidad_disponible || 0}
               />
-            </div>
-          )}
-
-          {hasPermission("ver_stats") && (
-            <div className="h-60 shrink-0">
-              <RevenueChart data={hourlyData} />
-            </div>
-          )}
-
-          {!hasPermission("ver_stats") && (
-            <div className="p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100 text-center">
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
-                Terminal Operativa
-              </p>
-              <p className="text-xs font-bold text-indigo-900">
-                Sede: {user?.sucursal?.nombre}
-              </p>
-            </div>
-          )}
+            )}
+            {hasPermission("ver_stats") && (
+              <div className="h-60 lg:h-auto lg:flex-1">
+                <RevenueChart data={hourlyData} />
+              </div>
+            )}
+          </div>
         </aside>
       </div>
     </div>

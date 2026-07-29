@@ -1367,3 +1367,21 @@
 2026-07-29 00:21:16,837 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
 2026-07-29 00:21:31,666 | INFO | parking_service | INGRESO: Vehículo INF104 en Torre 1 por Usuario ID 1
 2026-07-29 00:21:31,668 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-29 00:58:12,446 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 00:58:12,488 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 00:58:15,307 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 00:58:15,334 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:35:23,784 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 01:35:24,256 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:35:28,582 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 01:36:53,861 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:41:38,532 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 01:41:39,264 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:41:39,271 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 01:41:39,345 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 01:43:06,792 | INFO | parking_service | INGRESO: Vehículo DAD244 en Torre 1 por Usuario ID 1
+2026-07-29 01:43:06,798 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-29 01:43:13,090 | INFO | parking_service | SALIDA: Vehículo DAD241 egresó por Torre 1 por Usuario ID 1
+2026-07-29 01:43:13,114 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-29 01:45:19,332 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 01:45:19,358 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
