@@ -83,42 +83,48 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     if not estadia:
         raise EstadiaNoEncontradaError(patente)
 
-    # 2. Cálculos de Tiempo
+   # 2. Cálculos de tiempo en UTC
     fecha_salida = datetime.now(timezone.utc)
-    entrada_tz = estadia.fecha_entrada.replace(tzinfo=timezone.utc)
-    duracion = fecha_salida - entrada_tz
-    segundos_totales = duracion.total_seconds()
-    minutos_totales = segundos_totales / 60
+    duracion = fecha_salida - estadia.fecha_entrada.replace(tzinfo=timezone.utc)
+    minutos_totales = ceil(duracion.total_seconds() / 60)
 
     # 3. Reglas de Negocio
     sucursal = estadia.torre.sucursal
-    tarifa_base = sucursal.tarifa_hora
-    minutos_gracia = sucursal.tiempo_cortesia_min
+    tipo = estadia.vehiculo.tipo.upper()
 
+    # Selección de tarifa dinámica según tipo de vehículo
+    if tipo == "MOTO":
+        tarifa_hora = sucursal.tarifa_moto
+    elif tipo == "CAMIONETA":
+        tarifa_hora = sucursal.tarifa_camioneta
+    else:
+        tarifa_hora = sucursal.tarifa_auto
+
+    # 4. LÓGICA DEL MOTOR DE COBRO (Empresarial)
     monto_final = 0.0
 
     # Lógica de Cobro por Fracciones
-    if minutos_totales > minutos_gracia:
-        if minutos_totales <= 60:
-            # Primera hora completa
-            monto_final = tarifa_base
-        else:
-            # Primera hora + fracciones de 15 min
-            minutos_adicionales = minutos_totales - 60
-            # ceil(minutos / 15) nos da cuántos bloques de 15 min hay
-            fracciones_15 = ceil(minutos_adicionales / 15)
-            monto_final = tarifa_base + (fracciones_15 * (tarifa_base / 4))
+    if minutos_totales <= sucursal.tiempo_cortesia_min:
+        monto_final = 0.0
+    elif minutos_totales <= 60:
+         # Se cobra la primera hora completa después de la cortesía
+        monto_final = tarifa_hora
+    else:
+        # Primera hora + fracciones
+        minutos_adicionales = minutos_totales - 60
+        # Calculamos cuántos bloques de (ej: 15 min) hay
+        cantidad_fracciones = ceil(minutos_adicionales / sucursal.fraccion_minutos)
+        
+        # Precio por cada fracción (proporcional a la hora)
+        precio_fraccion = (tarifa_hora / 60) * sucursal.fraccion_minutos
+        
+        monto_final = tarifa_hora + (cantidad_fracciones * precio_fraccion)
 
-    # 4. Multiplicador por Tipo de Vehículo
-    multiplicadores = {"AUTO": 1.0, "MOTO": 0.5, "CAMIONETA": 1.5}
-    factor_tipo = multiplicadores.get(estadia.vehiculo.tipo, 1.0)
-    monto_final *= factor_tipo
+    # 5. Aplicar descuento de torre si existe (ej: convenio con hotel)
+    if estadia.torre.porcentaje_descuento > 0:
+        monto_final -= (monto_final * estadia.torre.porcentaje_descuento)
 
-    # 5. Descuento de la Torre
-    porcentaje_dto = estadia.torre.porcentaje_descuento or 0.0
-    monto_final = monto_final * (1 - porcentaje_dto)
-
-    # 6. Actualización en DB
+    # 6. Persistencia
     estadia.fecha_salida = fecha_salida
     estadia.monto = round(monto_final, 2)
     estadia.usuario_salida_id = usuario_egreso_id
@@ -127,6 +133,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     db.commit()
     db.refresh(estadia)
 
+    # 7. Log de auditoría
     registrar_evento(
         db,
         usuario_id=usuario_egreso_id,
@@ -135,6 +142,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
         detalles=f"Vehículo {patente} salió. Cobrado: ${estadia.monto}"
     )
     logger.info(f"SALIDA PRO: {patente} | Duración: {int(minutos_totales)}min | Monto: ${estadia.monto}")
+
     return estadia
 
 def obtener_estadias_activas(db: Session, sucursal_id: int):
