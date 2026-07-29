@@ -5,11 +5,11 @@
   font-family: "Inter", sans-serif;
 }
 
-p {
+p, span{
   font-family: "Inter", sans-serif;
 }
 
-body span {
+body {
   font-family: "Inter", sans-serif;
   background-color: #f8fafc;
   color: #1e293b;

@@ -128,7 +128,7 @@ def obtener_estadias_activas(db: Session, sucursal_id: int):
         .filter(
             db_models.Estadia.estado == "ACTIVO",
             db_models.Torre.sucursal_id == sucursal_id
-    ).all()
+    ).order_by(db_models.Estadia.fecha_entrada.desc()).all()
 
 def obtener_historial_paginado(db: Session, sucursal_id: int, page: int = 1, size: int = 20, patente: str = None):
     query = db.query(db_models.Estadia).join(db_models.Torre).join(db_models.Vehiculo).filter(

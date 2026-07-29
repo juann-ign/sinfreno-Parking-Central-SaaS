@@ -103,25 +103,26 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
               <th className="px-8 py-5 text-right">Acción</th>
             </tr>
           </thead>
-          <tbody className="relative">
-            <AnimatePresence mode="popLayout" initial={true}>
+          <motion.tbody layout className="relative">
+            <AnimatePresence mode="popLayout">
               {!isLoading &&
                 vehicles.map((v) => (
                   <motion.tr
                     key={v.id}
                     layout
                     // ANIMACIÓN DE ENTRADA CORREGIDA: Usamos opacity y y-offset
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
                     exit={{
                       opacity: 0,
-                      scale: 0.95,
-                      transition: { duration: 0.2 },
+                      scale: 0.9,
+                      x: 20,
                     }}
                     transition={{
                       type: "spring",
-                      stiffness: 400,
-                      damping: 30,
+                      stiffness: 500,
+                      damping: 35,
+                      mass: 1,
                     }}
                     className="hover:bg-slate-50/80 transition-colors group border-b border-slate-50"
                   >
@@ -145,7 +146,7 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className="text-sm font-black text-slate-600 tracking-tight italic uppercase">
+                      <span className="text-sm font-black text-slate-800 tracking-tight italic uppercase">
                         Torre {v.torre_id}
                       </span>
                     </td>
@@ -165,7 +166,7 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
             </AnimatePresence>
             {isLoading &&
               [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)}
-          </tbody>
+          </motion.tbody>
         </table>
       </div>
     </div>
