@@ -10,8 +10,12 @@ class EmpresaBase(BaseModel):
 
 class SucursalBase(BaseModel):
     nombre: str
-    tarifa_hora: float = Field(gt=0, description="La tarifa debe ser mayor a cero")
-
+    tarifa_auto: float = Field(gt=0)
+    tarifa_moto: float = Field(gt=0)
+    tarifa_camioneta: float = Field(gt=0)
+    tiempo_cortesia_min: int = Field(default=10, ge=0)
+    fraccion_minutos: int = Field(default=15, ge=1)
+    
 class TorreBase(BaseModel):
     numero: int
     capacidad: int

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from app.core.websocket_manager import manager 
 from sqlalchemy.orm import Session
 from app.api import dependencies
@@ -77,15 +77,28 @@ def update_config(
         db_models.Sucursal.id == current_user.sucursal_id
     ).first()
 
-    # 2. Actualizamos los campos de la sucursal
-    if obj_in.tarifa_hora is not None:
-        sucursal.tarifa_hora = obj_in.tarifa_hora
-    if obj_in.tiempo_cortesia_min is not None:
-        sucursal.tiempo_cortesia_min = obj_in.tiempo_cortesia_min
+    if not sucursal:
+        raise HTTPException(status_code=404, detail="Sucursal no encontrada")
+
+    # 2. Actualizamos los campos de la sucursal (Nuevos campos dinámicos)
     if obj_in.nombre is not None:
         sucursal.nombre = obj_in.nombre
 
-    # 3. White-label: Estos campos viven en la tabla 'Empresa'
+     # Actualizamos las 3 tarifas
+    if obj_in.tarifa_auto is not None:
+        sucursal.tarifa_auto = obj_in.tarifa_auto
+    if obj_in.tarifa_moto is not None:
+        sucursal.tarifa_moto = obj_in.tarifa_moto
+    if obj_in.tarifa_camioneta is not None:
+        sucursal.tarifa_camioneta = obj_in.tarifa_camioneta
+
+    # Reglas de tiempo
+    if obj_in.tiempo_cortesia_min is not None:
+        sucursal.tiempo_cortesia_min = obj_in.tiempo_cortesia_min
+    if obj_in.fraccion_minutos is not None:
+        sucursal.fraccion_minutos = obj_in.fraccion_minutos
+
+     # 3. White-label: Campos en la tabla 'Empresa'
     if obj_in.logo_url is not None or obj_in.color_primario is not None:
         empresa = sucursal.empresa
         if obj_in.logo_url is not None: empresa.logo_url = obj_in.logo_url
