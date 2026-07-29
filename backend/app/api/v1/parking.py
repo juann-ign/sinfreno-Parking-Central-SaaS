@@ -33,7 +33,15 @@ async def salida(patente: str, db: Session = Depends(dependencies.get_db),
 
     # Notificación inmediata por WebSocket
     await manager.broadcast( 
-        {"event": "NUEVA_SALIDA", "patente": patente.upper(), "monto": estadia.monto},
+        {
+            "event": "NUEVA_SALIDA", 
+            "patente": patente.upper(), 
+            "monto": estadia.monto,
+            "tipo": estadia.tipo_vehiculo,
+            "fecha_entrada": estadia.fecha_entrada.isoformat(),
+            "fecha_salida": estadia.fecha_salida.isoformat(),
+            "id": estadia.id,
+        },
         current_user.sucursal_id
     )
 

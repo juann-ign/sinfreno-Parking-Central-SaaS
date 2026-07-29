@@ -5,6 +5,7 @@ import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
 import RevenueChart from "../components/RevenueChart";
 import OccupancyPieChart from "../components/OccupancyPieChart";
+import TicketModal from "../components/TicketModal";
 import {
   Car,
   LogOut,
@@ -32,6 +33,9 @@ const Dashboard = ({ onLogout }) => {
   const socketRef = useRef(null);
   const lastProcessedEventRef = useRef("");
   const navigate = useNavigate();
+
+  const [showTicket, setShowTicket] = useState(false);
+  const [lastTicketData, setLastTicketData] = useState(null);
 
   // Función de carga de datos (Memorizada para evitar re-renders)
   const fetchData = useCallback(
@@ -248,6 +252,11 @@ const Dashboard = ({ onLogout }) => {
                     Cerrar
                   </button>
                   <button
+                    onClick={() => {
+                      setLastTicketData(data); // 'data' viene del mensaje del socket
+                      setShowTicket(true);
+                      toast.dismiss(t.id); // Cerramos el aviso al abrir el ticket
+                    }}
                     style={{
                       fontSize: 9,
                       fontWeight: 800,
@@ -290,7 +299,6 @@ const Dashboard = ({ onLogout }) => {
   const handleCheckout = async (patente) => {
     try {
       await api.post(`/parking/salida?patente=${encodeURIComponent(patente)}`);
-      // No llamamos a fetchData aquí porque el WebSocket lo hará por nosotros
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al procesar salida");
     }
@@ -422,6 +430,11 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </aside>
       </div>
+      <TicketModal
+        isOpen={showTicket}
+        ticketData={lastTicketData}
+        onClose={() => setShowTicket(false)}
+      />
     </div>
   );
 };
