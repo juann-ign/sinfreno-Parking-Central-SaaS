@@ -1422,3 +1422,17 @@
 2026-07-29 16:07:45,289 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
 2026-07-29 16:08:20,685 | INFO | parking_service | SALIDA PRO: DDD241 | Duración: 2388min | Monto: $600000.0
 2026-07-29 16:08:20,691 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-29 16:19:23,843 | INFO | parking_service | INGRESO: Vehículo PSB134 en Torre 1 por Usuario ID 1
+2026-07-29 16:19:23,846 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-07-29 16:19:31,904 | INFO | parking_service | SALIDA PRO: DAD244 | Duración: 876min | Monto: $73750.0
+2026-07-29 16:19:31,906 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-29 16:26:22,262 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 16:26:35,520 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: CONFIG_UPDATED
+2026-07-29 16:26:39,320 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 16:26:39,324 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 16:26:39,337 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 16:26:47,974 | INFO | parking_service | SALIDA PRO: PSB134 | Duración: 7min | Monto: $0.0
+2026-07-29 16:26:47,980 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-07-29 16:29:14,019 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-07-29 16:29:19,348 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-07-29 16:32:09,138 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
