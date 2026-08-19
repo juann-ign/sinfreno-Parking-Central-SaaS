@@ -10,8 +10,12 @@ class EmpresaBase(BaseModel):
 
 class SucursalBase(BaseModel):
     nombre: str
-    tarifa_hora: float = Field(gt=0, description="La tarifa debe ser mayor a cero")
-
+    tarifa_auto: float = Field(gt=0)
+    tarifa_moto: float = Field(gt=0)
+    tarifa_camioneta: float = Field(gt=0)
+    tiempo_cortesia_min: int = Field(default=10, ge=0)
+    fraccion_minutos: int = Field(default=15, ge=1)
+    
 class TorreBase(BaseModel):
     numero: int
     capacidad: int
@@ -130,9 +134,11 @@ class PeakHour(BaseModel):
 # Nuevo esquema para actualizar la sucursal
 class SucursalUpdate(BaseModel):
     nombre: Optional[str] = None
-    tarifa_hora: Optional[float] = Field(None, gt=0)
+    tarifa_auto: Optional[float] = Field(None, gt=0)
+    tarifa_moto: Optional[float] = Field(None, gt=0)
+    tarifa_camioneta: Optional[float] = Field(None, gt=0)
     tiempo_cortesia_min: Optional[int] = Field(None, ge=0)
-    # White-label (vienen de la tabla Empresa a través de la relación)
+    fraccion_minutos: Optional[int] = Field(None, ge=1)
     logo_url: Optional[str] = None
     color_primario: Optional[str] = None
 

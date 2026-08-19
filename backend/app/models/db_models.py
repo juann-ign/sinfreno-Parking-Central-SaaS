@@ -18,10 +18,17 @@ class Sucursal(Base):
     __tablename__ = "sucursales"
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String)
-    tarifa_hora = Column(Float)
+
+    # Tarifas por categoría (Flexibilidad total)
+    tarifa_auto = Column(Float, default=1000.0)
+    tarifa_moto = Column(Float, default=500.0)
+    tarifa_camioneta = Column(Float, default=1500.0)
+
+     # Configuración de fracciones
+    tiempo_cortesia_min = Column(Integer, default=10)
+    fraccion_minutos = Column(Integer, default=15) # Cada cuánto se cobra la fracción (ej: 15 min)
+
     empresa_id = Column(Integer, ForeignKey("empresas.id"))
-    # Tiempo de gracia en minutos (ej: 10 min) antes de cobrar la primera hora
-    tiempo_cortesia_min = Column(Integer, default=5)
     empresa = relationship("Empresa", back_populates="sucursales")
     torres = relationship("Torre", back_populates="sucursal")
     usuarios = relationship("Usuario", back_populates="sucursal")

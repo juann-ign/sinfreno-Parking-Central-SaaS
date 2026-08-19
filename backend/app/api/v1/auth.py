@@ -40,8 +40,11 @@ def login(
                 "sucursal": {
                     "id": user.sucursal_id,
                     "nombre": user.sucursal.nombre,
-                    "tarifa": user.sucursal.tarifa_hora,
-                    "tiempo_cortesia_min": user.sucursal.tiempo_cortesia_min, 
+                    "tarifa_auto": user.sucursal.tarifa_auto,
+                    "tarifa_moto": user.sucursal.tarifa_moto,
+                    "tarifa_camioneta": user.sucursal.tarifa_camioneta,
+                    "tiempo_cortesia_min": user.sucursal.tiempo_cortesia_min,
+                    "fraccion_minutos": user.sucursal.fraccion_minutos,
                     "logo": user.sucursal.empresa.logo_url,
                     "color": user.sucursal.empresa.color_primario
                 }
