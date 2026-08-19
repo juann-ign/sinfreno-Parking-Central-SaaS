@@ -118,3 +118,23 @@ class Auditoria(Base):
 
     class Config:
         from_attributes = True
+
+class CierreCaja(Base):
+    __tablename__ = "cierres_caja"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    
+    fecha_apertura = Column(DateTime, default=datetime.datetime.utcnow)
+    fecha_cierre = Column(DateTime, nullable=True)
+    
+    monto_esperado = Column(Float, default=0.0) # Lo que el sistema dice que hay
+    monto_real = Column(Float, nullable=True)   # Lo que el operario dice que contó
+    diferencia = Column(Float, default=0.0)
+    
+    estado = Column(String, default="ABIERTA") # ABIERTA, CERRADA
+    notas = Column(String, nullable=True)
+
+    usuario = relationship("Usuario")
+    sucursal = relationship("Sucursal")
