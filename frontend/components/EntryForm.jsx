@@ -9,7 +9,7 @@ import {
 import api from "../api/axios";
 import { toast } from "sonner";
 
-const EntryForm = ({ onEntrySuccess }) => {
+const EntryForm = ({ onEntrySuccess, disabled }) => {
   const [patente, setPatente] = useState("");
   const [torreId, setTorreId] = useState("1");
   const [tipo, setTipo] = useState("AUTO");
@@ -53,7 +53,9 @@ const EntryForm = ({ onEntrySuccess }) => {
   };
 
   return (
-    <section className="bg-white rounded-3xl lg:rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+    <section
+      className={`bg-white rounded-3xl lg:rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden, ${disabled ? "opacity-30 pointer-events-none" : ""}`}
+    >
       <div className="p-5 lg:px-8 lg:py-6 border-b border-slate-100 bg-slate-50/50">
         <h2 className="font-arvo text-base lg:text-lg font-bold text-slate-800 uppercase tracking-tight">
           Ingreso de Vehículos

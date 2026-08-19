@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 from app.models import db_models
 from fastapi import HTTPException 
-from datetime import datetime
+from app.core.timezone_utils import get_now_local
 from sqlalchemy import func
+
 
 def obtener_caja_actual(db: Session, sucursal_id: int):
     return db.query(db_models.CierreCaja).filter(
@@ -38,7 +39,7 @@ def cerrar_caja(db: Session, sucursal_id: int, monto_real: float, notas: str):
         db_models.Estadia.fecha_salida >= caja.fecha_apertura
     ).scalar() or 0.0
 
-    caja.fecha_cierre = datetime.datetime.utcnow()
+    caja.fecha_cierre = get_now_local()
     caja.monto_esperado = recaudado
     caja.monto_real = monto_real
     caja.diferencia = monto_real - recaudado

@@ -1572,3 +1572,16 @@
 2026-07-29 21:30:44,096 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
 2026-07-29 21:30:47,612 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
 2026-07-29 21:46:20,223 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-19 03:28:28,260 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-19 03:28:28,275 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-08-19 03:28:28,318 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-19 03:28:37,598 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-08-19 03:28:37,601 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-19 03:28:37,616 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 2
+2026-08-19 03:29:53,430 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-19 03:31:59,596 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-19 03:32:00,237 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-19 03:32:21,518 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-19 03:32:21,586 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-19 03:32:33,232 | INFO | parking_service | SALIDA PRO: INF104 | Duración: 30432min | Monto: $2540000.0
+2026-08-19 03:32:33,247 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA

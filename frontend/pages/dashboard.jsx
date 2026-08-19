@@ -6,6 +6,7 @@ import EntryForm from "../components/EntryForm";
 import RevenueChart from "../components/RevenueChart";
 import OccupancyPieChart from "../components/OccupancyPieChart";
 import TicketModal from "../components/TicketModal";
+import CashModal from "../components/cashModal";
 import {
   Car,
   LogOut,
@@ -13,6 +14,8 @@ import {
   Search,
   DollarSign,
   Settings as SettingsIcon,
+  Wallet,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +40,10 @@ const Dashboard = ({ onLogout }) => {
 
   const [showTicket, setShowTicket] = useState(false);
   const [lastTicketData, setLastTicketData] = useState(null);
+
+  const [cashSession, setCashSession] = useState(null); // Guardará la caja abierta
+  const [showCashModal, setShowCashModal] = useState(false);
+  const [cashMode, setCashMode] = useState("open");
 
   // Función de carga de datos (Memorizada para evitar re-renders)
   const fetchData = useCallback(
@@ -63,10 +70,21 @@ const Dashboard = ({ onLogout }) => {
     [hasPermission],
   );
 
+  // Función para verificar si hay caja abierta
+  const checkCashStatus = useCallback(async () => {
+    try {
+      const res = await api.get("/cash/status");
+      setCashSession(res.data);
+    } catch (error) {
+      setCashSession(null); // 404 significa que no hay caja abierta
+    }
+  }, []);
+
   // 1. Carga inicial de datos
   useEffect(() => {
     fetchData(true);
-  }, [fetchData]);
+    checkCashStatus();
+  }, [fetchData, checkCashStatus]);
 
   // 2. Lógica de WebSocket
   useEffect(() => {
@@ -305,6 +323,26 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
+  const handleCashAction = async (data) => {
+    try {
+      if (cashMode === "open") {
+        const res = await api.post("/cash/abrir");
+        setCashSession(res.data);
+        toast.success("Caja abierta. ¡Buen turno!");
+      } else {
+        await api.post("/cash/cerrar", {
+          monto_real: data.amount,
+          notas: data.notes,
+        });
+        setCashSession(null);
+        toast.success("Caja cerrada correctamente.");
+      }
+      setShowCashModal(false);
+    } catch (err) {
+      toast.error("Error en operación de caja");
+    }
+  };
+
   const filteredVehicles = activeVehicles.filter((v) =>
     v.patente.toLowerCase().includes(filterTerm.toLowerCase()),
   );
@@ -332,6 +370,24 @@ const Dashboard = ({ onLogout }) => {
 
         {/* LADO DERECHO: Botones de Acción */}
         <div className="flex items-center gap-1 sm:gap-3 lg:gap-8 shrink-0">
+          {/* BOTÓN CAJA */}
+          <button
+            onClick={() => {
+              setCashMode(cashSession ? "close" : "open");
+              setShowCashModal(true);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all ${
+              cashSession
+                ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+                : "bg-rose-50 border-rose-100 text-rose-600 animate-pulse"
+            }`}
+          >
+            <Wallet size={16} />
+            <span className="text-[10px] font-black uppercase tracking-widest">
+              {cashSession ? "Caja Abierta" : "Caja Cerrada"}
+            </span>
+          </button>
+
           {/* BOTÓN HISTORIAL */}
           {hasPermission("ver_historial") && (
             <button
@@ -384,8 +440,38 @@ const Dashboard = ({ onLogout }) => {
       <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-4 lg:p-6 gap-6">
         {/* COLUMNA OPERATIVA (Izquierda) */}
         <section className="flex-1 lg:flex-[7] flex flex-col gap-6 min-w-0">
+          {/* Overlay de bloqueo si no hay caja */}
+          {!cashSession && (
+            <div className="absolute inset-0 z-40 bg-slate-50/60 backdrop-blur-[2px] flex items-center justify-center rounded-[2rem]">
+              <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center max-w-sm">
+                <AlertTriangle
+                  className="mx-auto text-rose-500 mb-4"
+                  size={48}
+                />
+                <h3 className="font-black text-slate-800 uppercase mb-2">
+                  Operación Bloqueada
+                </h3>
+                <p className="text-sm text-slate-500 font-bold mb-6">
+                  Debes abrir la caja antes de registrar ingresos o salidas.
+                </p>
+                <button
+                  onClick={() => {
+                    setCashMode("open");
+                    setShowCashModal(true);
+                  }}
+                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest"
+                >
+                  Abrir Caja Ahora
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="shrink-0">
-            <EntryForm onEntrySuccess={() => fetchData()} />
+            <EntryForm
+              onEntrySuccess={() => fetchData()}
+              disabled={!cashSession}
+            />
           </div>
 
           <div className="shrink-0 relative">
@@ -447,10 +533,19 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </aside>
       </div>
+
       <TicketModal
         isOpen={showTicket}
         ticketData={lastTicketData}
         onClose={() => setShowTicket(false)}
+      />
+
+      <CashModal
+        isOpen={showCashModal}
+        mode={cashMode}
+        expectedAmount={stats?.recaudacion_hoy}
+        onConfirm={handleCashAction}
+        onClose={() => setShowCashModal(false)}
       />
     </div>
   );
