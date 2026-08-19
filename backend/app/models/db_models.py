@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-import datetime
+from app.core.timezone_utils import get_now_local
+from datetime import datetime
 
 class Empresa(Base):
     __tablename__ = "empresas"
@@ -77,7 +78,7 @@ class Estadia(Base):
     usuario_ingreso_id = Column(Integer, ForeignKey("usuarios.id")) 
     usuario_salida_id = Column(Integer, ForeignKey("usuarios.id"))
     
-    fecha_entrada = Column(DateTime, default=datetime.datetime.utcnow)
+    fecha_entrada = Column(DateTime, default=get_now_local())
     fecha_salida = Column(DateTime, nullable=True)
     monto = Column(Float, default=0.0)
     estado = Column(String, default="ACTIVO") # ACTIVO o FINALIZADO
@@ -105,7 +106,7 @@ class Auditoria(Base):
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     accion = Column(String)
     detalles = Column(String)
-    fecha = Column(DateTime, default=datetime.datetime.utcnow)
+    fecha = Column(DateTime, default=get_now_local)
 
     usuario = relationship("Usuario")
     sucursal = relationship("Sucursal")
@@ -126,7 +127,7 @@ class CierreCaja(Base):
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     
-    fecha_apertura = Column(DateTime, default=datetime.datetime.utcnow)
+    fecha_apertura = Column(DateTime, default=get_now_local())
     fecha_cierre = Column(DateTime, nullable=True)
     
     monto_esperado = Column(Float, default=0.0) # Lo que el sistema dice que hay

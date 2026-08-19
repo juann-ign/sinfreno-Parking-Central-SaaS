@@ -57,8 +57,6 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
         estado="ACTIVO"
     )
     db.add(nueva_estadia)
-    db.commit()
-    db.refresh(nueva_estadia)
 
     registrar_evento(
         db, 
@@ -70,6 +68,8 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     
     logger.info(f"INGRESO: Vehículo {patente_up} en Torre {torre_id} por Usuario ID {usuario_ingreso_id}")
 
+    db.commit()
+    db.refresh(nueva_estadia)
     return nueva_estadia
 
 
