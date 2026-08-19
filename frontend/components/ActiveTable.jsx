@@ -72,7 +72,7 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
       {/* Header adaptable */}
-      <div className="p-5 lg:p-8 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+      <div className="p-5 lg:px-8 lg:py-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
         <h3 className="font-arvo text-base lg:text-lg font-bold text-slate-800 uppercase">
           Vehículos en Planta
         </h3>

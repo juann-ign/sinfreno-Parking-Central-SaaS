@@ -152,3 +152,22 @@ class AuditoriaOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CierreCajaCreate(BaseModel):
+    notas: Optional[str] = None
+
+class CierreCajaFinalizar(BaseModel):
+    monto_real: float
+    notas: Optional[str] = None
+
+class CierreCajaOut(BaseModel):
+    id: int
+    fecha_apertura: datetime
+    fecha_cierre: Optional[datetime] = None
+    monto_esperado: float
+    monto_real: Optional[float]
+    estado: str
+    usuario_id: int
+    
+    class Config:
+        from_attributes = True
