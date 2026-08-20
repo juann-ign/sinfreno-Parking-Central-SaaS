@@ -37,3 +37,13 @@ def cerrar(
         data.monto_real, 
         data.notas
     )
+
+@router.get("/history", response_model=list[schemas.CierreCajaOut])
+def get_cash_history(
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.get_current_user)
+):
+    """Retorna todos los cierres de caja de la sucursal actual."""
+    return db.query(db_models.CierreCaja).filter(
+        db_models.CierreCaja.sucursal_id == current_user.sucursal_id
+    ).order_by(db_models.CierreCaja.fecha_apertura.desc()).all()
