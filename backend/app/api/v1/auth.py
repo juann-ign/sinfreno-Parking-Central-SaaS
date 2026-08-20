@@ -50,3 +50,20 @@ def login(
                 }
             }
         }
+
+@router.post("/discovery")
+def discover_tenant(email: str, db: Session = Depends(dependencies.get_db)):
+    user = db.query(db_models.Usuario).filter(db_models.Usuario.email == email).first()
+    if not user:
+        # Retornamos branding genérico de Sinfreno si el usuario no existe
+        return {
+            "logo": None, 
+            "color": "#4f46e5", 
+            "empresa": "Sinfreno"
+        }
+    
+    return {
+        "logo": user.sucursal.empresa.logo_url,
+        "color": user.sucursal.empresa.color_primario,
+        "empresa": user.sucursal.empresa.nombre
+    }
