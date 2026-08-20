@@ -1,0 +1,75 @@
+.btn-3d {
+  all: unset;
+  cursor: pointer;
+  position: relative;
+  border-radius: 1rem;
+  background-color: rgba(79, 70, 229, 0.2); /* Color base índigo suave */
+  font-size: 14px; /* Ajustado para tu UI */
+}
+
+.btn-3d::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: calc(100% + 0.4em);
+  height: calc(100% + 0.4em);
+  top: -0.2em;
+  left: -0.2em;
+  border-radius: inherit;
+  background: linear-gradient(-135deg, rgba(79, 70, 229, 0.3), transparent);
+  filter: blur(2px);
+  opacity: 0.3;
+}
+
+.button-outer {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  transition: box-shadow 300ms ease;
+  box-shadow:
+    0 0.1em 0.1em -0.01em rgba(0, 0, 0, 0.5),
+    0.15em 0.3em 0.15em -0.01em rgba(0, 0, 0, 0.2);
+}
+
+.btn-3d:hover .button-outer {
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+}
+
+.button-inner {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 0.8rem 1.5rem;
+  /* Degradado de ÍNDIGO SINFRENO */
+  background-image: linear-gradient(135deg, #6366f1, #4338ca);
+  transition: all 250ms ease;
+  clip-path: inset(0 0 0 0 round 1rem);
+  box-shadow:
+    0 0.05em 0.2em inset rgba(255, 255, 255, 0.4),
+    0.025em 0.05em 0.1em 0 inset rgba(255, 255, 255, 0.5),
+    -0.075em -0.25em 0.25em 0.1em inset rgba(0, 0, 0, 0.3);
+}
+
+.btn-3d:hover .button-inner {
+  clip-path: inset(2px 2px 2px 2px round 1rem);
+  background-image: linear-gradient(135deg, #4f46e5, #3730a3);
+}
+
+.btn-3d span {
+  position: relative;
+  z-index: 4;
+  font-weight: 900;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  transition: transform 250ms ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-3d:hover span {
+  transform: scale(0.95);
+}
+.btn-3d:active .button-inner {
+  transform: scale(0.96);
+}

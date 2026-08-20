@@ -26,10 +26,10 @@ async def ingreso(
     return nueva_estadia
     
 @router.post("/salida", response_model=schemas.EstadiaOut)
-async def salida(patente: str, db: Session = Depends(dependencies.get_db),
+async def salida(patente: str, metodo_pago: str = "EFECTIVO", db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.get_current_user)
     ):
-    estadia = parking_service.registrar_salida_vehiculo(db, patente, current_user.id)
+    estadia = parking_service.registrar_salida_vehiculo(db, patente, current_user.id, metodo_pago)
 
     # Notificación inmediata por WebSocket
     await manager.broadcast( 
@@ -37,6 +37,7 @@ async def salida(patente: str, db: Session = Depends(dependencies.get_db),
             "event": "NUEVA_SALIDA", 
             "patente": patente.upper(), 
             "monto": estadia.monto,
+            "metodo_pago": metodo_pago,
             "tipo": estadia.tipo_vehiculo,
             "fecha_entrada": estadia.fecha_entrada.isoformat(),
             "fecha_salida": estadia.fecha_salida.isoformat(),

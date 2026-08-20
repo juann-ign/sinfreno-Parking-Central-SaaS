@@ -81,6 +81,7 @@ class Estadia(Base):
     fecha_entrada = Column(DateTime, default=get_now_local())
     fecha_salida = Column(DateTime, nullable=True)
     monto = Column(Float, default=0.0)
+    metodo_pago = Column(String, nullable=True) # "EFECTIVO", "DEBITO", "QR"
     estado = Column(String, default="ACTIVO") # ACTIVO o FINALIZADO
 
     # Relationships inversos (necesarios para acceder a estadia.vehiculo.patente)

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import api from "../api/axios";
 import { toast } from "sonner";
+import "../src/Button3D.css";
 
 const EntryForm = ({ onEntrySuccess, disabled }) => {
   const [patente, setPatente] = useState("");
@@ -139,17 +140,17 @@ const EntryForm = ({ onEntrySuccess, disabled }) => {
           <button
             type="submit"
             disabled={loading || status === "invalid" || status === "empty"}
-            /* MODIFICACIÓN: h-[48px] en desktop para alinear con el resto */
-            className={`w-full h-[54px] lg:h-[48px] rounded-xl lg:rounded-2xl font-black text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 ${
+            className={`btn-3d ${
               loading || status === "invalid" || status === "empty"
-                ? "bg-slate-200 shadow-none cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700 active:scale-95"
+                ? "opacity-50 grayscale cursor-not-allowed"
+                : ""
             }`}
           >
-            <span className="text-xs uppercase tracking-widest">
-              {loading ? "..." : "INGRESAR"}
-            </span>
-            <ChevronRight size={16} />
+            <div className="button-outer">
+              <div className="button-inner">
+                <span>{loading ? "..." : "Ingresar"}</span>
+              </div>
+            </div>
           </button>
         </form>
       </div>
