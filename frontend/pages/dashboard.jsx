@@ -73,7 +73,7 @@ const Dashboard = ({ onLogout }) => {
 
   // Función para verificar si hay caja abierta
   const checkCashStatus = useCallback(async () => {
-    setCashLoading(true);
+    setIsCashLoading(true);
     try {
       const res = await api.get("/cash/status");
       setCashSession(res.data);
@@ -319,9 +319,11 @@ const Dashboard = ({ onLogout }) => {
     };
   }, [user?.sucursal?.id, fetchData]);
 
-  const handleCheckout = async (patente) => {
+  const handleCheckout = async (patente, metodo = "EFECTIVO") => {
     try {
-      await api.post(`/parking/salida?patente=${encodeURIComponent(patente)}`);
+      await api.post(
+        `/parking/salida?patente=${encodeURIComponent(patente)}&metodo_pago=${metodo}`,
+      );
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al procesar salida");
     }
@@ -523,17 +525,19 @@ const Dashboard = ({ onLogout }) => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 flex-1">
-            {hasPermission("ver_ocupacion") && (
-              <OccupancyPieChart
-                occupied={stats?.autos_adentro || 0}
-                available={stats?.capacidad_disponible || 0}
-              />
-            )}
-            {hasPermission("ver_stats") && (
-              <div className="h-60 lg:h-auto lg:flex-1">
-                <RevenueChart data={hourlyData} />
-              </div>
-            )}
+            <div className="min-h-[350px] h-full">
+              {hasPermission("ver_ocupacion") && (
+                <OccupancyPieChart
+                  occupied={stats?.autos_adentro || 0}
+                  available={stats?.capacidad_disponible || 0}
+                />
+              )}
+              {hasPermission("ver_stats") && (
+                <div className="h-60 lg:h-auto lg:flex-1">
+                  <RevenueChart data={hourlyData} />
+                </div>
+              )}
+            </div>
           </div>
         </aside>
       </div>

@@ -78,6 +78,7 @@ class EstadiaOut(BaseModel):
     fecha_entrada: datetime
     fecha_salida: Optional[datetime] = None
     monto: float
+    metodo_pago: Optional[str] = None   
     estado: str
     
     class Config:

@@ -73,9 +73,10 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     return nueva_estadia
 
 
-def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int):
-    # 1. Buscar estadía activa
-    estadia = db.query(db_models.Estadia).join(db_models.Vehiculo).filter(
+def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int, metodo_pago: str = "EFECTIVO"):
+    # 1. Buscar estadía activa CON BLOQUEO (SELECT FOR UPDATE)
+    # Esto evita que si dos operarios clickean al mismo tiempo, se procese dos veces.
+    estadia = db.query(db_models.Estadia).with_for_update().join(db_models.Vehiculo).filter(
         db_models.Vehiculo.patente == patente.upper().strip(),
         db_models.Estadia.estado == "ACTIVO",
     ).first()
@@ -127,6 +128,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int)
     # 6. Persistencia
     estadia.fecha_salida = fecha_salida
     estadia.monto = round(monto_final, 2)
+    estadia.metodo_pago = metodo_pago
     estadia.usuario_salida_id = usuario_egreso_id
     estadia.estado = "FINALIZADO"
 

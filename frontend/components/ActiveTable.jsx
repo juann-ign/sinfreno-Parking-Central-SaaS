@@ -69,6 +69,13 @@ const TimeBadge = ({ entryDate }) => {
 };
 
 const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
+  const [isProcessing, setIsProcessing] = useState(null); // Guarda la patente que se está cobrando
+
+  const handleQuickCheckout = (patente, metodo) => {
+    onCheckout(patente, metodo);
+    setIsProcessing(null);
+  };
+
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
       {/* Header adaptable */}
@@ -136,12 +143,39 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
 
                   {/* Acción - Botón grande en mobile */}
                   <td className="px-4 lg:px-8 py-4 lg:py-6 lg:text-right">
-                    <button
-                      onClick={() => onCheckout(v.patente)}
-                      className="w-full lg:w-auto bg-slate-900 text-white px-6 py-3 lg:py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 active:scale-95 transition-all shadow-lg"
-                    >
-                      Cobrar
-                    </button>
+                    {isProcessing === v.patente ? (
+                      <div className="flex gap-2 animate-in fade-in zoom-in duration-300">
+                        <button
+                          onClick={() =>
+                            handleQuickCheckout(v.patente, "EFECTIVO")
+                          }
+                          className="bg-emerald-600 text-white p-2 rounded-lg text-[9px] font-black uppercase"
+                        >
+                          💵 Efectivo
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleQuickCheckout(v.patente, "DEBITO")
+                          }
+                          className="bg-blue-600 text-white p-2 rounded-lg text-[9px] font-black uppercase"
+                        >
+                          💳 Tarjeta
+                        </button>
+                        <button
+                          onClick={() => setIsProcessing(null)}
+                          className="bg-slate-200 text-slate-600 p-2 rounded-lg"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsProcessing(v.patente)}
+                        className="w-full lg:w-auto bg-slate-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all"
+                      >
+                        Cobrar
+                      </button>
+                    )}
                   </td>
                 </motion.tr>
               ))}
