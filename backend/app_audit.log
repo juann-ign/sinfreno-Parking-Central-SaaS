@@ -1877,3 +1877,19 @@
 2026-08-20 16:44:34,426 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
 2026-08-20 16:44:42,476 | INFO | parking_service | INGRESO: Vehículo DDA211 en Torre 1 por Usuario ID 1
 2026-08-20 16:44:42,486 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-20 17:41:05,606 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-20 17:41:19,717 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-20 17:42:21,434 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-20 17:42:22,397 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-20 17:43:06,918 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-20 17:44:30,696 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-20 17:44:30,790 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-20 17:44:30,851 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-20 17:44:37,098 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-20 17:44:59,826 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-20 17:45:05,185 | INFO | parking_service | INGRESO: Vehículo DADR34 en Torre 1 por Usuario ID 1
+2026-08-20 17:45:05,216 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-20 17:45:08,646 | INFO | parking_service | SALIDA PRO: DAD311 | Duración: 61min | Monto: $1250.0
+2026-08-20 17:45:08,649 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-08-20 17:45:17,397 | INFO | parking_service | SALIDA PRO: DDA211 | Duración: 61min | Monto: $1250.0
+2026-08-20 17:45:17,402 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA

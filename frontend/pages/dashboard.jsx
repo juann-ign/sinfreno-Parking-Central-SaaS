@@ -16,6 +16,7 @@ import {
   Settings as SettingsIcon,
   Wallet,
   AlertTriangle,
+  FileStack,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -420,6 +421,14 @@ const Dashboard = ({ onLogout }) => {
             <span className="text-[10px] font-black uppercase tracking-widest">
               {cashSession ? "Caja Abierta" : "Caja Cerrada"}
             </span>
+          </button>
+
+          <button
+            onClick={() => navigate("/cash-history")}
+            className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all shadow-sm"
+            title="Historial de Cajas"
+          >
+            <FileStack size={18} />
           </button>
 
           {/* BOTÓN HISTORIAL */}
