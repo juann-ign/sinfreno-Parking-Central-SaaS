@@ -223,6 +223,34 @@ const Dashboard = ({ onLogout }) => {
                         CAMIONETA: "🚐 Camioneta",
                       }[data.tipo] ?? "🚗 Auto"}
                     </div>
+
+                    {/* Método de Pago */}
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        marginTop: 4,
+                        padding: "2px 8px",
+                        background: "#f1f5f9",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <span style={{ fontSize: 10 }}>
+                        {data.metodo_pago === "EFECTIVO" ? "💵" : "💳"}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 800,
+                          color: "#475569",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {data.metodo_pago}
+                      </span>
+                    </div>
+
                     <div
                       style={{
                         display: "flex",

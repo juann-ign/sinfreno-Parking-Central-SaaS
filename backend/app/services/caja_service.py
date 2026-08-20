@@ -32,6 +32,20 @@ def cerrar_caja(db: Session, sucursal_id: int, monto_real: float, notas: str):
     if not caja:
         raise HTTPException(status_code=404, detail="No hay una caja abierta para cerrar")
 
+    # Desglose por método de pago
+    resumen = db.query(
+        db_models.Estadia.metodo_pago,
+        func.sum(db_models.Estadia.monto).label('total')
+    ).join(db_models.Torre).filter(
+        db_models.Torre.sucursal_id == sucursal_id,
+        db_models.Estadia.estado == "FINALIZADO",
+        db_models.Estadia.fecha_salida >= caja.fecha_apertura
+    ).group_by(db_models.Estadia.metodo_pago).all()
+
+    # Convertimos a dict para guardarlo en las notas o en un nuevo campo JSON
+    detalle_pagos = {str(r.metodo_pago): r.total for r in resumen}
+    caja.notas = f"{notas} | Desglose: {detalle_pagos}"
+
     # Calculamos todo lo recaudado entre apertura y ahora
     recaudado = db.query(func.sum(db_models.Estadia.monto)).join(db_models.Torre).filter(
         db_models.Torre.sucursal_id == sucursal_id,

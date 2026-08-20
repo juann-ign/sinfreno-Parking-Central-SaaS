@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { TableRowSkeleton } from "./Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 import { differenceInMinutes } from "date-fns";
 import { useAuth } from "../src/context/AuthContext";
-import { Clock } from "lucide-react";
+import { X } from "lucide-react";
 
 const TimeBadge = ({ entryDate }) => {
   const { user } = useAuth();
@@ -142,43 +142,76 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
                   </td>
 
                   {/* Acción - Botón grande en mobile */}
-                  <td className="px-4 lg:px-8 py-4 lg:py-6 lg:text-right">
-                    {isProcessing === v.patente ? (
-                      <div className="flex gap-2 animate-in fade-in zoom-in duration-300">
-                        <button
-                          onClick={() =>
-                            handleQuickCheckout(v.patente, "EFECTIVO")
-                          }
-                          className="bg-emerald-600 text-white p-2 rounded-lg text-[9px] font-black uppercase"
-                        >
-                          💵 Efectivo
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleQuickCheckout(v.patente, "DEBITO")
-                          }
-                          className="bg-blue-600 text-white p-2 rounded-lg text-[9px] font-black uppercase"
-                        >
-                          💳 Tarjeta
-                        </button>
-                        <button
-                          onClick={() => setIsProcessing(null)}
-                          className="bg-slate-200 text-slate-600 p-2 rounded-lg"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setIsProcessing(v.patente)}
-                        className="w-full lg:w-auto bg-slate-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all"
-                      >
-                        Cobrar
-                      </button>
-                    )}
+                  <td className="px-4 lg:px-8 py-4 lg:py-6 text-right">
+                    <div className="relative flex justify-end items-center h-10">
+                      <AnimatePresence mode="wait">
+                        {isProcessing === v.patente ? (
+                          <motion.div
+                            key="options"
+                            initial={{ opacity: 0, scale: 0.8, x: 10 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, x: 10 }}
+                            className="flex gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner"
+                          >
+                            <motion.button
+                              whileHover={{
+                                scale: 1.05,
+                                backgroundColor: "#ecfdf5",
+                              }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() =>
+                                handleQuickCheckout(v.patente, "EFECTIVO")
+                              }
+                              className="px-3 py-1.5 bg-white text-emerald-600 rounded-lg text-[9px] font-black uppercase shadow-sm border border-emerald-100 transition-colors"
+                            >
+                              💵 Efvo
+                            </motion.button>
+
+                            <motion.button
+                              whileHover={{
+                                scale: 1.05,
+                                backgroundColor: "#eff6ff",
+                              }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() =>
+                                handleQuickCheckout(v.patente, "DEBITO")
+                              }
+                              className="px-3 py-1.5 bg-white text-blue-600 rounded-lg text-[9px] font-black uppercase shadow-sm border border-blue-100 transition-colors"
+                            >
+                              💳 Card
+                            </motion.button>
+
+                            <button
+                              onClick={() => setIsProcessing(null)}
+                              className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          </motion.div>
+                        ) : (
+                          <motion.button
+                            key="button"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsProcessing(v.patente)}
+                            className="w-full lg:w-auto bg-slate-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all"
+                          >
+                            Cobrar
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </td>
                 </motion.tr>
               ))}
+              {isLoading && (
+                <>
+                  <TableRowSkeleton />
+                  <TableRowSkeleton />
+                  <TableRowSkeleton />
+                </>
+              )}
             </AnimatePresence>
           </motion.tbody>
         </table>
