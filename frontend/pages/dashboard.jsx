@@ -41,6 +41,7 @@ const Dashboard = ({ onLogout }) => {
   const [showTicket, setShowTicket] = useState(false);
   const [lastTicketData, setLastTicketData] = useState(null);
 
+  const [isCashLoading, setIsCashLoading] = useState(true);
   const [cashSession, setCashSession] = useState(null); // Guardará la caja abierta
   const [showCashModal, setShowCashModal] = useState(false);
   const [cashMode, setCashMode] = useState("open");
@@ -72,11 +73,14 @@ const Dashboard = ({ onLogout }) => {
 
   // Función para verificar si hay caja abierta
   const checkCashStatus = useCallback(async () => {
+    setCashLoading(true);
     try {
       const res = await api.get("/cash/status");
       setCashSession(res.data);
     } catch (error) {
       setCashSession(null); // 404 significa que no hay caja abierta
+    } finally {
+      setIsCashLoading(false);
     }
   }, []);
 
@@ -441,7 +445,7 @@ const Dashboard = ({ onLogout }) => {
         {/* COLUMNA OPERATIVA (Izquierda) */}
         <section className="flex-1 lg:flex-[7] flex flex-col gap-6 min-w-0">
           {/* Overlay de bloqueo si no hay caja */}
-          {!cashSession && (
+          {!isCashLoading && !cashSession && (
             <div className="absolute inset-0 z-40 bg-slate-50/60 backdrop-blur-[2px] flex items-center justify-center rounded-[2rem]">
               <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center max-w-sm">
                 <AlertTriangle

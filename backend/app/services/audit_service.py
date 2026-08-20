@@ -9,4 +9,3 @@ def registrar_evento(db: Session, usuario_id: int, sucursal_id: int, accion: str
         detalles=detalles
     )
     db.add(nuevo_log)
-    db.commit()

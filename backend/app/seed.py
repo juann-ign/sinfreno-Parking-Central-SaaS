@@ -3,113 +3,90 @@ from app.core.database import SessionLocal
 from app.models import db_models
 from app.core.security import get_password_hash
 
+def get_or_create_empresa(db, nombre, cuit):
+    empresa = db.query(db_models.Empresa).filter_by(cuit=cuit).first()
+    if not empresa:
+        empresa = db_models.Empresa(nombre=nombre, cuit=cuit)
+        db.add(empresa)
+        db.commit()
+        db.refresh(empresa)
+    return empresa
+
+def get_or_create_sucursal(db, nombre, empresa_id):
+    sucursal = db.query(db_models.Sucursal).filter_by(nombre=nombre, empresa_id=empresa_id).first()
+    if not sucursal:
+        sucursal = db_models.Sucursal(
+            nombre=nombre, 
+            empresa_id=empresa_id,
+            tarifa_auto=1000.0,
+            tarifa_moto=500.0,
+            tarifa_camioneta=1500.0,
+            tiempo_cortesia_min=10,
+            fraccion_minutos=15
+        )
+        db.add(sucursal)
+        db.commit()
+        db.refresh(sucursal)
+    return sucursal
+
 def seed():
     db = SessionLocal()
     try:
-        # 1. Buscar o Crear Empresa (Tenant Principal)
-        empresa = db.query(db_models.Empresa).filter_by(nombre="Sinfreno Corp").first()
-        if not empresa:
-            print("Creando empresa inicial...")
-            empresa = db_models.Empresa(nombre="Sinfreno Corp", cuit="30-11111111-9")
-            db.add(empresa)
-            db.commit()
-            db.refresh(empresa)
+        print("--- Iniciando Sincronización de Datos ---")
 
-        # --- EMPRESA 2 PARA TEST DE SEGURIDAD ---
-        empresa2 = db_models.Empresa(nombre="Parking El Vecino", cuit="30-99999998-9")
-        db.add(empresa2)
-        db.commit()
-        db.refresh(empresa2)
+        # 1. Empresas
+        e1 = get_or_create_empresa(db, "Sinfreno Corp", "30-11111111-9")
+        e2 = get_or_create_empresa(db, "Parking El Vecino", "30-99999998-9")
 
-        # 2. Buscar o Crear Sucursal (Configuración de Negocio)
-        sucursal = db.query(db_models.Sucursal).filter_by(nombre="Sede Central").first()
-        if not sucursal:
-            print("Creando sucursal inicial...")
-            sucursal = db_models.Sucursal(
-                nombre="Sede Central", 
-                tarifa_hora=1500.0, 
-                tiempo_cortesia_min=10, # NUEVO: 10 minutos de gracia
-                empresa_id=empresa.id
-            )
-            db.add(sucursal)
-            db.commit()
-            db.refresh(sucursal)
+        s1 = get_or_create_sucursal(db, "Sede Central", e1.id)
+        s2 = get_or_create_sucursal(db, "Sede Norte", e2.id)
 
-        sucursal2 = db_models.Sucursal(nombre="Sede Norte", tarifa_hora=2000.0, tiempo_cortesia_min=10, empresa_id=empresa2.id)
-        db.add(sucursal2)
-        db.commit()
-        db.refresh(sucursal2)
+        # 3. Torres
+        if not db.query(db_models.Torre).filter_by(sucursal_id=s1.id).first():
+            db.add(db_models.Torre(numero=1, capacidad=50, sucursal_id=s1.id))
+        if not db.query(db_models.Torre).filter_by(sucursal_id=s2.id).first():
+            db.add(db_models.Torre(numero=2, capacidad=50, sucursal_id=s2.id))
 
-        # 3. Buscar o Crear Torre
-        torre = db.query(db_models.Torre).filter_by(numero=1, sucursal_id=sucursal.id).first()
-        if not torre:
-            print("Creando Torre 1...")
-            torre = db_models.Torre(numero=1, capacidad=50, sucursal_id=sucursal.id)
-            db.add(torre)
+        # 4. Usuarios (Admin y Operador)
+        users_to_create = [
+            {
+                "email": "admin@sinfreno.com",
+                "rol": "ADMIN",
+                "permisos": "ingreso,salida,ver_stats,ver_historial,config_sucursal",
+                "suc_id": s1.id,
+                "pass": "admin123"
+            },
+            {
+                "email": "vecino@test.com",
+                "rol": "ADMIN",
+                "permisos": "ingreso,salida,ver_stats,ver_historial,config_sucursal",
+                "suc_id": s2.id,
+                "pass": "admin123"
+            },
+            {
+                "email": "empleado@sinfreno.com",
+                "rol": "OPERADOR",
+                "permisos": "ingreso,salida,ver_ocupacion",
+                "suc_id": s1.id,
+                "pass": "ope123"
+            }
+        ]
 
-        # 3.1 Crear torre Vecino
-        torre2 = db.query(db_models.Torre).filter_by(numero=2, sucursal_id=sucursal2.id).first()
-        if not torre2:
-            print("Creando Torre 2...")
-            torre2 = db_models.Torre(numero=2, capacidad=50, sucursal_id=sucursal2.id)
-            db.add(torre2)   
-
-        # 4. CREACIÓN/ACTUALIZACIÓN DE USUARIO ADMINISTRADOR
-        email_admin = "admin@sinfreno.com"
-        admin = db.query(db_models.Usuario).filter_by(email=email_admin).first()
-        
-        hash_admin = get_password_hash("admin123")
-        
-        if not admin:
-            print(f"Creando Admin: {email_admin}...")
-            admin = db_models.Usuario(
-                email=email_admin,
-                password_hash=hash_admin,
-                rol="ADMIN",
-                # Permisos totales para el dueño
-                permisos="ingreso,salida,ver_stats,ver_historial,config_sucursal",
-                sucursal_id=sucursal.id
-            )
-            db.add(admin)
-        else:
-            print(f"Actualizando permisos y hash de Admin...")
-            admin.password_hash = hash_admin
-            admin.permisos = "ingreso,salida,ver_stats,ver_historial,config_sucursal"
-
-        admin2 = db_models.Usuario(
-            email="vecino@test.com", 
-            password_hash=get_password_hash("admin123"), 
-            rol="ADMIN", 
-            sucursal_id=sucursal2.id,
-            permisos="ingreso,salida,ver_stats,ver_historial,config_sucursal"
-        )
-        db.add(admin2)
-        db.commit()
-
-        # 5. CREACIÓN/ACTUALIZACIÓN DE USUARIO OPERADOR
-        email_ope = "empleado@sinfreno.com"
-        operador = db.query(db_models.Usuario).filter_by(email=email_ope).first()
-        
-        hash_ope = get_password_hash("ope123")
-        
-        if not operador:
-            print(f"Creando Operador: {email_ope}...")
-            operador = db_models.Usuario(
-                email=email_ope,
-                password_hash=hash_ope,
-                rol="OPERADOR",
-                # Permisos limitados: solo flujo operativo
-                permisos="ingreso,salida,ver_ocupacion", 
-                sucursal_id=sucursal.id
-            )
-            db.add(operador)
-        else:
-            print(f"Actualizando permisos y hash de Operador...")
-            operador.password_hash = hash_ope
-            operador.permisos = "ingreso,salida,ver_ocupacion"
+        for u_data in users_to_create:
+            user = db.query(db_models.Usuario).filter_by(email=u_data["email"]).first()
+            if not user:
+                print(f"Creando usuario: {u_data['email']}...")
+                user = db_models.Usuario(
+                    email=u_data["email"],
+                    password_hash=get_password_hash(u_data["pass"]),
+                    rol=u_data["rol"],
+                    permisos=u_data["permisos"],
+                    sucursal_id=u_data["suc_id"]
+                )
+                db.add(user)
 
         db.commit()
-        print("✅ PROCESO COMPLETADO: Base de datos sincronizada con modo SaaS Pro.")
+        print("✅ PROCESO COMPLETADO: Usuarios y empresas listos.")
 
     except Exception as e:
         print(f"❌ Error en el seed: {e}")
