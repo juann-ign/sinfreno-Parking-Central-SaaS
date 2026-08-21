@@ -1,86 +1,178 @@
 import React, { useState } from "react";
 import api from "../api/axios";
-import { LogIn, Car } from "lucide-react";
 import { useAuth } from "../src/context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { Car, ArrowRight, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = ({ onLoginSuccess }) => {
+  const [step, setStep] = useState(1); // 1: Email, 2: Password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [branding, setBranding] = useState({
+    color: "#4f46e5",
+    logo: null,
+    empresa: "Sinfreno",
+  });
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+  const handleNextStep = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      // Enviamos los datos en formato Form Data como pide FastAPI
+      const res = await api.post(`/auth/discovery?email=${email}`);
+      setBranding(res.data);
+      setStep(2);
+    } catch (err) {
+      toast.error("Error al verificar el correo");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
       const formData = new FormData();
       formData.append("username", email);
       formData.append("password", password);
-
       const response = await api.post("/auth/login", formData);
-
-      // Guardamos el token para Axios
       localStorage.setItem("token", response.data.access_token);
-
-      // 2. Guardar TODA la info del usuario en el Contexto (SaaS Pro)
       login(response.data.user_info);
-
-      // Avisamos a la App que entramos con éxito
       onLoginSuccess();
     } catch (err) {
-      setError("Credenciales inválidas. Intenta de nuevo.");
+      toast.error("Contraseña incorrecta");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="flex justify-center mb-6 text-blue-600">
-          <Car size={48} strokeWidth={2.5} />
-        </div>
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
-          Sinfreno
-        </h2>
-        <p className="text-center text-gray-500 mb-8">
-          Gestión de Parking Inteligente
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)} // "Reactivo": actualiza la memoria al escribir
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-          <button
-            type="submit"
-            className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 font-medium transition-colors"
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6">
+      {/* LOGO DINÁMICO */}
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="mb-8 flex flex-col items-center"
+      >
+        {branding.logo ? (
+          <img
+            src={branding.logo}
+            alt="Logo"
+            className="h-12 w-auto object-contain"
+          />
+        ) : (
+          <div
+            className="p-3 rounded-2xl text-white shadow-lg"
+            style={{ backgroundColor: branding.color }}
           >
-            <LogIn className="mr-2" size={18} /> Entrar al Panel
-          </button>
-        </form>
+            <Car size={32} />
+          </div>
+        )}
+        <h2 className="mt-4 font-arvo text-xl font-bold text-slate-800 uppercase tracking-tight">
+          Sign in to{" "}
+          <span style={{ color: branding.color }}>{branding.empresa}</span>
+        </h2>
+      </motion.div>
+
+      <div className="w-full max-w-[400px] bg-white rounded-[2rem] shadow-xl shadow-slate-200/60 border border-slate-100 p-8">
+        <AnimatePresence mode="wait">
+          {step === 1 ? (
+            <motion.form
+              key="step1"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 20, opacity: 0 }}
+              onSubmit={handleNextStep}
+              className="space-y-6"
+            >
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="tu@empresa.com"
+                  className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-slate-700"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+              >
+                Continuar <ArrowRight size={16} />
+              </button>
+
+              <div className="relative py-4 flex items-center">
+                <div className="flex-grow border-t border-slate-100"></div>
+                <span className="flex-shrink mx-4 text-[10px] font-black text-slate-300 uppercase">
+                  O
+                </span>
+                <div className="flex-grow border-t border-slate-100"></div>
+              </div>
+
+              <button
+                type="button"
+                className="w-full py-4 border-2 border-slate-100 rounded-2xl font-black text-[10px] uppercase text-slate-500 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"
+              >
+                <img
+                  src="https://www.svgrepo.com/show/355037/google.svg"
+                  className="h-4 w-4"
+                />{" "}
+                Continuar con Google
+              </button>
+            </motion.form>
+          ) : (
+            <motion.form
+              key="step2"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              onSubmit={handleSubmit}
+              className="space-y-6"
+            >
+              <button
+                onClick={() => setStep(1)}
+                className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase hover:text-slate-600 transition-colors"
+              >
+                <ArrowLeft size={14} /> {email}
+              </button>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  required
+                  autoFocus
+                  className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-slate-700"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ focusBorderColor: branding.color }}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg transition-all"
+                style={{ backgroundColor: branding.color }}
+              >
+                {loading ? "Verificando..." : "Entrar al Panel"}
+              </button>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </div>
+      <p className="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        ¿No tienes cuenta?{" "}
+        <span className="text-indigo-600 cursor-pointer">Contáctanos</span>
+      </p>
     </div>
   );
 };

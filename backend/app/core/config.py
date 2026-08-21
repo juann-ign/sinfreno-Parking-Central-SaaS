@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "CAMBIAME_POR_ALGO_SUPER_SECRETO_Y_LARGO_12345"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # Una jornada laboral de 8 horas
+
+    TELEGRAM_TOKEN: str = ""
+    TELEGRAM_CHAT_ID: str = ""
     
     class Config:
         env_file = ".env"
