@@ -8,7 +8,6 @@ import {
   User,
   AlertCircle,
   CheckCircle2,
-  FileStack,
 } from "lucide-react";
 
 const CashHistory = () => {
