@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.api import dependencies
 from app.core import security
-from app.models import db_models
+from app.models import db_models, schemas
 
 router = APIRouter(prefix="/auth", tags=["Security"])
 
@@ -67,3 +67,58 @@ def discover_tenant(email: str, db: Session = Depends(dependencies.get_db)):
         "color": user.sucursal.empresa.color_primario,
         "empresa": user.sucursal.empresa.nombre
     }
+
+@router.get("/users", response_model=list[schemas.UsuarioOut])
+def list_users(
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+):
+    # AISLAMIENTO: Solo devolvemos usuarios de la misma sucursal
+    return db.query(db_models.Usuario).filter(
+        db_models.Usuario.sucursal_id == current_user.sucursal_id
+    ).all()
+
+@router.post("/users", response_model=schemas.UsuarioOut)
+def create_staff_user(
+    user_in: schemas.UserCreateInternal,
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+):
+    # Verificar si el email ya existe
+    existing_user = db.query(db_models.Usuario).filter(db_models.Usuario.email == user_in.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="El email ya está registrado")
+    
+    # Crear nuevo usuario heredando la sucursal del Admin que lo crea
+    new_user = db_models.Usuario(
+        email=user_in.email,
+        password_hash=security.get_password_hash(user_in.password),
+        rol=user_in.rol.upper(),
+        permisos=",".join(user_in.permisos),
+        sucursal_id=current_user.sucursal_id
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+@router.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+):
+    user = db.query(db_models.Usuario).filter(
+        db_models.Usuario.id == user_id,
+        db_models.Usuario.sucursal_id == current_user.sucursal_id # SEGURIDAD
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="No puedes eliminarte a ti mismo")
+
+    db.delete(user)
+    db.commit()
+    return {"detail": "Usuario eliminado"}

@@ -5,6 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import History from "../pages/History";
 import Settings from "../pages/Settings";
 import CashHistory from "../pages/CashHistory";
+import Users from "../pages/Users";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -22,6 +23,7 @@ const RootNavigation = () => {
       <Route path="/history" element={<History />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/cash-history" element={<CashHistory />} />
+      <Route path="/users" element={<Users />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
