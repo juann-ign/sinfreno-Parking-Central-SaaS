@@ -172,3 +172,9 @@ class CierreCajaOut(BaseModel):
     
     class Config:
         from_attributes = True
+
+class UserCreateInternal(BaseModel):
+    email: EmailStr
+    password: str
+    rol: str = "OPERADOR"
+    permisos: List[str] = ["ingreso", "salida"]

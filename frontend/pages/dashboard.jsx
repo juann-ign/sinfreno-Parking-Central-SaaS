@@ -16,6 +16,7 @@ import {
   Settings as SettingsIcon,
   Wallet,
   AlertTriangle,
+  Users,
   FileStack,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -461,8 +462,20 @@ const Dashboard = ({ onLogout }) => {
               </span>
             </button>
           )}
-          {/* Separador sutil solo visible en desktop */}
-          <div className="hidden lg:block h-6 w-px bg-slate-100 mx-2"></div>
+          {/* BOTÓN USUARIOS */}
+          {hasPermission("config_sucursal") && (
+            <button
+              onClick={() => navigate("/users")}
+              className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-slate-50 lg:hover:bg-transparent transition-all"
+            >
+              <div className="p-1.5 lg:p-0 bg-slate-50 lg:bg-transparent rounded-md lg:rounded-none text-slate-400 group-hover:text-indigo-600">
+                <Users size={18} lg:size={16} />
+              </div>
+              <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-slate-400 group-hover:text-indigo-600 tracking-[0.15em] transition-all">
+                STAFF
+              </span>
+            </button>
+          )}
 
           {/* BOTÓN SALIR */}
           <button

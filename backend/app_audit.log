@@ -2014,3 +2014,53 @@
 2026-08-22 01:42:40,286 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
 2026-08-22 01:43:13,255 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
 2026-08-22 01:48:33,506 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 01:48:54,853 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 01:53:44,750 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:40:35,509 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:40:35,539 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:40:35,572 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:40:36,244 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:40:43,791 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:40:43,794 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:40:43,829 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:41:12,878 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:41:12,889 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:41:17,926 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:41:17,937 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:42:08,878 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:42:08,902 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:42:25,083 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:43:48,659 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:43:57,011 | INFO | parking_service | INGRESO: Vehículo DSA241 en Torre 1 por Usuario ID 1
+2026-08-22 12:43:57,039 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-22 12:43:59,868 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:44:07,838 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:44:07,847 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:44:07,870 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:44:14,984 | INFO | parking_service | INGRESO: Vehículo DAD241 en Torre 1 por Usuario ID 4
+2026-08-22 12:44:14,995 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-22 12:44:29,304 | INFO | parking_service | SALIDA PRO: DAS134 | Duración: 665min | Monto: $11250.0
+2026-08-22 12:44:29,308 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-08-22 12:45:18,510 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:45:47,636 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:45:47,643 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:45:47,660 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:47:48,633 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:47:48,769 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:48:02,712 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:48:02,760 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:48:15,082 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:48:15,101 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:48:19,246 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:48:27,618 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:48:27,638 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:48:27,659 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:54:20,774 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:54:34,844 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:56:04,349 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:56:14,928 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:57:49,795 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:57:59,465 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:58:21,493 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:58:28,610 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:58:39,182 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
