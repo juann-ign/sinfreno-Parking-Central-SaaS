@@ -9,6 +9,45 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
     window.print(); // El CSS ocultará todo excepto el ticket
   };
 
+  const handleWhatsAppShare = () => {
+    // 1. Definimos isIngreso al principio de todo
+    const isIngreso = ticketData?.event === "NUEVO_INGRESO";
+
+    console.log("Procesando WhatsApp. ¿Es ingreso?:", isIngreso);
+
+    // 2. Validaciones de seguridad
+    if (!ticketData?.id) {
+      alert(
+        "Error: No se encontró el ID de la operación. Intenta cerrar y abrir el ticket.",
+      );
+      return;
+    }
+
+    const phone = prompt("Ingresa el número (Ej: 54911...)");
+    if (!phone) return;
+
+    const cleanPhone = phone.replace(/\D/g, "");
+
+    const mensaje = isIngreso
+      ? `*¡BIENVENIDO A ${ticketData.sucursal || "NUESTRO PARKING"}!* 🚗%0A%0A` +
+        `Hemos registrado el ingreso de tu vehículo:%0A` +
+        `• *Patente:* ${ticketData.patente}%0A` +
+        `• *Hora:* ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}hs%0A%0A` +
+        `Puedes consultar los detalles de tu estadía y tarifas aquí: %0A` +
+        `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`
+      : `*GRACIAS POR TU VISITA* ✨%0A%0A` +
+        `Se ha procesado el pago de tu estadía:%0A` +
+        `• *Vehículo:* ${ticketData.patente}%0A` +
+        `• *Monto:* $${ticketData.monto}%0A` +
+        `• *Medio de pago:* ${ticketData.metodo_pago}%0A%0A` +
+        `Descarga tu comprobante oficial aquí: %0A` +
+        `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`;
+
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${mensaje}`;
+
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -118,6 +157,12 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
               className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"
             >
               <Printer size={14} /> Imprimir
+            </button>
+            <button
+              onClick={handleWhatsAppShare}
+              className="flex-1 py-3 px-4 bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all"
+            >
+              WhatsApp
             </button>
           </div>
         </motion.div>

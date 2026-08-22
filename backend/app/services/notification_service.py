@@ -41,6 +41,6 @@ def format_cash_report(caja, sucursal_nombre: str):
         f"💰 <b>Esperado:</b> ${caja.monto_esperado:,.2f}\n"
         f"💵 <b>Real:</b> ${caja.monto_real:,.2f}\n"
         f"📊 <b>Diferencia:</b> ${caja.diferencia:,.2f}\n\n"
-        f"📝 <b>Notas:</b> {caja.notes or 'Sin notas'}\n"
+        f"📝 <b>Notas:</b> {caja.notas or 'Sin notas'}\n"
         f"📅 <i>{caja.fecha_cierre.strftime('%d/%m/%Y %H:%M')}</i>"
     )
