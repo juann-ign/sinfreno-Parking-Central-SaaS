@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Car,
   ChevronRight,
@@ -12,10 +12,11 @@ import "../src/Button3D.css";
 
 const EntryForm = ({ onEntrySuccess, disabled }) => {
   const [patente, setPatente] = useState("");
-  const [torreId, setTorreId] = useState("1");
   const [tipo, setTipo] = useState("AUTO");
   const [status, setStatus] = useState("empty");
   const [loading, setLoading] = useState(false);
+  const [towers, setTowers] = useState([]); // Nuevo estado para torres
+  const [torreId, setTorreId] = useState("");
 
   const analizarPatente = (valor) => {
     const limpio = valor.replace(/[^A-Z0-9]/gi, "").toUpperCase();
@@ -47,11 +48,32 @@ const EntryForm = ({ onEntrySuccess, disabled }) => {
       setStatus("empty");
       onEntrySuccess();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Error en ingreso");
+      const errorMsg = error.response?.data?.detail;
+      // Si detail es un objeto o lista (error 422), lo convertimos a string legible
+      toast.error(
+        typeof errorMsg === "object"
+          ? JSON.stringify(errorMsg)
+          : errorMsg || "Error en ingreso",
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const res = await api.get("/parking/config"); // Recordá que este endpoint devuelve la sucursal con sus torres
+        setTowers(res.data.torres);
+        if (res.data.torres.length > 0 && !torreId) {
+          setTorreId(res.data.torres[0].id.toString()); // Seleccionamos la primera por defecto
+        }
+      } catch (err) {
+        console.error("Error cargando torres", err);
+      }
+    };
+    loadConfig();
+  }, []);
 
   return (
     <section
@@ -130,25 +152,41 @@ const EntryForm = ({ onEntrySuccess, disabled }) => {
               value={torreId}
               onChange={(e) => setTorreId(e.target.value)}
             >
-              <option value="1">Torre 1</option>
-              <option value="2">Torre 2</option>
-              <option value="3">Visitante</option>
+              {towers.map((t) => (
+                <option key={t.id} value={t.id}>
+                  Torre {t.numero}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* Botón de Acción */}
           <button
             type="submit"
-            disabled={loading || status === "invalid" || status === "empty"}
+            disabled={
+              loading ||
+              status === "invalid" ||
+              status === "empty" ||
+              towers.length === 0
+            }
             className={`btn-3d ${
-              loading || status === "invalid" || status === "empty"
+              loading ||
+              status === "invalid" ||
+              status === "empty" ||
+              towers.length === 0
                 ? "opacity-50 grayscale cursor-not-allowed"
                 : ""
             }`}
           >
             <div className="button-outer">
               <div className="button-inner">
-                <span>{loading ? "..." : "Ingresar"}</span>
+                <span>
+                  {towers.length === 0
+                    ? "Sin Torres"
+                    : loading
+                      ? "..."
+                      : "Ingresar"}
+                </span>{" "}
               </div>
             </div>
           </button>
