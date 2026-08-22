@@ -1911,3 +1911,32 @@
 2026-08-20 23:09:48,561 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
 2026-08-20 23:09:48,583 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
 2026-08-20 23:11:05,818 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:33:20,042 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:33:20,116 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:33:20,142 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:33:47,161 | INFO | parking_service | INGRESO: Vehículo AAA999 en Torre 1 por Usuario ID 1
+2026-08-21 18:33:47,188 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-21 18:34:05,129 | INFO | parking_service | SALIDA PRO: AAA999 | Duración: 1min | Monto: $0.0
+2026-08-21 18:34:05,134 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-08-21 18:34:20,647 | INFO | parking_service | SALIDA PRO: DADR34 | Duración: 1490min | Monto: $25000.0
+2026-08-21 18:34:20,654 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-08-21 18:36:04,046 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:36:11,213 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:36:29,831 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:36:30,945 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:36:31,020 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:36:31,180 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:36:42,862 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:36:43,416 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:37:06,996 | WARNING | notification_service | httpx no está instalado. No se puede enviar notificación por Telegram.
+2026-08-21 18:47:21,857 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:47:21,881 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-21 18:47:21,891 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-21 18:47:29,949 | INFO | parking_service | INGRESO: Vehículo DADA11 en Torre 1 por Usuario ID 1
+2026-08-21 18:47:29,969 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-21 18:47:32,745 | INFO | parking_service | SALIDA PRO: DADA11 | Duración: 1min | Monto: $0.0
+2026-08-21 18:47:32,748 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-08-21 18:47:36,983 | INFO | parking_service | INGRESO: Vehículo DAA441 en Torre 1 por Usuario ID 1
+2026-08-21 18:47:36,990 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-22 00:32:04,362 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 00:33:07,089 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1

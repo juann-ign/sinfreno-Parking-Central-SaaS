@@ -40,7 +40,6 @@ def cerrar(
         data.notas
     )
 
-    # 2. Agregamos la notificación a la cola de segundo plano
     mensaje = format_cash_report(caja, current_user.sucursal.nombre)
     background_tasks.add_task(send_telegram_message, mensaje)
 
