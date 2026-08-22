@@ -4,8 +4,10 @@ import { useAuth } from "../src/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Car, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Login = ({ onLoginSuccess }) => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Email, 2: Password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,9 +40,20 @@ const Login = ({ onLoginSuccess }) => {
       const formData = new FormData();
       formData.append("username", email);
       formData.append("password", password);
+
       const response = await api.post("/auth/login", formData);
       localStorage.setItem("token", response.data.access_token);
-      login(response.data.user_info);
+
+      const userInfo = response.data.user_info;
+      login(userInfo);
+
+      // --- LÓGICA DE REDIRECCIÓN POR ROL ---
+      if (userInfo.rol === "SUPERADMIN") {
+        navigate("/superadmin");
+      } else {
+        navigate("/dashboard");
+      }
+
       onLoginSuccess();
     } catch (err) {
       toast.error("Contraseña incorrecta");

@@ -53,7 +53,7 @@ const OccupancyPieChart = ({ occupied, available }) => {
         </p>
       </div>
       {/* CONTENEDOR DEL GRÁFICO: Usamos 'relative' y 'flex-1' para que ocupe todo el resto */}
-      <div className="flex-1 relative min-h-0 w-full">
+      <div className="flex-1 relative min-h-[250px] w-full">
         {/* TEXTO CENTRAL: Lo centramos matemáticamente */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
           <span className="text-4xl font-black text-slate-800 leading-none">

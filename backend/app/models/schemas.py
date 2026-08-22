@@ -178,3 +178,9 @@ class UserCreateInternal(BaseModel):
     password: str
     rol: str = "OPERADOR"
     permisos: List[str] = ["ingreso", "salida"]
+
+class TenantProvision(BaseModel):
+    nombre_empresa: str
+    cuit: str
+    email_admin: str
+    password_admin: str

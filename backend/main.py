@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.exceptions import SinfrenoException
-from app.api.v1 import parking, auth, stats, cash
+from app.api.v1 import parking, auth, stats, cash, superadmin
 from app.core.config import settings
 from app.core.websocket_manager import manager
 
@@ -21,6 +21,8 @@ app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(parking.router, prefix=settings.API_V1_STR)
 app.include_router(stats.router, prefix=settings.API_V1_STR)
 app.include_router(cash.router, prefix=settings.API_V1_STR)
+app.include_router(superadmin.router, prefix=settings.API_V1_STR)
+
 
 # --- PUNTO DE CONEXIÓN WEBSOCKET ---
 # Debe estar fuera de los prefijos /api/v1 para que coincida con ws://localhost:8000/ws

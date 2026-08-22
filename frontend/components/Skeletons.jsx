@@ -11,19 +11,21 @@ export const SkeletonCard = () => (
 
 // Simula las filas de las tablas
 export const TableRowSkeleton = () => (
-  <tr className="animate-pulse">
-    <td className="px-6 py-4">
-      <div className="h-10 w-10 bg-slate-200 rounded-full inline-block mr-3"></div>
-      <div className="h-6 w-24 bg-slate-100 rounded inline-block"></div>
+  <tr className="animate-pulse flex flex-col lg:table-row border-b border-slate-100 p-4 lg:p-0">
+    <td className="px-4 lg:px-8 py-4 lg:py-6">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-slate-200 rounded-xl"></div>
+        <div className="h-4 w-24 bg-slate-100 rounded"></div>
+      </div>
     </td>
-    <td className="px-6 py-4">
+    <td className="hidden lg:table-cell px-8 py-6">
       <div className="h-4 w-20 bg-slate-50 rounded"></div>
     </td>
-    <td className="px-6 py-4">
-      <div className="h-4 w-16 bg-slate-50 rounded"></div>
+    <td className="px-4 lg:px-8 py-2 lg:py-6">
+      <div className="h-6 w-32 bg-slate-100 rounded-lg"></div>
     </td>
-    <td className="px-6 py-4 text-right">
-      <div className="h-4 w-12 bg-slate-200 rounded ml-auto"></div>
+    <td className="px-4 lg:px-8 py-4 lg:py-6 text-right">
+      <div className="h-10 w-24 bg-slate-200 rounded-xl ml-auto"></div>
     </td>
   </tr>
 );

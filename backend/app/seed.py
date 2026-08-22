@@ -51,6 +51,7 @@ def seed():
             )
             db.add(sa)
             db.commit()
+        
         # 3. Torres
         if not db.query(db_models.Torre).filter_by(sucursal_id=s1.id).first():
             db.add(db_models.Torre(numero=1, capacidad=50, sucursal_id=s1.id))

@@ -207,9 +207,9 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
               ))}
               {isLoading && (
                 <>
-                  <TableRowSkeleton />
-                  <TableRowSkeleton />
-                  <TableRowSkeleton />
+                  <TableRowSkeleton key="s1" />
+                  <TableRowSkeleton key="s2" />
+                  <TableRowSkeleton key="s3" />
                 </>
               )}
             </AnimatePresence>

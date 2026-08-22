@@ -6,6 +6,7 @@ import History from "../pages/History";
 import Settings from "../pages/Settings";
 import CashHistory from "../pages/CashHistory";
 import Users from "../pages/Users";
+import SuperAdmin from "../pages/SuperAdmin";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -19,11 +20,31 @@ const RootNavigation = () => {
 
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          user.rol === "SUPERADMIN" ? (
+            <Navigate to="/superadmin" />
+          ) : (
+            <Navigate to="/dashboard" />
+          )
+        }
+      />
       <Route path="/dashboard" element={<Dashboard onLogout={logout} />} />
       <Route path="/history" element={<History />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/cash-history" element={<CashHistory />} />
       <Route path="/users" element={<Users />} />
+      <Route
+        path="/superadmin"
+        element={
+          user?.rol === "SUPERADMIN" ? (
+            <SuperAdmin />
+          ) : (
+            <Navigate to="/dashboard" />
+          )
+        }
+      />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );

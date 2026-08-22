@@ -66,6 +66,20 @@ def listar_historial(
 ):
     return parking_service.obtener_historial_paginado(db, current_user.sucursal_id, page, size, patente)
 
+@router.get("/config", response_model=schemas.SucursalOut)
+def get_config(
+    db: Session = Depends(dependencies.get_db),
+    current_user: db_models.Usuario = Depends(dependencies.get_current_user)
+):
+    """Retorna la configuración y torres de la sucursal del usuario actual."""
+    sucursal = db.query(db_models.Sucursal).filter(
+        db_models.Sucursal.id == current_user.sucursal_id
+    ).first()
+    
+    if not sucursal:
+        raise HTTPException(status_code=404, detail="Sucursal no encontrada")
+    return sucursal
+
 @router.patch("/config", response_model=schemas.SucursalOut)
 def update_config(
     obj_in: schemas.SucursalUpdate,
