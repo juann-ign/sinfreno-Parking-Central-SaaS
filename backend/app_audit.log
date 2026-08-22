@@ -2055,3 +2055,12 @@
 2026-08-22 12:48:27,618 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
 2026-08-22 12:48:27,638 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
 2026-08-22 12:48:27,659 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:54:20,774 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:54:34,844 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:56:04,349 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:56:14,928 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:57:49,795 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:57:59,465 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:58:21,493 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 12:58:28,610 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 12:58:39,182 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1

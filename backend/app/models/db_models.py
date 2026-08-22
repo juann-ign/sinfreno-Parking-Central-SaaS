@@ -39,10 +39,9 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True)
     password_hash = Column(String)
-    # Guardaremos una lista separada por comas: "ingreso,salida,stats,config"
     permisos = Column(String, default="ingreso,salida")
     rol = Column(String) # superAdmin, adminSede o operador
-    sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
+    sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=True)
 
     sucursal = relationship("Sucursal", back_populates="usuarios")
     # Relaciones de auditoría

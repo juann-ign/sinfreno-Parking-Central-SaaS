@@ -33,7 +33,7 @@ def seed():
     db = SessionLocal()
     try:
         print("--- Iniciando Sincronización de Datos ---")
-
+        
         # 1. Empresas
         e1 = get_or_create_empresa(db, "Sinfreno Corp", "30-11111111-9")
         e2 = get_or_create_empresa(db, "Parking El Vecino", "30-99999998-9")
@@ -41,6 +41,16 @@ def seed():
         s1 = get_or_create_sucursal(db, "Sede Central", e1.id)
         s2 = get_or_create_sucursal(db, "Sede Norte", e2.id)
 
+        if not db.query(db_models.Usuario).filter_by(rol="SUPERADMIN").first():
+            sa = db_models.Usuario(
+                email="root@sinfreno.com",
+                password_hash=get_password_hash("root123"),
+                rol="SUPERADMIN",
+                permisos="all",
+                sucursal_id=None # SuperAdmin no pertenece a ninguna sede
+            )
+            db.add(sa)
+            db.commit()
         # 3. Torres
         if not db.query(db_models.Torre).filter_by(sucursal_id=s1.id).first():
             db.add(db_models.Torre(numero=1, capacidad=50, sucursal_id=s1.id))
