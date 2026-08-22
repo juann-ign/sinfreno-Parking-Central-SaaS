@@ -1,7 +1,6 @@
 from io import BytesIO
 from xhtml2pdf import pisa
 from jinja2 import Template
-from datetime import datetime
 
 # Una plantilla HTML minimalista y profesional
 TICKET_TEMPLATE = """
@@ -55,7 +54,8 @@ def generar_pdf_ticket(estadia):
         "salida": estadia.fecha_salida.strftime("%d/%m/%y %H:%M") if estadia.fecha_salida else "Activa",
         "monto": f"{estadia.monto:,.2f}",
         "metodo_pago": estadia.metodo_pago or "N/A",
-        "sucursal": estadia.torre.sucursal.nombre
+        "sucursal": estadia.torre.sucursal.nombre,
+        "color": estadia.torre.sucursal.empresa.color_primario or "#4f46e5",
     }
     
     template = Template(TICKET_TEMPLATE)

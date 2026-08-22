@@ -2001,3 +2001,16 @@
 2026-08-22 01:31:07,809 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
 2026-08-22 01:32:25,633 | INFO | parking_service | INGRESO: Vehículo DAD144 en Torre 1 por Usuario ID 1
 2026-08-22 01:32:25,697 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-22 01:38:08,364 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 01:38:22,422 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 01:39:32,295 | INFO | parking_service | INGRESO: Vehículo DAS134 en Torre 1 por Usuario ID 1
+2026-08-22 01:39:32,344 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVO_INGRESO
+2026-08-22 01:40:59,795 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 01:41:00,911 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 01:41:00,919 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 01:41:00,930 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 01:41:04,893 | INFO | parking_service | SALIDA PRO: DAD144 | Duración: 9min | Monto: $0.0
+2026-08-22 01:41:04,902 | INFO | websocket_manager | 📡 Enviando Broadcast a sucursal 1: NUEVA_SALIDA
+2026-08-22 01:42:40,286 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1
+2026-08-22 01:43:13,255 | INFO | websocket_manager | 🔌 WebSocket conectado: Sucursal 1. Total activos: 1
+2026-08-22 01:48:33,506 | INFO | websocket_manager | ❌ WebSocket desconectado: Sucursal 1

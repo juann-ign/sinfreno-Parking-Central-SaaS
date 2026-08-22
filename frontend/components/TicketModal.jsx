@@ -1,7 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Printer, X, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
 
 const TicketModal = ({ isOpen, ticketData, onClose }) => {
   if (!isOpen || !ticketData) return null;
@@ -29,21 +28,20 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
 
     const cleanPhone = phone.replace(/\D/g, "");
 
-    // 3. Construcción del mensaje dinámico
-    const titulo = isIngreso ? "*TICKET DE INGRESO*" : "*COMPROBANTE DE PAGO*";
-
-    // Si es ingreso no mostramos monto, si es salida sí.
-    const detalleMonto = isIngreso
-      ? ""
-      : `%0A💰 *Total Cobrado:* $${ticketData.monto}`;
-
-    const mensaje =
-      `*SINFRENO PARKING - ${titulo}*%0A%0A` +
-      `🚗 *Patente:* ${ticketData.patente}%0A` +
-      `🕒 *Fecha:* ${new Date().toLocaleString()}` +
-      `${detalleMonto}%0A%0A` +
-      `Puedes descargar el comprobante oficial aquí:%0A` +
-      `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`;
+    const mensaje = isIngreso
+      ? `*¡BIENVENIDO A ${ticketData.sucursal || "NUESTRO PARKING"}!* 🚗%0A%0A` +
+        `Hemos registrado el ingreso de tu vehículo:%0A` +
+        `• *Patente:* ${ticketData.patente}%0A` +
+        `• *Hora:* ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}hs%0A%0A` +
+        `Puedes consultar los detalles de tu estadía y tarifas aquí: %0A` +
+        `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`
+      : `*GRACIAS POR TU VISITA* ✨%0A%0A` +
+        `Se ha procesado el pago de tu estadía:%0A` +
+        `• *Vehículo:* ${ticketData.patente}%0A` +
+        `• *Monto:* $${ticketData.monto}%0A` +
+        `• *Medio de pago:* ${ticketData.metodo_pago}%0A%0A` +
+        `Descarga tu comprobante oficial aquí: %0A` +
+        `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`;
 
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${mensaje}`;
 
