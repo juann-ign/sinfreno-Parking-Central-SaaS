@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, Response
 from app.core.websocket_manager import manager 
 from sqlalchemy.orm import Session
 from app.api import dependencies
 from app.models import schemas, db_models
-from app.services import parking_service
+from app.services import parking_service, pdf_service
 
 router = APIRouter(prefix="/parking", tags=["Parking Operations"])
 
@@ -19,7 +19,7 @@ async def ingreso(
     )
      # Notificación inmediata por WebSocket
     await manager.broadcast( 
-        {"event": "NUEVO_INGRESO", "patente": data.patente.upper(), "tipo": data.tipo},
+        {"event": "NUEVO_INGRESO", "id": nueva_estadia.id, "patente": data.patente.upper(), "tipo": data.tipo},
         current_user.sucursal_id
     )
 
@@ -123,3 +123,20 @@ def obtener_logs(
     return db.query(db_models.Auditoria).filter(
         db_models.Auditoria.sucursal_id == current_user.sucursal_id
     ).order_by(db_models.Auditoria.fecha.desc()).limit(100).all()
+
+@router.get("/{estadia_id}/pdf")
+def download_ticket_pdf(
+    estadia_id: int, 
+    db: Session = Depends(dependencies.get_db)
+):
+    estadia = db.query(db_models.Estadia).filter(db_models.Estadia.id == estadia_id).first()
+    if not estadia:
+        raise HTTPException(status_code=404, detail="Estadía no encontrada")
+        
+    pdf_content = pdf_service.generar_pdf_ticket(estadia)
+    
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=ticket_{estadia.patente}.pdf"}
+    )
