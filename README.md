@@ -82,6 +82,18 @@ sinfreno/
 
 ---
 
+## Recuperación de accesos (SF-02A)
+
+La revisión actual está en [SF-02A](docs/recovery/02a-accesos.md), con autorización
+HTTP/PDF/WebSocket y pruebas contra PostgreSQL. Usa recursos separados de SF-01:
+
+```powershell
+docker --context desktop-linux compose -p sinfreno-sf02a-20261111 -f docker-compose.access.yml up -d --build --wait --wait-timeout 120
+```
+
+Aplicación: http://127.0.0.1:15174. El informe contiene la preparación explícita
+de datos sintéticos, cuentas, pruebas y limitaciones. No modifica la demo SF-01.
+
 ## 🛠️ Entorno local de recuperación (SF-01)
 
 Desde PowerShell, con Docker Desktop iniciado:
