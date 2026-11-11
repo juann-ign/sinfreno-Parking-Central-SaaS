@@ -19,9 +19,17 @@ const AccessGate = ({ allowed, children }) => allowed ? children : (
 );
 
 const RootNavigation = () => {
-  const { user, checkingSession, logout, hasPermission } = useAuth();
+  const { user, checkingSession, sessionStatus, sessionError, retrySession, logout, hasPermission } = useAuth();
 
   if (checkingSession) return <p role="status" className="p-8 text-center">Verificando sesión…</p>;
+  if (sessionStatus === "unavailable") return (
+    <main className="session-recovery">
+      <h1>Conexión interrumpida</h1>
+      <p role="alert">{sessionError}</p>
+      <button className="sf-button sf-primary" onClick={retrySession}>Reintentar verificación</button>
+      <button className="sf-button" onClick={logout}>Cerrar sesión</button>
+    </main>
+  );
 
   if (!user) {
     return <Login onLoginSuccess={() => console.log("Logueado!")} />;

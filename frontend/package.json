@@ -9,6 +9,7 @@
     "lint": "eslint . --max-warnings=0",
     "test:connections": "node --test config/connections.test.js",
     "test:realtime": "node --test api/realtime.test.js",
+    "test:session": "node --test api/session-controller.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
