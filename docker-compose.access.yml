@@ -1,0 +1,63 @@
+# SF-02A: proyecto y base descartables propios; no reutiliza la demo SF-01.
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: sf02a_demo
+      POSTGRES_PASSWORD: sf02a_local_disposable
+      POSTGRES_DB: sf02a_disposable
+    ports:
+      - "127.0.0.1:15433:5432"
+    volumes:
+      - access_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sf02a_demo -d sf02a_disposable"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    labels:
+      com.sinfreno.purpose: sf02a-disposable
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql://sf02a_demo:sf02a_local_disposable@db:5432/sf02a_disposable
+      SECRET_KEY: sf02a-local-disposable-key-do-not-deploy
+      CORS_ORIGINS: '["http://127.0.0.1:15174","http://localhost:15174"]'
+      TELEGRAM_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+    ports:
+      - "127.0.0.1:18001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+      start_period: 10s
+    labels:
+      com.sinfreno.purpose: sf02a-disposable
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.recovery
+    environment:
+      VITE_BACKEND_URL: http://127.0.0.1:18001
+    ports:
+      - "127.0.0.1:15174:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+    labels:
+      com.sinfreno.purpose: sf02a-disposable
+volumes:
+  access_postgres:
+    labels:
+      com.sinfreno.purpose: sf02a-disposable

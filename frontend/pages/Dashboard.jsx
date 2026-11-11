@@ -1,7 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../src/context/useAuth";
 import api from "../api/axios";
 import { getWebSocketUrl } from "../config/connections.js";
+import { connectAuthenticatedSocket } from "../api/realtime.js";
+import { SESSION_ENDED_EVENT } from "../api/session.js";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
 import RevenueChart from "../components/RevenueChart";
@@ -22,22 +24,15 @@ import {
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-const getHora = () =>
-  new Date().toLocaleTimeString("es-AR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
 const Dashboard = ({ onLogout }) => {
-  const { user, hasPermission } = useAuth();
+  const { user, hasPermission, login, logout } = useAuth();
+  const isAdmin = user?.rol === "ADMIN";
   const [stats, setStats] = useState(null);
   const [activeVehicles, setActiveVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hourlyData, setHourlyData] = useState([]);
   const [filterTerm, setFilterTerm] = useState("");
 
-  const socketRef = useRef(null);
-  const lastProcessedEventRef = useRef("");
   const navigate = useNavigate();
 
   const [showTicket, setShowTicket] = useState(false);
@@ -64,7 +59,7 @@ const Dashboard = ({ onLogout }) => {
         }
       })
       .catch((error) => {
-        console.error("Error cargando datos", error);
+        toast.error(error.response?.status === 403 ? "No tenés permiso para consultar estos datos." : "No se pudieron cargar los datos del dashboard.", { id: "dashboard-load" });
       })
       .finally(() => {
         setLoading(false);
@@ -78,7 +73,8 @@ const Dashboard = ({ onLogout }) => {
       .then((res) => {
         setCashSession(res.data);
       })
-      .catch(() => {
+      .catch((error) => {
+        if (error.response?.status !== 404) toast.error("No se pudo consultar el estado de caja.", { id: "cash-status" });
         setCashSession(null); // 404 significa que no hay caja abierta
       })
       .finally(() => {
@@ -91,268 +87,60 @@ const Dashboard = ({ onLogout }) => {
     checkCashStatus();
   }, [fetchData, checkCashStatus]);
 
-  // 2. Lógica de WebSocket
+  // Socket messages only invalidate authorized HTTP reads.
   useEffect(() => {
     const sucursalId = user?.sucursal?.id;
     if (!sucursalId) return;
-
-    const connect = () => {
-      if (socketRef.current?.readyState === WebSocket.OPEN) return;
-
-      const socket = new WebSocket(getWebSocketUrl(sucursalId));
-      socketRef.current = socket;
-
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        // Evitar duplicados (Mismo evento en menos de 2 seg)
-        const eventKey = `${data.event}-${data.patente}`;
-        if (lastProcessedEventRef.current === eventKey) return;
-        lastProcessedEventRef.current = eventKey;
-        setTimeout(() => {
-          lastProcessedEventRef.current = "";
-        }, 2000);
-
-        // CORRECCIÓN: "NUV" -> "NUEVA_SALIDA"
-        if (data.event === "NUEVO_INGRESO" || data.event === "NUEVA_SALIDA") {
-          const isIngreso = data.event === "NUEVO_INGRESO";
-
-          toast.custom(
-            (t) => (
-              <div
-                style={{
-                  width: 320,
-                  background: "#ffffff",
-                  border: `2px solid ${isIngreso ? "#10b981" : "#4f46e5"}`,
-                  borderRadius: 14,
-                  padding: "12px 14px",
-                  position: "relative",
-                  boxSizing: "border-box",
-                  fontFamily: "inherit",
-                }}
-              >
-                {/* HORA */}
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 12,
-                    right: 14,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: "#64748b",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {getHora()}
-                </span>
-
-                {/* TÍTULO + EMOJI TIPO */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    paddingRight: 40,
-                  }}
-                >
-                  <span style={{ fontSize: 14 }}>
-                    {isIngreso
-                      ? ({ AUTO: "🚗", MOTO: "🏍️", CAMIONETA: "🚐" }[
-                          data.tipo
-                        ] ?? "🚗")
-                      : "💸"}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.12em",
-                      color: "#0f172a",
-                    }}
-                  >
-                    {isIngreso ? "Ingreso de vehículo" : "Salida registrada"}
-                  </span>
-                </div>
-
-                {/* PATENTE */}
-                <div
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: 22,
-                    fontWeight: 900,
-                    color: "#0f172a",
-                    lineHeight: 1.1,
-                    marginTop: 6,
-                  }}
-                >
-                  {data.patente}
-                </div>
-
-                {/* TIPO DE VEHÍCULO (solo en ingreso) */}
-                {isIngreso && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#475569",
-                      marginTop: 3,
-                    }}
-                  >
-                    {{
-                      AUTO: "🚗 Auto",
-                      MOTO: "🏍️ Motocicleta",
-                      CAMIONETA: "🚐 Camioneta",
-                    }[data.tipo] ?? "🚗 Auto"}
-                  </div>
-                )}
-
-                {/* MONTO + TIPO (solo en salida) */}
-                {!isIngreso && (
-                  <>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#475569",
-                        marginTop: 3,
-                      }}
-                    >
-                      {{
-                        AUTO: "🚗 Auto",
-                        MOTO: "🏍️ Motocicleta",
-                        CAMIONETA: "🚐 Camioneta",
-                      }[data.tipo] ?? "🚗 Auto"}
-                    </div>
-
-                    {/* Método de Pago */}
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        marginTop: 4,
-                        padding: "2px 8px",
-                        background: "#f1f5f9",
-                        borderRadius: "6px",
-                      }}
-                    >
-                      <span style={{ fontSize: 10 }}>
-                        {data.metodo_pago === "EFECTIVO" ? "💵" : "💳"}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 800,
-                          color: "#475569",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {data.metodo_pago}
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        gap: 5,
-                        marginTop: 4,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 800,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.1em",
-                          color: "#64748b",
-                        }}
-                      >
-                        cobrado
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 18,
-                          fontWeight: 900,
-                          color: "#4f46e5",
-                        }}
-                      >
-                        ${Number(data.monto).toLocaleString("es-AR")}
-                      </span>
-                    </div>
-                  </>
-                )}
-
-                {/* BOTONES */}
-                <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
-                  <button
-                    onClick={() => toast.dismiss(t)}
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 800,
-                      padding: "5px 10px",
-                      borderRadius: 7,
-                      border: "1px solid #e2e8f0",
-                      background: "transparent",
-                      color: "#64748b",
-                      cursor: "pointer",
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Cerrar
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLastTicketData(data); // 'data' viene del mensaje del socket
-                      setShowTicket(true);
-                      toast.dismiss(t.id); // Cerramos el aviso al abrir el ticket
-                    }}
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 800,
-                      padding: "5px 10px",
-                      borderRadius: 7,
-                      border: "none",
-                      background: isIngreso ? "#10b981" : "#4f46e5",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {isIngreso ? "Ver ticket" : "Ver comprobante"}
-                  </button>
-                </div>
-              </div>
-            ),
-            { duration: 5000 },
-          );
-
-          fetchData(); // Refrescar lista y stats
+    const refresh = () => {
+      fetchData();
+      checkCashStatus();
+    };
+    const stop = connectAuthenticatedSocket({
+      url: getWebSocketUrl(sucursalId),
+      token: localStorage.getItem("token"),
+      onReady: refresh,
+      onEvent: ({ event }) => {
+        if (event === "CONFIG_UPDATED") {
+          api.get("/auth/me")
+            .then(({ data }) => login(data))
+            .catch(() => toast.error("No se pudo actualizar la configuración de la sesión."));
+        } else {
+          refresh();
         }
-      };
-
-      socket.onclose = () => {
-        if (socketRef.current) setTimeout(connect, 3000);
-      };
-    };
-
-    connect();
+      },
+      onUnauthorized: logout,
+      onForbidden: () => toast.error("Sin acceso a las actualizaciones en tiempo real.", { id: "realtime-access" }),
+      onUnavailable: () => toast.error("No se pudieron conectar las actualizaciones. Recargá para volver a intentar.", { id: "realtime-offline" }),
+    });
+    window.addEventListener(SESSION_ENDED_EVENT, stop);
     return () => {
-      if (socketRef.current) {
-        socketRef.current.onclose = null; // Evitar reconexión al desmontar
-        socketRef.current.close();
-      }
+      window.removeEventListener(SESSION_ENDED_EVENT, stop);
+      stop();
     };
-  }, [user?.sucursal?.id, fetchData]);
+  }, [user?.sucursal?.id, fetchData, checkCashStatus, login, logout]);
+
+  const showOperationResult = (data, isExit) => {
+    toast.success(isExit
+      ? "Salida de " + data.patente + ": $" + data.monto + " (" + data.metodo_pago + ")"
+      : "Ingreso registrado: " + data.patente, {
+      duration: 8000,
+      action: {
+        label: "Ver comprobante",
+        onClick: () => {
+          setLastTicketData(data);
+          setShowTicket(true);
+        },
+      },
+    });
+    fetchData();
+  };
 
   const handleCheckout = async (patente, metodo = "EFECTIVO") => {
     try {
-      await api.post(
-        `/parking/salida?patente=${encodeURIComponent(patente)}&metodo_pago=${metodo}`,
-      );
+      const { data } = await api.post("/parking/salida", null, {
+        params: { patente, metodo_pago: metodo },
+      });
+      showOperationResult(data, true);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Error al procesar salida");
     }
@@ -373,8 +161,8 @@ const Dashboard = ({ onLogout }) => {
         toast.success("Caja cerrada correctamente.");
       }
       setShowCashModal(false);
-    } catch {
-      toast.error("Error en operación de caja");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error en operación de caja");
     }
   };
 
@@ -407,6 +195,8 @@ const Dashboard = ({ onLogout }) => {
         <div className="flex items-center gap-1 sm:gap-3 lg:gap-8 shrink-0">
           {/* BOTÓN CAJA */}
           <button
+            disabled={!isAdmin}
+            title={isAdmin ? "Administrar caja" : "La caja la administra un administrador"}
             onClick={() => {
               setCashMode(cashSession ? "close" : "open");
               setShowCashModal(true);
@@ -423,13 +213,13 @@ const Dashboard = ({ onLogout }) => {
             </span>
           </button>
 
-          <button
+          {isAdmin && <button
             onClick={() => navigate("/cash-history")}
             className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all shadow-sm"
             title="Historial de Cajas"
           >
             <FileStack size={18} />
-          </button>
+          </button>}
 
           {/* BOTÓN HISTORIAL */}
           {hasPermission("ver_historial") && (
@@ -496,7 +286,7 @@ const Dashboard = ({ onLogout }) => {
         {/* COLUMNA OPERATIVA (Izquierda) */}
         <section className="flex-1 lg:flex-[7] flex flex-col gap-6 min-w-0">
           {/* Overlay de bloqueo si no hay caja */}
-          {!isCashLoading && !cashSession && (
+          {!isCashLoading && !cashSession && (hasPermission("ingreso") || hasPermission("salida")) && (
             <div className="absolute inset-0 z-40 bg-slate-50/60 backdrop-blur-[2px] flex items-center justify-center rounded-[2rem]">
               <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center max-w-sm">
                 <AlertTriangle
@@ -507,9 +297,9 @@ const Dashboard = ({ onLogout }) => {
                   Operación Bloqueada
                 </h3>
                 <p className="text-sm text-slate-500 font-bold mb-6">
-                  Debes abrir la caja antes de registrar ingresos o salidas.
+                  {isAdmin ? "Debes abrir la caja antes de registrar ingresos o salidas." : "Solicitá a un administrador que abra la caja para operar."}
                 </p>
-                <button
+                {isAdmin && <button
                   onClick={() => {
                     setCashMode("open");
                     setShowCashModal(true);
@@ -517,16 +307,16 @@ const Dashboard = ({ onLogout }) => {
                   className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest"
                 >
                   Abrir Caja Ahora
-                </button>
+                </button>}
               </div>
             </div>
           )}
 
           <div className="shrink-0">
-            <EntryForm
-              onEntrySuccess={() => fetchData()}
-              disabled={!cashSession}
-            />
+            {hasPermission("ingreso") && <EntryForm
+              onEntrySuccess={(data) => showOperationResult(data, false)}
+              disabled={!cashSession || isCashLoading}
+            />}
           </div>
 
           <div className="shrink-0 relative">
@@ -549,6 +339,7 @@ const Dashboard = ({ onLogout }) => {
             <ActiveTable
               vehicles={filteredVehicles}
               onCheckout={handleCheckout}
+              canCheckout={hasPermission("salida") && Boolean(cashSession) && !isCashLoading}
               isLoading={loading}
             />
           </div>
@@ -556,7 +347,7 @@ const Dashboard = ({ onLogout }) => {
 
         {/* ASIDE (Derecha / Abajo en mobile) */}
         <aside className="lg:flex-[3] flex flex-col gap-4 min-w-0 lg:min-w-[340px]">
-          {hasPermission("ver_stats") && (
+          {hasPermission("ver_stats") && stats?.recaudacion_hoy !== undefined && (
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
               <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
                 Caja Hoy

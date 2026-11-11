@@ -15,8 +15,6 @@ const SettingsForm = ({ user, login }) => {
     tarifa_camioneta: user.sucursal.tarifa_camioneta || 1500,
     tiempo_cortesia_min: user.sucursal.tiempo_cortesia_min || 10,
     fraccion_minutos: user.sucursal.fraccion_minutos || 15,
-    color_primario: user.sucursal.color || "#4f46e5",
-    logo_url: user.sucursal.logo || "",
   } : {
     nombre: "",
     tarifa_auto: 0,
@@ -24,8 +22,6 @@ const SettingsForm = ({ user, login }) => {
     tarifa_camioneta: 0,
     tiempo_cortesia_min: 0,
     fraccion_minutos: 15,
-    color_primario: "#4f46e5",
-    logo_url: "",
   });
 
   const handleSave = async (e) => {
@@ -38,13 +34,12 @@ const SettingsForm = ({ user, login }) => {
         sucursal: {
           ...user.sucursal,
           ...response.data,
-          color: formData.color_primario,
-          logo: formData.logo_url,
         },
       });
       toast.success("CONFIGURACIÓN ACTUALIZADA");
-    } catch {
-      toast.error("ERROR AL GUARDAR");
+    } catch (error) {
+      const detail = error.response?.data?.detail;
+      toast.error(typeof detail === "string" ? detail : "ERROR AL GUARDAR");
     } finally {
       setLoading(false);
     }
@@ -167,14 +162,10 @@ const SettingsForm = ({ user, login }) => {
                 <div className="relative group">
                   <input
                     type="color"
+                    disabled
+                    title="La identidad de la empresa se administra de forma global"
                     className="w-40 h-40 rounded-[3rem] cursor-pointer bg-white border-8 border-white shadow-2xl transition-transform hover:scale-105"
-                    value={formData.color_primario}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        color_primario: e.target.value,
-                      })
-                    }
+                    value={user?.sucursal?.color || "#4f46e5"}
                   />
                 </div>
                 <div className="text-center">
@@ -182,8 +173,9 @@ const SettingsForm = ({ user, login }) => {
                     Código Hexadecimal
                   </p>
                   <p className="text-3xl font-black text-indigo-600 font-mono">
-                    {formData.color_primario.toUpperCase()}
+                    {(user?.sucursal?.color || "#4f46e5").toUpperCase()}
                   </p>
+                  <p className="text-xs text-slate-500 mt-3">La identidad de la empresa requiere administración global.</p>
                 </div>
               </div>
             </div>

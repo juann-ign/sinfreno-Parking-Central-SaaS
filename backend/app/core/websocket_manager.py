@@ -1,50 +1,85 @@
-from fastapi import WebSocket
-from typing import List, Dict
-import asyncio
+"""Branch-scoped websocket invalidations; protected data comes from HTTP endpoints."""
+
 import logging
+import time
+from typing import Dict
+
+from fastapi import HTTPException, WebSocket
+from starlette.concurrency import run_in_threadpool
+
+from app.core.websocket_auth import WebSocketPrincipal, revalidate_websocket
 
 logger = logging.getLogger("sinfreno")
 
+EVENTS = frozenset({"NUEVO_INGRESO", "NUEVA_SALIDA", "CONFIG_UPDATED"})
+
+
+def minimal_event(message: dict):
+    event = message.get("event")
+    if event not in EVENTS:
+        return None
+    payload = {"event": event}
+    operation_id = message.get("id")
+    if (
+        event != "CONFIG_UPDATED"
+        and isinstance(operation_id, int)
+        and not isinstance(operation_id, bool)
+        and operation_id > 0
+    ):
+        payload["id"] = operation_id
+    return payload
+
+
 class ConnectionManager:
-    """
-    Gestiona las conexiones activas de WebSockets para 
-    notificaciones en tiempo real.
-    """
     def __init__(self):
-        # Lista de clientes conectados (navegadores abiertos)
-        self.active_connections: Dict[int, List[WebSocket]] = {}
+        self.active_connections: Dict[int, Dict[WebSocket, WebSocketPrincipal]] = {}
 
-    async def connect(self, websocket: WebSocket, sucursal_id: int):
-        await websocket.accept()
-        s_id = int(sucursal_id)
-
-        # Si la sucursal no tiene lista de conexiones, la creamos
-        if s_id not in self.active_connections:
-            self.active_connections[s_id] = []
-
-        # Agregamos este navegador a la "habitación" de su sucursal
-        self.active_connections[s_id].append(websocket)
-        logger.info (f"🔌 WebSocket conectado: Sucursal {s_id}. Total activos: {len(self.active_connections[s_id])}")
+    async def connect(self, websocket: WebSocket, principal: WebSocketPrincipal):
+        """Register before the ACK, so the client's first HTTP action cannot race it."""
+        if time.time() >= principal.expires_at:
+            raise HTTPException(status_code=401, detail="Credencial vencida")
+        self.active_connections.setdefault(principal.sucursal_id, {})[websocket] = principal
+        try:
+            await websocket.send_json({"type": "authenticated"})
+        except BaseException:
+            self.disconnect(websocket, principal.sucursal_id)
+            raise
+        logger.info("WebSocket autorizado en sucursal %s", principal.sucursal_id)
 
     def disconnect(self, websocket: WebSocket, sucursal_id: int):
-         # Quitamos el navegador de la lista para no enviar mensajes a un fantasma
-        s_id = int(sucursal_id)
-        if s_id in self.active_connections:
-            if websocket in self.active_connections[s_id]:
-                self.active_connections[s_id].remove(websocket)
-                logger.info(f"❌ WebSocket desconectado: Sucursal {s_id}")
+        connections = self.active_connections.get(sucursal_id)
+        if connections is None:
+            return
+        connections.pop(websocket, None)
+        if not connections:
+            self.active_connections.pop(sucursal_id, None)
 
+    async def close(self, websocket: WebSocket, sucursal_id: int, code: int):
+        self.disconnect(websocket, sucursal_id)
+        try:
+            await websocket.close(code=code)
+        except (RuntimeError, OSError):
+            # A concurrently disconnected peer requires no further cleanup.
+            pass
 
     async def broadcast(self, message: dict, sucursal_id: int):
-        s_id = int(sucursal_id)
-        # Creamos una lista de tareas para enviar a todos en paralelo
-        if s_id in self.active_connections:
-            logger.info(f"📡 Enviando Broadcast a sucursal {s_id}: {message['event']}")
-            for connection in self.active_connections[s_id][:]:
-                try:
-                    await connection.send_json(message)
-                except Exception as e:
-                    logger.error(f"⚠️ Error enviando a un socket: {e}")
-                    self.active_connections[s_id].remove(connection)
-# Instancia global para usar en toda la app
+        payload = minimal_event(message)
+        if payload is None:
+            return
+        for connection, principal in list(self.active_connections.get(sucursal_id, {}).items()):
+            try:
+                await run_in_threadpool(revalidate_websocket, principal)
+                if time.time() >= principal.expires_at:
+                    await self.close(connection, sucursal_id, 4401)
+                    continue
+                await connection.send_json(payload)
+            except HTTPException as exc:
+                await self.close(connection, sucursal_id, 4401 if exc.status_code == 401 else 4403)
+            except Exception:
+                # Fail closed. Notification errors must not turn a committed HTTP
+                # operation into a failure or expose tokens/exception contents.
+                logger.warning("Canal WebSocket cerrado al fallar una notificación")
+                await self.close(connection, sucursal_id, 1011)
+
+
 manager = ConnectionManager()

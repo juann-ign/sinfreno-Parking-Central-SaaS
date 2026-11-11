@@ -1,4 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
+from app.core.access_policy import LOCAL_PERMISSIONS, OPERATOR_PERMISSIONS
 from datetime import datetime
 from typing import Optional, List
 
@@ -113,7 +114,7 @@ class DashboardSummary(BaseModel):
     autos_adentro: int
     capacidad_disponible: int
     porcentaje_ocupacion: float
-    recaudacion_hoy: float
+    recaudacion_hoy: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -173,11 +174,43 @@ class CierreCajaOut(BaseModel):
     class Config:
         from_attributes = True
 
+class CajaOperativaOut(BaseModel):
+    id: int
+    fecha_apertura: datetime
+    fecha_cierre: Optional[datetime] = None
+    estado: str
+    usuario_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
 class UserCreateInternal(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     email: EmailStr
     password: str
     rol: str = "OPERADOR"
-    permisos: List[str] = ["ingreso", "salida"]
+    permisos: List[str] = Field(default_factory=lambda: ["ingreso", "salida"])
+
+    @field_validator("rol")
+    @classmethod
+    def local_role(cls, value):
+        role = value.strip().upper()
+        if role not in {"ADMIN", "OPERADOR"}:
+            raise ValueError("Sólo se pueden crear ADMIN u OPERADOR locales")
+        return role
+
+    @field_validator("permisos")
+    @classmethod
+    def known_permissions(cls, values):
+        if any(value not in LOCAL_PERMISSIONS for value in values):
+            raise ValueError("Permiso no concedible")
+        return sorted(set(values))
+
+    @model_validator(mode="after")
+    def local_permissions(self):
+        if self.rol == "OPERADOR" and not set(self.permisos) <= OPERATOR_PERMISSIONS:
+            raise ValueError("Ese permiso requiere ADMIN local")
+        return self
 
 class TenantProvision(BaseModel):
     nombre_empresa: str

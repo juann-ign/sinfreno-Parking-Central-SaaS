@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import History from "../pages/History";
@@ -11,12 +11,23 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/useAuth";
 
 // Este componente decide qué ver según si el usuario está logueado
+const AccessGate = ({ allowed, children }) => allowed ? children : (
+  <main className="p-8 text-center">
+    <p>No tenés permiso para acceder a esta pantalla.</p>
+    <Link to="/" className="text-indigo-600 underline">Volver al inicio</Link>
+  </main>
+);
+
 const RootNavigation = () => {
-  const { user, logout } = useAuth();
+  const { user, checkingSession, logout, hasPermission } = useAuth();
+
+  if (checkingSession) return <p role="status" className="p-8 text-center">Verificando sesión…</p>;
 
   if (!user) {
     return <Login onLoginSuccess={() => console.log("Logueado!")} />;
   }
+  const isAdmin = user.rol === "ADMIN";
+  const canOperate = Boolean(user.sucursal) && ["ingreso", "salida", "ver_ocupacion", "ver_stats", "ver_historial"].some(hasPermission);
 
   return (
     <Routes>
@@ -30,11 +41,11 @@ const RootNavigation = () => {
           )
         }
       />
-      <Route path="/dashboard" element={<Dashboard onLogout={logout} />} />
-      <Route path="/history" element={<History />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/cash-history" element={<CashHistory />} />
-      <Route path="/users" element={<Users />} />
+      <Route path="/dashboard" element={<AccessGate allowed={canOperate}><Dashboard onLogout={logout} /></AccessGate>} />
+      <Route path="/history" element={<AccessGate allowed={hasPermission("ver_historial")}><History /></AccessGate>} />
+      <Route path="/settings" element={<AccessGate allowed={hasPermission("config_sucursal")}><Settings /></AccessGate>} />
+      <Route path="/cash-history" element={<AccessGate allowed={isAdmin}><CashHistory /></AccessGate>} />
+      <Route path="/users" element={<AccessGate allowed={isAdmin}><Users /></AccessGate>} />
       <Route
         path="/superadmin"
         element={

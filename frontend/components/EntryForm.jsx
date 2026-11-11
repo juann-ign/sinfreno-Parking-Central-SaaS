@@ -37,14 +37,14 @@ const EntryForm = ({ onEntrySuccess, disabled }) => {
     if (status === "invalid" || status === "empty") return;
     setLoading(true);
     try {
-      await api.post("/parking/ingreso", {
+      const { data } = await api.post("/parking/ingreso", {
         patente: patente.toUpperCase(),
         torre_id: parseInt(torreId),
         tipo: tipo,
       });
       setPatente("");
       setStatus("empty");
-      onEntrySuccess();
+      onEntrySuccess(data);
     } catch (error) {
       const errorMsg = error.response?.data?.detail;
       // Si detail es un objeto o lista (error 422), lo convertimos a string legible

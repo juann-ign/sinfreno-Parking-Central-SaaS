@@ -1,51 +1,51 @@
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Printer, CheckCircle2 } from "lucide-react";
+import { Printer, Download, CheckCircle2 } from "lucide-react";
 import { getTicketUrl } from "../config/connections.js";
+import api from "../api/axios.js";
+import { toast } from "sonner";
 
 const TicketModal = ({ isOpen, ticketData, onClose }) => {
+  const [downloading, setDownloading] = useState(false);
+  const downloadController = useRef(null);
+  useEffect(() => () => downloadController.current?.abort(), [isOpen, ticketData?.id]);
   if (!isOpen || !ticketData) return null;
+  const isIngreso = !ticketData.fecha_salida;
 
   const handlePrint = () => {
     window.print(); // El CSS ocultará todo excepto el ticket
   };
 
-  const handleWhatsAppShare = () => {
-    // 1. Definimos isIngreso al principio de todo
-    const isIngreso = ticketData?.event === "NUEVO_INGRESO";
-
-    console.log("Procesando WhatsApp. ¿Es ingreso?:", isIngreso);
-
-    // 2. Validaciones de seguridad
-    if (!ticketData?.id) {
-      alert(
-        "Error: No se encontró el ID de la operación. Intenta cerrar y abrir el ticket.",
-      );
-      return;
+  const handleDownload = async () => {
+    if (downloading) return;
+    const controller = new AbortController();
+    downloadController.current = controller;
+    setDownloading(true);
+    try {
+      const { data } = await api.get(getTicketUrl(ticketData.id), {
+        responseType: "blob",
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      const url = URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ticket_${ticketData.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        toast.error(error.response?.status === 403
+          ? "No tenés permiso para descargar este comprobante."
+          : error.response?.status === 404
+            ? "No se encontró el comprobante en tu sucursal."
+            : "No se pudo descargar el comprobante.");
+      }
+    } finally {
+      setDownloading(false);
     }
-
-    const phone = prompt("Ingresa el número (Ej: 54911...)");
-    if (!phone) return;
-
-    const cleanPhone = phone.replace(/\D/g, "");
-
-    const mensaje = isIngreso
-      ? `*¡BIENVENIDO A ${ticketData.sucursal || "NUESTRO PARKING"}!* 🚗\n\n` +
-        `Hemos registrado el ingreso de tu vehículo:\n` +
-        `• *Patente:* ${ticketData.patente}\n` +
-        `• *Hora:* ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}hs\n\n` +
-        `Puedes consultar los detalles de tu estadía y tarifas aquí: \n` +
-        getTicketUrl(ticketData.id)
-      : `*GRACIAS POR TU VISITA* ✨\n\n` +
-        `Se ha procesado el pago de tu estadía:\n` +
-        `• *Vehículo:* ${ticketData.patente}\n` +
-        `• *Monto:* $${ticketData.monto}\n` +
-        `• *Medio de pago:* ${ticketData.metodo_pago}\n\n` +
-        `Descarga tu comprobante oficial aquí: \n` +
-        getTicketUrl(ticketData.id);
-
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(mensaje)}`;
-
-    window.open(whatsappUrl, "_blank");
   };
 
   return (
@@ -73,10 +73,10 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
               <CheckCircle2 size={40} />
             </div>
             <h2 className="text-xl font-black uppercase tracking-tight">
-              Pago Exitoso
+              {isIngreso ? "Ingreso registrado" : "Pago Exitoso"}
             </h2>
             <p className="text-indigo-100 text-xs font-bold opacity-80">
-              Comprobante de Salida
+              {isIngreso ? "Comprobante de Ingreso" : "Comprobante de Salida"}
             </p>
           </div>
 
@@ -106,14 +106,14 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
                   {new Date(ticketData.fecha_entrada).toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between text-xs">
+              {!isIngreso && <div className="flex justify-between text-xs">
                 <span className="text-slate-400 uppercase font-bold">
                   Salida:
                 </span>
                 <span>
                   {new Date(ticketData.fecha_salida).toLocaleString()}
                 </span>
-              </div>
+              </div>}
               <div className="flex justify-between text-xs border-t border-slate-100 pt-3">
                 <span className="text-slate-400 uppercase font-bold">
                   Tipo:
@@ -123,14 +123,14 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
             </div>
 
             {/* Total */}
-            <div className="bg-slate-50 p-4 rounded-2xl text-center mb-6">
+            {!isIngreso && <div className="bg-slate-50 p-4 rounded-2xl text-center mb-6">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                 Total Cobrado
               </p>
               <p className="text-3xl font-black text-indigo-600">
                 ${ticketData.monto}
               </p>
-            </div>
+            </div>}
 
             {/* QR Placeholder (Demuestra nivel técnico) */}
             <div className="flex justify-center mb-6 opacity-20">
@@ -159,10 +159,11 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
               <Printer size={14} /> Imprimir
             </button>
             <button
-              onClick={handleWhatsAppShare}
+              onClick={handleDownload}
+              disabled={downloading}
               className="flex-1 py-3 px-4 bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all"
             >
-              WhatsApp
+              <Download size={14} /> {downloading ? "Descargando…" : "PDF"}
             </button>
           </div>
         </motion.div>

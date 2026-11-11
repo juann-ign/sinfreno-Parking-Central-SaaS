@@ -39,9 +39,10 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
         db.refresh(vehiculo)
 
     # 3. Validar si ya está adentro
-    estadia_activa = db.query(db_models.Estadia).filter(
+    estadia_activa = db.query(db_models.Estadia).join(db_models.Torre).filter(
         db_models.Estadia.vehiculo_id == vehiculo.id, 
-        db_models.Estadia.estado == "ACTIVO"
+        db_models.Estadia.estado == "ACTIVO",
+        db_models.Torre.sucursal_id == sucursal_id_usuario,
     ).first()
     
     if estadia_activa:
@@ -54,6 +55,7 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
         usuario_ingreso_id=usuario_ingreso_id, 
         fecha_entrada=datetime.now(timezone.utc), # Siempre UTC
         monto=0.0, 
+        tipo_vehiculo_registrado=tipo,
         estado="ACTIVO"
     )
     db.add(nueva_estadia)
@@ -73,16 +75,17 @@ def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario
     return nueva_estadia
 
 
-def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int, metodo_pago: str = "EFECTIVO"):
+def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int, sucursal_id_usuario: int, metodo_pago: str = "EFECTIVO"):
     # 1. Buscar estadía activa CON BLOQUEO (SELECT FOR UPDATE)
     # Esto evita que si dos operarios clickean al mismo tiempo, se procese dos veces.
-    estadia = db.query(db_models.Estadia).with_for_update().join(db_models.Vehiculo).filter(
+    estadia = db.query(db_models.Estadia).join(db_models.Vehiculo).join(db_models.Torre).filter(
         db_models.Vehiculo.patente == patente.upper().strip(),
         db_models.Estadia.estado == "ACTIVO",
-    ).first()
+        db_models.Torre.sucursal_id == sucursal_id_usuario,
+    ).with_for_update(of=db_models.Estadia).first()
 
     if not estadia:
-        raise EstadiaNoEncontradaError(patente)
+        raise HTTPException(status_code=404, detail="Estadía no encontrada")
 
    # 2. Cálculos de tiempo en UTC
     fecha_salida = datetime.now(timezone.utc)
@@ -91,7 +94,7 @@ def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int,
 
     # 3. Reglas de Negocio
     sucursal = estadia.torre.sucursal
-    tipo = estadia.vehiculo.tipo.upper()
+    tipo = estadia.tipo_vehiculo.upper()
 
     # Selección de tarifa dinámica según tipo de vehículo
     if tipo == "MOTO":

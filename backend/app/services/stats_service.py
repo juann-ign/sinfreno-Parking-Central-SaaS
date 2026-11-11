@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 from app.core.config import settings
 from app.core.timezone_utils import get_today_range_utc
 
-def get_dashboard_summary(db: Session, sucursal_id: int):
+def get_dashboard_summary(db: Session, sucursal_id: int, include_financial: bool = False):
     # Usamos el helper para filtrar "Hoy" según Argentina
     inicio_utc, fin_utc = get_today_range_utc()
 
@@ -21,20 +21,19 @@ def get_dashboard_summary(db: Session, sucursal_id: int):
         db_models.Torre.sucursal_id == sucursal_id
     ).scalar() or 0
 
-    # 3. Recaudación Real (Hoy)
-    recaudacion_hoy = db.query(func.sum(db_models.Estadia.monto)).join(db_models.Torre).filter(
-        db_models.Torre.sucursal_id == sucursal_id,
-        db_models.Estadia.estado == "FINALIZADO",
-        db_models.Estadia.fecha_salida >= inicio_utc,
-        db_models.Estadia.fecha_salida <= fin_utc
-    ).scalar() or 0.0
-
-    return {
+    summary = {
         "autos_adentro": autos_adentro,
         "capacidad_disponible": capacidad_total - autos_adentro,
         "porcentaje_ocupacion": round((autos_adentro / capacidad_total * 100), 2) if capacidad_total > 0 else 0,
-        "recaudacion_hoy": recaudacion_hoy
     }
+    if include_financial:
+        summary["recaudacion_hoy"] = db.query(func.sum(db_models.Estadia.monto)).join(db_models.Torre).filter(
+            db_models.Torre.sucursal_id == sucursal_id,
+            db_models.Estadia.estado == "FINALIZADO",
+            db_models.Estadia.fecha_salida >= inicio_utc,
+            db_models.Estadia.fecha_salida <= fin_utc,
+        ).scalar() or 0.0
+    return summary
 
 def get_hourly_revenue(db: Session, sucursal_id: int):
     inicio_utc, fin_utc = get_today_range_utc()

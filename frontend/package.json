@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint . --max-warnings=0",
     "test:connections": "node --test config/connections.test.js",
+    "test:realtime": "node --test api/realtime.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

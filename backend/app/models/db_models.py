@@ -82,6 +82,8 @@ class Estadia(Base):
     monto = Column(Float, default=0.0)
     metodo_pago = Column(String, nullable=True) # "EFECTIVO", "DEBITO", "QR"
     estado = Column(String, default="ACTIVO") # ACTIVO o FINALIZADO
+    # El registro global de patente no puede cambiar la categoría de otra sede.
+    tipo_vehiculo_registrado = Column(String, nullable=True)
 
     # Relationships inversos (necesarios para acceder a estadia.vehiculo.patente)
     vehiculo = relationship("Vehiculo", back_populates="estadias")
@@ -96,7 +98,7 @@ class Estadia(Base):
         
     @property
     def tipo_vehiculo(self):
-        return self.vehiculo.tipo if self.vehiculo else "AUTO"
+        return self.tipo_vehiculo_registrado or (self.vehiculo.tipo if self.vehiculo else "AUTO")
 
 class Auditoria(Base):
     __tablename__ = "auditoria"

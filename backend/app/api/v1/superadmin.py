@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from app.api import dependencies
 from app.models import schemas, db_models
 from app.core import security
@@ -61,9 +62,15 @@ def provision_tenant(
         db.commit()
         return {"msg": "Tenant provisionado con éxito", "torre_id": nueva_torre.id}
 
-    except Exception as e:
+    except HTTPException:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Fallo en provisión: {str(e)}")
+        raise
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Los datos de empresa o administrador ya están en uso")
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="No se pudo completar la provisión")
 
 @router.get("/global-stats")
 def get_global_stats(

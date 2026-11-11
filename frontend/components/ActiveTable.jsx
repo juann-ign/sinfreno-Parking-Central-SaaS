@@ -64,7 +64,7 @@ const TimeBadge = ({ entryDate }) => {
   );
 };
 
-const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
+const ActiveTable = ({ vehicles, onCheckout, canCheckout, isLoading }) => {
   const [isProcessing, setIsProcessing] = useState(null); // Guarda la patente que se está cobrando
 
   const handleQuickCheckout = (patente, metodo) => {
@@ -141,7 +141,7 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
                   <td className="px-4 lg:px-8 py-4 lg:py-6 text-right">
                     <div className="relative flex justify-end items-center h-10">
                       <AnimatePresence mode="wait">
-                        {isProcessing === v.patente ? (
+                        {canCheckout && isProcessing === v.patente ? (
                           <motion.div
                             key="options"
                             initial={{ opacity: 0, scale: 0.8, x: 10 }}
@@ -187,6 +187,7 @@ const ActiveTable = ({ vehicles, onCheckout, isLoading }) => {
                         ) : (
                           <motion.button
                             key="button"
+                            disabled={!canCheckout}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}

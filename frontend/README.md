@@ -8,6 +8,7 @@ Desde `C:\dev\sinfreno\frontend`, en PowerShell:
 npm.cmd ci --cache ..\.recovery\npm-cache --no-audit --no-fund
 npm.cmd run lint
 npm.cmd run test:connections
+npm.cmd run test:realtime
 npm.cmd run build
 npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort
 ```
@@ -26,7 +27,11 @@ Copiar `.env.example` a `.env.local` para cambiar la configuración:
 
 Las rutas que empiezan por `/` heredan el origen del frontend y su esquema TLS. Los prefijos y las barras finales se conservan o normalizan al construir enlaces. Reiniciar Vite después de cambiar variables; para un frontend compilado se debe volver a ejecutar el build. Las variables `VITE_*` se incluyen en el navegador: nunca poner claves, tokens ni credenciales.
 
-La configuración central está en `config/connections.js`. Sus pruebas cubren protocolos, prefijos, URLs independientes, valores inválidos y codificación de identificadores. La autorización de WebSocket y comprobantes sigue pendiente para SF-02.
+La configuración central está en `config/connections.js`. Sus pruebas cubren protocolos, prefijos, URLs independientes, valores inválidos y codificación de identificadores. Los comprobantes se descargan desde el botón PDF usando el cliente Axios autenticado y un blob local; no se comparten URLs públicas ni tokens mediante WhatsApp.
+
+El WebSocket envía la credencial en un primer mensaje y espera confirmación antes de procesar avisos. Origin lo agrega el navegador. Los avisos sólo invalidan lecturas HTTP autorizadas; el resultado individual y el comprobante provienen de la respuesta HTTP de la terminal que hizo la operación. Al cerrar sesión o recibir 401/4401 se limpia la sesión y se cierra el socket. Los rechazos 4403/1008 no se reintentan; las desconexiones transitorias tienen hasta cinco reintentos (1, 2, 4, 8 y 15 segundos), sin reiniciar ese límite dentro de la misma conexión lógica. Después hace falta recargar. El servidor cierra la conexión al vencer la credencial.
+
+Al restaurar una sesión se consulta `/auth/me` para consumir rol, permisos y sucursal actuales; el almacenamiento local sólo conserva la sesión entre recargas. La autorización real se aplica en backend. Los tests de `api/realtime.test.js` verifican el ciclo del cliente con un WebSocket simulado; no reemplazan las pruebas integradas de autenticación y aislamiento.
 
 ## Lint
 

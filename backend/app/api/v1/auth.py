@@ -1,4 +1,3 @@
-from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -7,6 +6,31 @@ from app.core import security
 from app.models import db_models, schemas
 
 router = APIRouter(prefix="/auth", tags=["Security"])
+
+
+def user_info(user):
+    sucursal = user.sucursal
+    return {
+        "email": user.email,
+        "rol": dependencies.normalized_role(user),
+        "permisos": sorted(dependencies.effective_permissions(user)),
+        "sucursal": {
+            "id": sucursal.id,
+            "nombre": sucursal.nombre,
+            "tarifa_auto": sucursal.tarifa_auto,
+            "tarifa_moto": sucursal.tarifa_moto,
+            "tarifa_camioneta": sucursal.tarifa_camioneta,
+            "tiempo_cortesia_min": sucursal.tiempo_cortesia_min,
+            "fraccion_minutos": sucursal.fraccion_minutos,
+            "logo": sucursal.empresa.logo_url,
+            "color": sucursal.empresa.color_primario,
+        } if sucursal and sucursal.empresa else None,
+    }
+
+
+@router.get("/me")
+def read_current_user(current_user: db_models.Usuario = Depends(dependencies.get_current_user)):
+    return user_info(current_user)
 
 @router.post("/login")
 def login(
@@ -25,30 +49,10 @@ def login(
 
     access_token = security.create_access_token(subject=user.id)
     
-    # Construimos la info de la sucursal solo si existe
-    sucursal_info = None
-    if user.sucursal:
-        sucursal_info = {
-            "id": user.sucursal_id,
-            "nombre": user.sucursal.nombre,
-            "tarifa_auto": user.sucursal.tarifa_auto,
-            "tarifa_moto": user.sucursal.tarifa_moto,
-            "tarifa_camioneta": user.sucursal.tarifa_camioneta,
-            "tiempo_cortesia_min": user.sucursal.tiempo_cortesia_min,
-            "fraccion_minutos": user.sucursal.fraccion_minutos,
-            "logo": user.sucursal.empresa.logo_url,
-            "color": user.sucursal.empresa.color_primario
-        }
-
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user_info": {
-            "email": user.email,
-            "rol": user.rol,
-            "permisos": user.permisos.split(",") if user.permisos else [],
-            "sucursal": sucursal_info  # Será None para el SuperAdmin
-        }
+        "user_info": user_info(user),
     }
 @router.post("/discovery")
 def discover_tenant(email: str, db: Session = Depends(dependencies.get_db)):
@@ -71,7 +75,7 @@ def discover_tenant(email: str, db: Session = Depends(dependencies.get_db)):
 @router.get("/users", response_model=list[schemas.UsuarioOut])
 def list_users(
     db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+    current_user: db_models.Usuario = Depends(dependencies.require_local_admin)
 ):
     # AISLAMIENTO: Solo devolvemos usuarios de la misma sucursal
     return db.query(db_models.Usuario).filter(
@@ -82,7 +86,7 @@ def list_users(
 def create_staff_user(
     user_in: schemas.UserCreateInternal,
     db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+    current_user: db_models.Usuario = Depends(dependencies.require_local_admin)
 ):
     # Verificar si el email ya existe
     existing_user = db.query(db_models.Usuario).filter(db_models.Usuario.email == user_in.email).first()
@@ -93,8 +97,10 @@ def create_staff_user(
     new_user = db_models.Usuario(
         email=user_in.email,
         password_hash=security.get_password_hash(user_in.password),
-        rol=user_in.rol.upper(),
-        permisos=",".join(user_in.permisos),
+        rol=user_in.rol,
+        permisos=",".join(sorted(dependencies.effective_permissions(
+            db_models.Usuario(rol=user_in.rol, permisos=",".join(user_in.permisos))
+        ))),
         sucursal_id=current_user.sucursal_id
     )
     db.add(new_user)
@@ -106,7 +112,7 @@ def create_staff_user(
 def delete_user(
     user_id: int,
     db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.RoleChecker(["ADMIN"]))
+    current_user: db_models.Usuario = Depends(dependencies.require_local_admin)
 ):
     user = db.query(db_models.Usuario).filter(
         db_models.Usuario.id == user_id,
@@ -118,6 +124,9 @@ def delete_user(
     
     if user.id == current_user.id:
         raise HTTPException(status_code=400, detail="No puedes eliminarte a ti mismo")
+
+    if dependencies.normalized_role(user) not in {"ADMIN", "OPERADOR"}:
+        raise HTTPException(status_code=403, detail="No puedes administrar una cuenta global")
 
     db.delete(user)
     db.commit()
