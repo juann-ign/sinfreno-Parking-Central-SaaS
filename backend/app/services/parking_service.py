@@ -1,187 +1,233 @@
-from sqlalchemy.orm import Session, joinedload
-from app.models import db_models
-from fastapi import HTTPException 
-from datetime import datetime, timezone
-from math import ceil
-from app.core.websocket_manager import manager
-from app.core.exceptions import VehiculoYaPresenteError, EstadiaNoEncontradaError
-from app.core.logger import logger 
+import math
+from datetime import timedelta, timezone
+from decimal import Decimal
+from uuid import uuid4
+
+from sqlalchemy import and_, or_
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import joinedload
+
+from app.models import db_models as m, schemas
 from app.services.audit_service import registrar_evento
+from app.services.billing import CATEGORIES, calcular_cobro, validate_rules
+from app.services.caja_service import exigir_caja_abierta
+from app.services.idempotency import begin_operation, lock_branch, operation_error, save_operation, rollback_or_record_rejection
 
-def registrar_ingreso_vehiculo(db: Session, patente: str, torre_id: int, usuario_ingreso_id: int, sucursal_id_usuario: int, tipo: str = "AUTO"):
-    # 1. Validar Torre y su capacidad
-    # 1. VALIDACIÓN DE SEGURIDAD: ¿Esta torre es de MI sucursal?
-    torre = db.query(db_models.Torre).filter(
-        db_models.Torre.id == torre_id,
-        db_models.Torre.sucursal_id == sucursal_id_usuario # <--- OBLIGATORIO
-    ).first()
-    
-    if not torre:
-        raise HTTPException(status_code=403, detail="No tienes acceso a esta torre o no existe.")
-    
-    # Contar cuántos vehículos están actualmente en esa torre
-    ocupacion_actual = db.query(db_models.Estadia).filter(
-        db_models.Estadia.torre_id == torre_id,
-        db_models.Estadia.estado == "ACTIVO"
-    ).count()
+QUOTE_TTL_SECONDS = 120
 
-    if ocupacion_actual >= torre.capacidad:
-        raise HTTPException(status_code=400, detail="Torre llena. No se pueden registrar más ingresos.")
 
-    patente_up = patente.upper().strip()
-    
-    # 2. Obtener o crear vehículo
-    vehiculo = db.query(db_models.Vehiculo).filter(db_models.Vehiculo.patente == patente_up).first()
-    if not vehiculo:
-        vehiculo = db_models.Vehiculo(patente=patente_up, tipo=tipo)
-        db.add(vehiculo)
+def respuesta_estadia(stay):
+    return schemas.EstadiaOut.model_validate(stay).model_dump(mode="json")
+
+
+def reglas_actuales(branch, tower, category):
+    if category not in CATEGORIES:
+        raise operation_error("CATEGORIA_INVALIDA", "La categoría debe ser AUTO, MOTO o CAMIONETA", 422)
+    try:
+        return validate_rules({
+            "categoria": category,
+            "tarifa_hora": str(getattr(branch, {"AUTO": "tarifa_auto", "MOTO": "tarifa_moto", "CAMIONETA": "tarifa_camioneta"}[category])),
+            "cortesia_minutos": branch.tiempo_cortesia_min,
+            "fraccion_minutos": branch.fraccion_minutos,
+            "porcentaje_descuento": str(tower.porcentaje_descuento),
+        })
+    except ValueError:
+        raise operation_error("CONFIGURACION_INVALIDA", "Las reglas de cobro requieren revisión administrativa") from None
+
+
+def estadia_local(db, estadia_id, sucursal_id, lock=False):
+    query = db.query(m.Estadia).join(m.Torre).filter(m.Estadia.id == estadia_id, m.Torre.sucursal_id == sucursal_id)
+    if lock:
+        query = query.populate_existing().with_for_update(of=m.Estadia)
+    stay = query.first()
+    if stay is None:
+        raise operation_error("ESTADIA_NO_ENCONTRADA", "Estadía no encontrada", 404)
+    return stay
+
+
+def registrar_ingreso_vehiculo(db, patente, torre_id, usuario_ingreso_id, sucursal_id_usuario, tipo, caja_id, key):
+    plate = patente.upper().strip()
+    payload = {"patente": plate, "torre_id": torre_id, "tipo": tipo, "caja_id": caja_id}
+    savepoint = None
+    try:
+        previous = begin_operation(db, sucursal_id_usuario, usuario_ingreso_id, "INGRESO", key, payload)
+        if previous is not None:
+            db.rollback()
+            return previous, True
+        savepoint = db.begin_nested()
+        branch = lock_branch(db, sucursal_id_usuario)
+        tower = db.query(m.Torre).filter_by(id=torre_id, sucursal_id=sucursal_id_usuario).populate_existing().with_for_update().first()
+        if tower is None:
+            raise operation_error("SECTOR_NO_AUTORIZADO", "Sector no encontrado o no autorizado", 403)
+        exigir_caja_abierta(db, caja_id, sucursal_id_usuario)
+        rules = reglas_actuales(branch, tower, tipo)
+        duplicate = db.query(m.Estadia).join(m.Vehiculo).filter(
+            m.Estadia.sucursal_id == sucursal_id_usuario, m.Estadia.estado == "ACTIVO", m.Vehiculo.patente == plate,
+        ).first()
+        if duplicate:
+            raise operation_error("PATENTE_YA_ACTIVA", "La patente ya tiene una estadía activa en esta sucursal")
+        occupancy = db.query(m.Estadia).filter_by(torre_id=torre_id, estado="ACTIVO").count()
+        if occupancy >= tower.capacidad:
+            raise operation_error("SECTOR_LLENO", "El sector no tiene plazas disponibles")
+        # La unicidad global de patente se resuelve sin commit intermedio ni 500
+        # ante creaciones concurrentes desde sucursales diferentes.
+        db.execute(insert(m.Vehiculo).values(patente=plate, tipo=tipo).on_conflict_do_nothing(index_elements=[m.Vehiculo.patente]))
+        vehicle = db.query(m.Vehiculo).filter_by(patente=plate).one()
+        now = m.utc_now()
+        stay = m.Estadia(vehiculo_id=vehicle.id, torre_id=torre_id, sucursal_id=sucursal_id_usuario,
+                        usuario_ingreso_id=usuario_ingreso_id, fecha_entrada=now.replace(tzinfo=None),
+                        fecha_entrada_utc=now, monto=Decimal("0.00"), estado="ACTIVO",
+                        tipo_vehiculo_registrado=tipo, reglas_ingreso=rules, caja_ingreso_id=caja_id)
+        db.add(stay)
+        db.flush()
+        registrar_evento(db, usuario_ingreso_id, sucursal_id_usuario, "INGRESO_VEHICULO", f"Estadía {stay.id}; patente {plate}; sector {torre_id}; turno {caja_id}")
+        response = respuesta_estadia(stay)
+        save_operation(db, sucursal_id_usuario, usuario_ingreso_id, "INGRESO", key, payload, response)
+        savepoint.commit()
         db.commit()
-        db.refresh(vehiculo)
-
-    # 3. Validar si ya está adentro
-    estadia_activa = db.query(db_models.Estadia).join(db_models.Torre).filter(
-        db_models.Estadia.vehiculo_id == vehiculo.id, 
-        db_models.Estadia.estado == "ACTIVO",
-        db_models.Torre.sucursal_id == sucursal_id_usuario,
-    ).first()
-    
-    if estadia_activa:
-        raise VehiculoYaPresenteError(patente_up)
-
-    # 4. Crear estadía con UTC
-    nueva_estadia = db_models.Estadia(
-        vehiculo_id=vehiculo.id, 
-        torre_id=torre_id, 
-        usuario_ingreso_id=usuario_ingreso_id, 
-        fecha_entrada=datetime.now(timezone.utc), # Siempre UTC
-        monto=0.0, 
-        tipo_vehiculo_registrado=tipo,
-        estado="ACTIVO"
-    )
-    db.add(nueva_estadia)
-
-    registrar_evento(
-        db, 
-        usuario_id=usuario_ingreso_id, 
-        sucursal_id=sucursal_id_usuario,
-        accion="INGRESO_VEHICULO",
-        detalles=f"Vehículo {patente_up} ingresó a Torre {torre_id}"
-    )
-    
-    logger.info(f"INGRESO: Vehículo {patente_up} en Torre {torre_id} por Usuario ID {usuario_ingreso_id}")
-
-    db.commit()
-    db.refresh(nueva_estadia)
-    return nueva_estadia
+        return response, False
+    except Exception as exc:
+        rollback_or_record_rejection(db, exc, savepoint, sucursal_id_usuario, usuario_ingreso_id, "INGRESO", key, payload)
+        raise
 
 
-def registrar_salida_vehiculo(db: Session, patente: str, usuario_egreso_id: int, sucursal_id_usuario: int, metodo_pago: str = "EFECTIVO"):
-    # 1. Buscar estadía activa CON BLOQUEO (SELECT FOR UPDATE)
-    # Esto evita que si dos operarios clickean al mismo tiempo, se procese dos veces.
-    estadia = db.query(db_models.Estadia).join(db_models.Vehiculo).join(db_models.Torre).filter(
-        db_models.Vehiculo.patente == patente.upper().strip(),
-        db_models.Estadia.estado == "ACTIVO",
-        db_models.Torre.sucursal_id == sucursal_id_usuario,
-    ).with_for_update(of=db_models.Estadia).first()
+def cotizar_salida(db, estadia_id, sucursal_id, usuario_id):
+    try:
+        branch = lock_branch(db, sucursal_id)
+        stay = estadia_local(db, estadia_id, sucursal_id, lock=True)
+        if stay.estado != "ACTIVO":
+            raise operation_error("ESTADIA_FINALIZADA", "La estadía ya fue finalizada")
+        if stay.fecha_entrada_utc is None:
+            raise operation_error("LEGACY_FECHA_REQUIERE_REVISION", "La fecha heredada no prueba una zona horaria; un ADMIN debe confirmarla explícitamente")
+        if stay.reglas_ingreso is None:
+            rules = reglas_actuales(branch, stay.torre, stay.tipo_vehiculo)
+            origin = "HEREDADO_CONFIG_ACTUAL"
+        else:
+            try:
+                rules = validate_rules(stay.reglas_ingreso)
+            except ValueError:
+                raise operation_error("SNAPSHOT_INVALIDO", "El snapshot de reglas requiere revisión") from None
+            origin = "INGRESO"
+        now = m.utc_now()
+        try:
+            calculation = calcular_cobro(stay.fecha_entrada_utc, now, rules)
+        except ValueError as exc:
+            raise operation_error("CALCULO_REQUIERE_REVISION", str(exc)) from None
+        quote = m.Cotizacion(id=str(uuid4()), estadia_id=stay.id, sucursal_id=sucursal_id, usuario_id=usuario_id,
+                             calculada_en=now, vence_en=now + timedelta(seconds=QUOTE_TTL_SECONDS),
+                             monto=calculation.monto, reglas=rules, origen_reglas=origin,
+                             explicacion={**calculation.explicacion, "fecha_entrada_utc": stay.fecha_entrada_utc.isoformat()})
+        db.add(quote)
+        db.flush()
+        response = schemas.CotizacionOut.model_validate(quote).model_dump(mode="json")
+        db.commit()
+        return response
+    except Exception:
+        db.rollback()
+        raise
 
-    if not estadia:
-        raise HTTPException(status_code=404, detail="Estadía no encontrada")
 
-   # 2. Cálculos de tiempo en UTC
-    fecha_salida = datetime.now(timezone.utc)
-    duracion = fecha_salida - estadia.fecha_entrada.replace(tzinfo=timezone.utc)
-    minutos_totales = ceil(duracion.total_seconds() / 60)
+def consultar_cotizacion(db, quote_id, sucursal_id, usuario_id):
+    quote = db.query(m.Cotizacion).filter_by(id=str(quote_id), sucursal_id=sucursal_id, usuario_id=usuario_id).first()
+    if quote is None:
+        raise operation_error("COTIZACION_NO_ENCONTRADA", "Cotización no encontrada", 404)
+    return schemas.CotizacionOut.model_validate(quote).model_dump(mode="json")
 
-    # 3. Reglas de Negocio
-    sucursal = estadia.torre.sucursal
-    tipo = estadia.tipo_vehiculo.upper()
 
-    # Selección de tarifa dinámica según tipo de vehículo
-    if tipo == "MOTO":
-        tarifa_hora = sucursal.tarifa_moto
-    elif tipo == "CAMIONETA":
-        tarifa_hora = sucursal.tarifa_camioneta
-    else:
-        tarifa_hora = sucursal.tarifa_auto
+def registrar_salida_vehiculo(db, estadia_id, usuario_egreso_id, sucursal_id_usuario, cotizacion_id, caja_id, metodo_pago, key):
+    payload = {"estadia_id": estadia_id, "cotizacion_id": str(cotizacion_id), "caja_id": caja_id, "metodo_pago": metodo_pago}
+    savepoint = None
+    try:
+        previous = begin_operation(db, sucursal_id_usuario, usuario_egreso_id, "SALIDA", key, payload)
+        if previous is not None:
+            db.rollback()
+            return previous, True
+        savepoint = db.begin_nested()
+        lock_branch(db, sucursal_id_usuario)
+        exigir_caja_abierta(db, caja_id, sucursal_id_usuario)
+        stay = estadia_local(db, estadia_id, sucursal_id_usuario, lock=True)
+        if stay.estado != "ACTIVO":
+            raise operation_error("ESTADIA_FINALIZADA", "La estadía ya fue cobrada; recuperar su operación")
+        quote = db.query(m.Cotizacion).filter_by(id=str(cotizacion_id), estadia_id=estadia_id,
+                    sucursal_id=sucursal_id_usuario, usuario_id=usuario_egreso_id).first()
+        if quote is None:
+            raise operation_error("COTIZACION_NO_ENCONTRADA", "Cotización no encontrada para este intento", 404)
+        now = m.utc_now()
+        if now >= quote.vence_en:
+            raise operation_error("COTIZACION_VENCIDA", "La cotización venció; revisar el importe y confirmar una nueva")
+        # El importe confirmado es exactamente el persistido y mostrado. No se
+        # recalcula silenciosamente ni se acepta un monto del cliente.
+        stay.monto = quote.monto
+        stay.cotizacion_id = quote.id
+        stay.fecha_salida_utc = now
+        stay.fecha_salida = now.replace(tzinfo=None)
+        stay.metodo_pago = metodo_pago
+        stay.usuario_salida_id = usuario_egreso_id
+        stay.caja_id = caja_id
+        stay.estado = "FINALIZADO"
+        registrar_evento(db, usuario_egreso_id, sucursal_id_usuario, "COBRO_SALIDA",
+                        f"Estadía {stay.id}; cotización {quote.id}; ARS {quote.monto}; medio {metodo_pago}; turno {caja_id}")
+        db.flush()
+        response = respuesta_estadia(stay)
+        save_operation(db, sucursal_id_usuario, usuario_egreso_id, "SALIDA", key, payload, response)
+        savepoint.commit()
+        db.commit()
+        return response, False
+    except Exception as exc:
+        rollback_or_record_rejection(db, exc, savepoint, sucursal_id_usuario, usuario_egreso_id, "SALIDA", key, payload)
+        raise
 
-    # 4. LÓGICA DEL MOTOR DE COBRO (Empresarial)
-    monto_final = 0.0
 
-    # Lógica de Cobro por Fracciones
-    if minutos_totales <= sucursal.tiempo_cortesia_min:
-        monto_final = 0.0
-    elif minutos_totales <= 60:
-         # Se cobra la primera hora completa después de la cortesía
-        monto_final = tarifa_hora
-    else:
-        # Primera hora + fracciones
-        minutos_adicionales = minutos_totales - 60
-        # Calculamos cuántos bloques de (ej: 15 min) hay
-        cantidad_fracciones = ceil(minutos_adicionales / sucursal.fraccion_minutos)
-        
-        # Precio por cada fracción (proporcional a la hora)
-        precio_fraccion = (tarifa_hora / 60) * sucursal.fraccion_minutos
-        
-        monto_final = tarifa_hora + (cantidad_fracciones * precio_fraccion)
+def revisar_fecha_heredada(db, estadia_id, sucursal_id, usuario_id, fecha_entrada_utc, motivo):
+    try:
+        lock_branch(db, sucursal_id)
+        stay = estadia_local(db, estadia_id, sucursal_id, lock=True)
+        if stay.estado != "ACTIVO" or stay.fecha_entrada_utc is not None:
+            raise operation_error("FECHA_YA_CONFIRMADA", "Sólo puede revisarse una fecha heredada de una estadía activa")
+        now = m.utc_now()
+        reviewed = fecha_entrada_utc.astimezone(timezone.utc)
+        if reviewed > now:
+            raise operation_error("FECHA_FUTURA", "El ingreso no puede ser futuro", 422)
+        stay.fecha_entrada_utc = reviewed
+        registrar_evento(db, usuario_id, sucursal_id, "REVISION_FECHA_HEREDADA",
+                        f"Estadía {stay.id}; fecha UTC confirmada {reviewed.isoformat()}; motivo: {motivo}")
+        db.flush()
+        response = respuesta_estadia(stay)
+        db.commit()
+        return response
+    except Exception:
+        db.rollback()
+        raise
 
-    # 5. Aplicar descuento de torre si existe (ej: convenio con hotel)
-    if estadia.torre.porcentaje_descuento > 0:
-        monto_final -= (monto_final * estadia.torre.porcentaje_descuento)
 
-    # 6. Persistencia
-    estadia.fecha_salida = fecha_salida
-    estadia.monto = round(monto_final, 2)
-    estadia.metodo_pago = metodo_pago
-    estadia.usuario_salida_id = usuario_egreso_id
-    estadia.estado = "FINALIZADO"
+def obtener_estadias_activas(db, sucursal_id):
+    return db.query(m.Estadia).options(joinedload(m.Estadia.vehiculo)).join(m.Torre).filter(
+        m.Estadia.estado == "ACTIVO", m.Torre.sucursal_id == sucursal_id,
+    ).order_by(m.Estadia.fecha_entrada.desc()).all()
 
-    db.commit()
-    db.refresh(estadia)
 
-    # 7. Log de auditoría
-    registrar_evento(
-        db,
-        usuario_id=usuario_egreso_id,
-        sucursal_id=estadia.torre.sucursal_id,
-        accion="COBRO_SALIDA",
-        detalles=f"Vehículo {patente} salió. Cobrado: ${estadia.monto}"
-    )
-    logger.info(f"SALIDA PRO: {patente} | Duración: {int(minutos_totales)}min | Monto: ${estadia.monto}")
-
-    return estadia
-
-def obtener_estadias_activas(db: Session, sucursal_id: int):
-    """
-    Retorna solo las estadías activas de la sucursal a la que 
-    pertenece el usuario actual.
-    """
-    return db.query(db_models.Estadia)\
-        .options(joinedload(db_models.Estadia.vehiculo))\
-        .join(db_models.Torre)\
-        .filter(
-            db_models.Estadia.estado == "ACTIVO",
-            db_models.Torre.sucursal_id == sucursal_id
-    ).order_by(db_models.Estadia.fecha_entrada.desc()).all()
-
-def obtener_historial_paginado(db: Session, sucursal_id: int, page: int = 1, size: int = 20, patente: str = None):
-    query = db.query(db_models.Estadia).join(db_models.Torre).join(db_models.Vehiculo).filter(
-        db_models.Torre.sucursal_id == sucursal_id,
-        db_models.Estadia.estado == "FINALIZADO"
-    ).order_by(db_models.Estadia.fecha_salida.desc())
-
-    if patente and patente.strip() != "":
-        query = query.filter(db_models.Vehiculo.patente.ilike(f"%{patente}%"))
-
-    
+def paginar(query, page, size):
     total = query.count()
-    # Lógica de paginación: (página - 1) * tamaño
-    offset = (page - 1) * size
-    items = query.order_by(db_models.Estadia.fecha_salida.desc()).offset(offset).limit(size).all()
-    
-    import math
-    return {
-        "total": total,
-        "page": page,
-        "pages": math.ceil(total / size) if total > 0 else 1,
-        "items": items
-    }
+    return {"total": total, "page": page, "pages": max(1, math.ceil(total / size)),
+            "items": query.offset((page - 1) * size).limit(size).all()}
+
+
+def obtener_historial_paginado(db, sucursal_id, page=1, size=20, patente=None):
+    query = db.query(m.Estadia).join(m.Torre).join(m.Vehiculo).filter(
+        m.Torre.sucursal_id == sucursal_id, m.Estadia.estado == "FINALIZADO",
+    )
+    if patente and patente.strip():
+        query = query.filter(m.Vehiculo.patente.ilike(f"%{patente.strip()}%"))
+    return paginar(query.order_by(m.Estadia.fecha_salida.desc()), page, size)
+
+
+def comprobantes_propios(db, sucursal_id, usuario_id, permissions, page, size):
+    conditions = []
+    if "ingreso" in permissions:
+        conditions.append(and_(m.Estadia.estado == "ACTIVO", m.Estadia.usuario_ingreso_id == usuario_id))
+    if "salida" in permissions:
+        conditions.append(and_(m.Estadia.estado == "FINALIZADO", m.Estadia.usuario_salida_id == usuario_id))
+    if not conditions:
+        return {"total": 0, "page": page, "pages": 1, "items": []}
+    query = db.query(m.Estadia).join(m.Torre).filter(m.Torre.sucursal_id == sucursal_id, or_(*conditions))
+    return paginar(query.order_by(m.Estadia.id.desc()), page, size)

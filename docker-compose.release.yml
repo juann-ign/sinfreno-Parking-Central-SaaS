@@ -1,0 +1,66 @@
+# Desarrollo y verificación descartables de esta release. No es hosting público.
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: release_demo
+      POSTGRES_PASSWORD: ${RELEASE_DB_PASSWORD:?Ejecutar node scripts/init-release.mjs y usar --env-file .recovery/release.env}
+      POSTGRES_DB: release_disposable
+    ports:
+      - "127.0.0.1:15434:5432"
+    volumes:
+      - release_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U release_demo -d release_disposable"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    labels:
+      com.sinfreno.purpose: release-disposable
+  backend:
+    build:
+      context: ./backend
+      args:
+        INSTALL_DEV: "true"
+    environment:
+      APP_ENV: test
+      DATABASE_URL: postgresql://release_demo:${RELEASE_DB_PASSWORD}@db:5432/release_disposable
+      SECRET_KEY: ${RELEASE_SECRET_KEY:?Generar entorno local; nunca usar una clave de ejemplo en producción}
+      CORS_ORIGINS: '["http://127.0.0.1:15175","http://localhost:15175"]'
+      TELEGRAM_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+    ports:
+      - "127.0.0.1:18002:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+      start_period: 20s
+    labels:
+      com.sinfreno.purpose: release-disposable
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.recovery
+    environment:
+      VITE_BACKEND_URL: http://127.0.0.1:18002
+    ports:
+      - "127.0.0.1:15175:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+    labels:
+      com.sinfreno.purpose: release-disposable
+volumes:
+  release_postgres:
+    labels:
+      com.sinfreno.purpose: release-disposable

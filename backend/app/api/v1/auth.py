@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import dependencies
 from app.core import security
 from app.models import db_models, schemas
+from app.services.audit_service import registrar_evento
 
 router = APIRouter(prefix="/auth", tags=["Security"])
 
@@ -13,13 +14,14 @@ def user_info(user):
     return {
         "email": user.email,
         "rol": dependencies.normalized_role(user),
+        "activo": user.activo,
         "permisos": sorted(dependencies.effective_permissions(user)),
         "sucursal": {
             "id": sucursal.id,
             "nombre": sucursal.nombre,
-            "tarifa_auto": sucursal.tarifa_auto,
-            "tarifa_moto": sucursal.tarifa_moto,
-            "tarifa_camioneta": sucursal.tarifa_camioneta,
+            "tarifa_auto": str(sucursal.tarifa_auto) if sucursal.tarifa_auto is not None else None,
+            "tarifa_moto": str(sucursal.tarifa_moto) if sucursal.tarifa_moto is not None else None,
+            "tarifa_camioneta": str(sucursal.tarifa_camioneta) if sucursal.tarifa_camioneta is not None else None,
             "tiempo_cortesia_min": sucursal.tiempo_cortesia_min,
             "fraccion_minutos": sucursal.fraccion_minutos,
             "logo": sucursal.empresa.logo_url,
@@ -41,7 +43,7 @@ def login(
         db_models.Usuario.email == form_data.username
     ).first()
 
-    if not user or not security.verify_password(form_data.password, user.password_hash):
+    if not user or not user.activo or not security.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email o contraseña incorrectos",
@@ -59,7 +61,7 @@ def discover_tenant(email: str, db: Session = Depends(dependencies.get_db)):
     user = db.query(db_models.Usuario).filter(db_models.Usuario.email == email).first()
     
     # Si el usuario no existe O no tiene sucursal (es SuperAdmin)
-    if not user or not user.sucursal:
+    if not user or not user.activo or not user.sucursal:
         return {
             "logo": None, 
             "color": "#4f46e5", 
@@ -128,6 +130,12 @@ def delete_user(
     if dependencies.normalized_role(user) not in {"ADMIN", "OPERADOR"}:
         raise HTTPException(status_code=403, detail="No puedes administrar una cuenta global")
 
-    db.delete(user)
+    if not user.activo:
+        return {"detail": "Usuario desactivado", "id": user.id, "activo": False}
+    user.activo = False
+    registrar_evento(
+        db, usuario_id=current_user.id, sucursal_id=current_user.sucursal_id,
+        accion="DESACTIVAR_USUARIO", detalles=f"Usuario ID {user.id} desactivado; identidad e historial conservados",
+    )
     db.commit()
-    return {"detail": "Usuario eliminado"}
+    return {"detail": "Usuario desactivado", "id": user.id, "activo": False}

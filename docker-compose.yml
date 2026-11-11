@@ -21,6 +21,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - APP_ENV=development
       - DATABASE_URL=postgresql://user_sinfreno:password_sinfreno@db:5432/sinfreno_db
     depends_on:
       - db

@@ -1,8 +1,13 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, Boolean, JSON, Index, CheckConstraint, UniqueConstraint, text
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.timezone_utils import get_now_local
-from datetime import datetime
+from datetime import datetime, timezone
+from decimal import Decimal
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 class Empresa(Base):
     __tablename__ = "empresas"
@@ -21,9 +26,9 @@ class Sucursal(Base):
     nombre = Column(String)
 
     # Tarifas por categoría (Flexibilidad total)
-    tarifa_auto = Column(Float, default=1000.0)
-    tarifa_moto = Column(Float, default=500.0)
-    tarifa_camioneta = Column(Float, default=1500.0)
+    tarifa_auto = Column(Numeric(14, 2), default=Decimal("1000.00"))
+    tarifa_moto = Column(Numeric(14, 2), default=Decimal("500.00"))
+    tarifa_camioneta = Column(Numeric(14, 2), default=Decimal("1500.00"))
 
      # Configuración de fracciones
     tiempo_cortesia_min = Column(Integer, default=10)
@@ -42,6 +47,7 @@ class Usuario(Base):
     permisos = Column(String, default="ingreso,salida")
     rol = Column(String) # superAdmin, adminSede o operador
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=True)
+    activo = Column(Boolean, nullable=False, default=True, server_default=text("true"))
 
     sucursal = relationship("Sucursal", back_populates="usuarios")
     # Relaciones de auditoría
@@ -53,7 +59,7 @@ class Torre(Base):
     id = Column(Integer, primary_key=True, index=True)
     numero = Column(Integer)
     capacidad = Column(Integer)
-    porcentaje_descuento = Column(Float, default=0.0) # Ejemplo: 0.15 para 15%
+    porcentaje_descuento = Column(Numeric(7, 6), default=Decimal("0"))
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     
     sucursal = relationship("Sucursal", back_populates="torres")
@@ -69,21 +75,33 @@ class Vehiculo(Base):
 
 class Estadia(Base):
     __tablename__ = "estadias"
+    __table_args__ = (
+        Index("uq_estadia_activa_sucursal_vehiculo", "sucursal_id", "vehiculo_id", unique=True,
+              postgresql_where=text("estado = 'ACTIVO'")),
+        CheckConstraint("monto >= 0", name="ck_estadia_monto_no_negativo"),
+    )
     id = Column(Integer, primary_key=True, index=True)
     vehiculo_id = Column(Integer, ForeignKey("vehiculos.id"))
     torre_id = Column(Integer, ForeignKey("torres.id"))
+    sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=False)
+    caja_ingreso_id = Column(Integer, ForeignKey("cierres_caja.id"), nullable=True)
+    caja_id = Column(Integer, ForeignKey("cierres_caja.id"), nullable=True)
     
     # Auditoría de empleados
     usuario_ingreso_id = Column(Integer, ForeignKey("usuarios.id")) 
     usuario_salida_id = Column(Integer, ForeignKey("usuarios.id"))
     
-    fecha_entrada = Column(DateTime, default=get_now_local())
+    fecha_entrada = Column(DateTime, default=lambda: utc_now().replace(tzinfo=None))
     fecha_salida = Column(DateTime, nullable=True)
-    monto = Column(Float, default=0.0)
+    fecha_entrada_utc = Column(DateTime(timezone=True), nullable=True)
+    fecha_salida_utc = Column(DateTime(timezone=True), nullable=True)
+    monto = Column(Numeric(14, 2), default=Decimal("0.00"))
     metodo_pago = Column(String, nullable=True) # "EFECTIVO", "DEBITO", "QR"
     estado = Column(String, default="ACTIVO") # ACTIVO o FINALIZADO
     # El registro global de patente no puede cambiar la categoría de otra sede.
     tipo_vehiculo_registrado = Column(String, nullable=True)
+    reglas_ingreso = Column(JSON, nullable=True)
+    cotizacion_id = Column(String(36), nullable=True)
 
     # Relationships inversos (necesarios para acceder a estadia.vehiculo.patente)
     vehiculo = relationship("Vehiculo", back_populates="estadias")
@@ -98,7 +116,17 @@ class Estadia(Base):
         
     @property
     def tipo_vehiculo(self):
-        return self.tipo_vehiculo_registrado or (self.vehiculo.tipo if self.vehiculo else "AUTO")
+        if self.tipo_vehiculo_registrado is not None:
+            return self.tipo_vehiculo_registrado
+        return self.vehiculo.tipo if self.vehiculo else None
+
+    @property
+    def fecha_entrada_publica(self):
+        return self.fecha_entrada_utc if self.fecha_entrada_utc is not None else self.fecha_entrada
+
+    @property
+    def fecha_salida_publica(self):
+        return self.fecha_salida_utc if self.fecha_salida_utc is not None else self.fecha_salida
 
 class Auditoria(Base):
     __tablename__ = "auditoria"
@@ -108,7 +136,7 @@ class Auditoria(Base):
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     accion = Column(String)
     detalles = Column(String)
-    fecha = Column(DateTime, default=get_now_local)
+    fecha = Column(DateTime, default=lambda: utc_now().replace(tzinfo=None))
 
     usuario = relationship("Usuario")
     sucursal = relationship("Sucursal")
@@ -124,20 +152,66 @@ class Auditoria(Base):
 
 class CierreCaja(Base):
     __tablename__ = "cierres_caja"
+    __table_args__ = (
+        Index("uq_caja_abierta_sucursal", "sucursal_id", unique=True,
+              postgresql_where=text("estado = 'ABIERTA'")),
+        CheckConstraint("monto_esperado >= 0 AND (monto_real IS NULL OR monto_real >= 0)", name="ck_caja_importes_no_negativos"),
+    )
     
     id = Column(Integer, primary_key=True, index=True)
     sucursal_id = Column(Integer, ForeignKey("sucursales.id"))
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     
-    fecha_apertura = Column(DateTime, default=get_now_local())
+    fecha_apertura = Column(DateTime, default=lambda: utc_now().replace(tzinfo=None))
     fecha_cierre = Column(DateTime, nullable=True)
+    fecha_apertura_utc = Column(DateTime(timezone=True), nullable=True)
+    fecha_cierre_utc = Column(DateTime(timezone=True), nullable=True)
     
-    monto_esperado = Column(Float, default=0.0) # Lo que el sistema dice que hay
-    monto_real = Column(Float, nullable=True)   # Lo que el operario dice que contó
-    diferencia = Column(Float, default=0.0)
+    monto_esperado = Column(Numeric(14, 2), default=Decimal("0.00"))
+    monto_real = Column(Numeric(14, 2), nullable=True)
+    diferencia = Column(Numeric(14, 2), default=Decimal("0.00"))
+    fondo_inicial = Column(Numeric(14, 2), nullable=False, default=Decimal("0.00"), server_default="0")
+    recaudacion_total = Column(Numeric(14, 2), nullable=True)
+    totales_por_medio = Column(JSON, nullable=True)
+    origen_datos = Column(String(24), nullable=False, default="UTC_POR_TURNO", server_default="HEREDADO_SIN_VINCULO")
     
     estado = Column(String, default="ABIERTA") # ABIERTA, CERRADA
     notas = Column(String, nullable=True)
 
     usuario = relationship("Usuario")
     sucursal = relationship("Sucursal")
+
+    @property
+    def fecha_apertura_publica(self):
+        return self.fecha_apertura_utc if self.fecha_apertura_utc is not None else self.fecha_apertura
+
+    @property
+    def fecha_cierre_publica(self):
+        return self.fecha_cierre_utc if self.fecha_cierre_utc is not None else self.fecha_cierre
+
+
+class Cotizacion(Base):
+    __tablename__ = "cotizaciones"
+    id = Column(String(36), primary_key=True)
+    estadia_id = Column(Integer, ForeignKey("estadias.id"), nullable=False)
+    sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    calculada_en = Column(DateTime(timezone=True), nullable=False)
+    vence_en = Column(DateTime(timezone=True), nullable=False)
+    monto = Column(Numeric(14, 2), nullable=False)
+    origen_reglas = Column(String(32), nullable=False)
+    explicacion = Column(JSON, nullable=False)
+    reglas = Column(JSON, nullable=False)
+
+
+class OperacionIdempotente(Base):
+    __tablename__ = "operaciones_idempotentes"
+    __table_args__ = (UniqueConstraint("sucursal_id", "tipo", "clave", name="uq_operacion_idempotente"),)
+    id = Column(Integer, primary_key=True)
+    sucursal_id = Column(Integer, ForeignKey("sucursales.id"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    tipo = Column(String(24), nullable=False)
+    clave = Column(String(128), nullable=False)
+    huella = Column(String(64), nullable=False)
+    respuesta = Column(JSON, nullable=False)
+    creada_en = Column(DateTime(timezone=True), nullable=False, default=utc_now)

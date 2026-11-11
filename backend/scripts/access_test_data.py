@@ -1,4 +1,4 @@
-"""Datos sintéticos SF-02A. El reset sólo se permite en su PostgreSQL descartable."""
+"""Fixtures de regresión de accesos, sólo en el PostgreSQL NUEVO de release."""
 
 import os
 from datetime import datetime, timedelta, timezone
@@ -18,13 +18,14 @@ PASSWORD = "sf02a-demo-only"
 def require_disposable_database():
     url = make_url(settings.DATABASE_URL)
     if (
-        os.environ.get("SF02A_ALLOW_RESET") != "1"
+        os.environ.get("RELEASE_ALLOW_RESET") != "1"
         or url.get_backend_name() != "postgresql"
-        or url.database != "sf02a_disposable"
-        or url.username != "sf02a_demo"
-        or url.host != "db"
+        or url.database != "release_disposable"
+        or url.username != "release_demo"
+        or url.host not in {"db", "127.0.0.1", "localhost"}
+        or settings.APP_ENV not in {"test", "development"}
     ):
-        raise RuntimeError("Reset prohibido: requiere el PostgreSQL descartable de docker-compose.access.yml y SF02A_ALLOW_RESET=1")
+        raise RuntimeError("Reset prohibido: requiere PostgreSQL release_disposable/release_demo local, APP_ENV de prueba y RELEASE_ALLOW_RESET=1")
     if settings.TELEGRAM_TOKEN or settings.TELEGRAM_CHAT_ID:
         raise RuntimeError("Las pruebas requieren Telegram desactivado")
 
@@ -37,7 +38,8 @@ def demo_hash():
 def reset_and_seed():
     require_disposable_database()
     with SessionLocal() as db:
-        db.execute(text("TRUNCATE auditoria, cierres_caja, estadias, vehiculos, usuarios, torres, sucursales, empresas RESTART IDENTITY CASCADE"))
+        names = [db.bind.dialect.identifier_preparer.quote(table.name) for table in m.Base.metadata.sorted_tables]
+        db.execute(text("TRUNCATE " + ", ".join(names) + " RESTART IDENTITY CASCADE"))
         empresas = [m.Empresa(nombre="SF02A Alpha", cuit="SF02A-ALPHA"), m.Empresa(nombre="SF02A Beta", cuit="SF02A-BETA")]
         db.add_all(empresas)
         db.flush()
@@ -78,14 +80,19 @@ def reset_and_seed():
                 db.add(vehicle)
                 db.flush()
                 stay = m.Estadia(vehiculo_id=vehicle.id, torre_id=tower.id, usuario_ingreso_id=operator.id,
+                                sucursal_id=branches[i].id,
                                 usuario_salida_id=operator.id if closed else None,
                                 fecha_entrada=now - timedelta(hours=2), fecha_salida=now if closed else None,
+                                fecha_entrada_utc=(now - timedelta(hours=2)).replace(tzinfo=timezone.utc),
+                                fecha_salida_utc=now.replace(tzinfo=timezone.utc) if closed else None,
                                 estado="FINALIZADO" if closed else "ACTIVO", monto=(i + 1) * 100 if closed else 0,
                                 metodo_pago="EFECTIVO" if closed else None, tipo_vehiculo_registrado="AUTO")
                 db.add(stay)
                 (historic if closed else active).append(stay)
             db.add(m.CierreCaja(sucursal_id=branches[i].id, usuario_id=users[["admin_a1", "admin_a2", "admin_b1"][i]].id,
-                               fecha_apertura=now - timedelta(hours=3), estado="ABIERTA", monto_esperado=12345))
+                               fecha_apertura=now - timedelta(hours=3),
+                               fecha_apertura_utc=(now - timedelta(hours=3)).replace(tzinfo=timezone.utc),
+                               origen_datos="UTC_POR_TURNO", estado="ABIERTA", monto_esperado=0))
         db.commit()
         return {
             "branches": [b.id for b in branches], "towers": [t.id for t in towers],
@@ -96,5 +103,5 @@ def reset_and_seed():
 
 if __name__ == "__main__":
     result = reset_and_seed()
-    print("SF02A: 2 empresas, 3 sucursales, 13 usuarios ficticios y operaciones sintéticas preparados.")
+    print("Release: fixtures de regresión, 2 empresas, 3 sucursales y 13 usuarios ficticios preparados.")
     print("Cuenta de prueba: admin_a1@sf02a.example.com / sf02a-demo-only; operador: op_a1@sf02a.example.com")

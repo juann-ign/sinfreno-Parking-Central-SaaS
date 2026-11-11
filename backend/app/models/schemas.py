@@ -1,7 +1,14 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 from app.core.access_policy import LOCAL_PERMISSIONS, OPERATOR_PERMISSIONS
 from datetime import datetime
-from typing import Optional, List
+from typing import Annotated, Optional, List, Literal, Dict
+from decimal import Decimal
+from uuid import UUID
+
+Money = Annotated[Decimal, Field(ge=0, max_digits=14, decimal_places=2, allow_inf_nan=False)]
+Rate = Annotated[Decimal, Field(gt=0, max_digits=14, decimal_places=2, allow_inf_nan=False)]
+VehicleCategory = Literal["AUTO", "MOTO", "CAMIONETA"]
+PaymentMethod = Literal["EFECTIVO", "DEBITO", "CREDITO", "QR", "TRANSFERENCIA"]
 
 # --- SCHEMAS BASE (Atributos comunes) ---
 
@@ -11,9 +18,9 @@ class EmpresaBase(BaseModel):
 
 class SucursalBase(BaseModel):
     nombre: str
-    tarifa_auto: float = Field(gt=0)
-    tarifa_moto: float = Field(gt=0)
-    tarifa_camioneta: float = Field(gt=0)
+    tarifa_auto: Rate
+    tarifa_moto: Rate
+    tarifa_camioneta: Rate
     tiempo_cortesia_min: int = Field(default=10, ge=0)
     fraccion_minutos: int = Field(default=15, ge=1)
     
@@ -45,9 +52,19 @@ class UsuarioCreate(UsuarioBase):
     sucursal_id: Optional[int] = None
 
 class EstadiaCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     patente: str = Field(..., min_length=6, max_length=10, example="ABC1234")
-    torre_id: int
-    tipo: str
+    torre_id: int = Field(gt=0, le=2147483647)
+    caja_id: int = Field(gt=0, le=2147483647)
+    tipo: VehicleCategory
+
+    @field_validator("patente")
+    @classmethod
+    def valid_plate(cls, value):
+        value = value.strip().upper()
+        if not value.isascii() or not value.isalnum() or not 6 <= len(value) <= 10:
+            raise ValueError("La patente debe tener entre 6 y 10 letras o números")
+        return value
 
 class EstadiaUpdate(BaseModel):
     # Usado para el cierre de estadía
@@ -76,11 +93,15 @@ class EstadiaOut(BaseModel):
     torre_id: int
     usuario_ingreso_id: int
     usuario_salida_id: Optional[int] = None
-    fecha_entrada: datetime
-    fecha_salida: Optional[datetime] = None
-    monto: float
+    fecha_entrada: datetime = Field(validation_alias=AliasChoices("fecha_entrada_publica", "fecha_entrada"))
+    fecha_salida: Optional[datetime] = Field(None, validation_alias=AliasChoices("fecha_salida_publica", "fecha_salida"))
+    monto: Money
     metodo_pago: Optional[str] = None   
     estado: str
+    sucursal_id: int
+    caja_ingreso_id: Optional[int] = None
+    caja_id: Optional[int] = None
+    cotizacion_id: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -88,6 +109,7 @@ class EstadiaOut(BaseModel):
 class UsuarioOut(UsuarioBase):
     id: int
     sucursal_id: Optional[int]
+    activo: bool = True
     class Config:
         from_attributes = True
 
@@ -114,14 +136,14 @@ class DashboardSummary(BaseModel):
     autos_adentro: int
     capacidad_disponible: int
     porcentaje_ocupacion: float
-    recaudacion_hoy: Optional[float] = None
+    recaudacion_hoy: Optional[Money] = None
 
     class Config:
         from_attributes = True
 
 class HourlyRevenue(BaseModel):
     hora: int  # 0 a 23
-    monto: float
+    monto: Money
 
     class Config:
         from_attributes = True
@@ -136,9 +158,9 @@ class PeakHour(BaseModel):
 # Nuevo esquema para actualizar la sucursal
 class SucursalUpdate(BaseModel):
     nombre: Optional[str] = None
-    tarifa_auto: Optional[float] = Field(None, gt=0)
-    tarifa_moto: Optional[float] = Field(None, gt=0)
-    tarifa_camioneta: Optional[float] = Field(None, gt=0)
+    tarifa_auto: Optional[Rate] = None
+    tarifa_moto: Optional[Rate] = None
+    tarifa_camioneta: Optional[Rate] = None
     tiempo_cortesia_min: Optional[int] = Field(None, ge=0)
     fraccion_minutos: Optional[int] = Field(None, ge=1)
     logo_url: Optional[str] = None
@@ -156,32 +178,74 @@ class AuditoriaOut(BaseModel):
         from_attributes = True
 
 class CierreCajaCreate(BaseModel):
-    notas: Optional[str] = None
+    model_config = ConfigDict(extra="forbid")
+    notas: Optional[str] = Field(None, max_length=1000)
 
 class CierreCajaFinalizar(BaseModel):
-    monto_real: float
-    notas: Optional[str] = None
+    model_config = ConfigDict(extra="forbid")
+    monto_real: Money
+    notas: Optional[str] = Field(None, max_length=1000)
 
 class CierreCajaOut(BaseModel):
     id: int
-    fecha_apertura: datetime
-    fecha_cierre: Optional[datetime] = None
-    monto_esperado: float
-    monto_real: Optional[float]
+    fecha_apertura: datetime = Field(validation_alias=AliasChoices("fecha_apertura_publica", "fecha_apertura"))
+    fecha_cierre: Optional[datetime] = Field(None, validation_alias=AliasChoices("fecha_cierre_publica", "fecha_cierre"))
+    monto_esperado: Money
+    monto_real: Optional[Money]
     estado: str
     usuario_id: int
+    diferencia: Decimal
+    fondo_inicial: Money
+    recaudacion_total: Optional[Money] = None
+    totales_por_medio: Optional[Dict[str, Money]] = None
+    notas: Optional[str] = None
+    origen_datos: str
     
     class Config:
         from_attributes = True
 
 class CajaOperativaOut(BaseModel):
     id: int
-    fecha_apertura: datetime
-    fecha_cierre: Optional[datetime] = None
+    fecha_apertura: datetime = Field(validation_alias=AliasChoices("fecha_apertura_publica", "fecha_apertura"))
+    fecha_cierre: Optional[datetime] = Field(None, validation_alias=AliasChoices("fecha_cierre_publica", "fecha_cierre"))
     estado: str
     usuario_id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SalidaConfirmar(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    cotizacion_id: UUID
+    caja_id: int = Field(gt=0, le=2147483647)
+    metodo_pago: PaymentMethod
+
+
+class CotizacionOut(BaseModel):
+    id: str
+    estadia_id: int
+    sucursal_id: int
+    usuario_id: int
+    calculada_en: datetime
+    vence_en: datetime
+    monto: Money
+    moneda: str = "ARS"
+    origen_reglas: str
+    explicacion: dict
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FechaHeredadaRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    fecha_entrada_utc: datetime
+    motivo: str = Field(min_length=8, max_length=500)
+
+    @field_validator("fecha_entrada_utc")
+    @classmethod
+    def explicit_offset(cls, value):
+        if value.utcoffset() is None:
+            raise ValueError("La revisión debe indicar una zona u offset explícitos")
+        return value
 
 class UserCreateInternal(BaseModel):
     model_config = ConfigDict(extra="forbid")

@@ -1,48 +1,96 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, Response, Query
-from app.core.websocket_manager import manager 
 from sqlalchemy.orm import Session
 from app.api import dependencies
 from app.models import schemas, db_models
 from app.services import parking_service, pdf_service
+from app.api.operation_inputs import RecordId, idempotency_key
+from app.services.events import publish_change
+from app.services.idempotency import operation_error, operation_result
+from typing import Literal
+from uuid import UUID
 
 router = APIRouter(prefix="/parking", tags=["Parking Operations"])
 
 @router.post("/ingreso", response_model=schemas.EstadiaOut)
-async def ingreso(
-    data: schemas.EstadiaCreate, 
+def ingreso(
+    data: schemas.EstadiaCreate,
+    background_tasks: BackgroundTasks,
+    response: Response,
+    key: str = Depends(idempotency_key),
     db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.PermissionChecker("ingreso"))
 ):
-    # 1. Ejecutamos la lógica de DB (sincrónica)
-    nueva_estadia = parking_service.registrar_ingreso_vehiculo(
-        db, data.patente, data.torre_id, current_user.id, current_user.sucursal_id, data.tipo
+    scope = current_user.sucursal_id
+    result, replayed = parking_service.registrar_ingreso_vehiculo(
+        db, data.patente, data.torre_id, current_user.id, scope, data.tipo, data.caja_id, key,
     )
-     # Notificación inmediata por WebSocket
-    await manager.broadcast( 
-        {"event": "NUEVO_INGRESO", "id": nueva_estadia.id},
-        current_user.sucursal_id
-    )
+    response.headers["Idempotency-Replayed"] = str(replayed).lower()
+    response.headers["Idempotency-Resolved"] = "true"
+    if not replayed:
+        background_tasks.add_task(publish_change, "NUEVO_INGRESO", scope, result["id"])
+    return result
 
-    return nueva_estadia
-    
-@router.post("/salida", response_model=schemas.EstadiaOut)
-async def salida(patente: str, metodo_pago: str = "EFECTIVO", db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.PermissionChecker("salida"))
+@router.post("/salida")
+def legacy_salida(current_user: db_models.Usuario = Depends(dependencies.PermissionChecker("salida"))):
+    raise operation_error("COMANDO_CON_IDS_REQUERIDO", "Cotizar y confirmar por ID de estadía, cotización y caja; la patente no identifica un reintento", 422)
+
+
+@router.post("/{estadia_id}/cotizaciones", response_model=schemas.CotizacionOut)
+def cotizar(estadia_id: RecordId, db: Session = Depends(dependencies.get_db),
+            current_user: db_models.Usuario = Depends(dependencies.PermissionChecker("salida"))):
+    return parking_service.cotizar_salida(db, estadia_id, current_user.sucursal_id, current_user.id)
+
+
+@router.get("/cotizaciones/{cotizacion_id}", response_model=schemas.CotizacionOut)
+def consultar_cotizacion(cotizacion_id: UUID, db: Session = Depends(dependencies.get_db),
+                         current_user: db_models.Usuario = Depends(dependencies.PermissionChecker("salida"))):
+    return parking_service.consultar_cotizacion(db, cotizacion_id, current_user.sucursal_id, current_user.id)
+
+
+@router.post("/{estadia_id}/salida", response_model=schemas.EstadiaOut)
+def confirmar_salida(estadia_id: RecordId, data: schemas.SalidaConfirmar, background_tasks: BackgroundTasks,
+                     response: Response, key: str = Depends(idempotency_key),
+                     db: Session = Depends(dependencies.get_db),
+                     current_user: db_models.Usuario = Depends(dependencies.PermissionChecker("salida"))):
+    scope = current_user.sucursal_id
+    result, replayed = parking_service.registrar_salida_vehiculo(
+        db, estadia_id, current_user.id, scope, data.cotizacion_id, data.caja_id, data.metodo_pago, key,
+    )
+    response.headers["Idempotency-Replayed"] = str(replayed).lower()
+    response.headers["Idempotency-Resolved"] = "true"
+    if not replayed:
+        background_tasks.add_task(publish_change, "NUEVA_SALIDA", scope, result["id"])
+    return result
+
+
+@router.get("/operaciones/{tipo}/{clave}")
+def recuperar_operacion(tipo: Literal["INGRESO", "SALIDA", "CAJA_ABRIR", "CAJA_CERRAR"], clave: str,
+                        db: Session = Depends(dependencies.get_db),
+                        current_user: db_models.Usuario = Depends(dependencies.get_current_branch_user)):
+    permissions = dependencies.effective_permissions(current_user)
+    if (
+        (tipo == "INGRESO" and "ingreso" not in permissions)
+        or (tipo == "SALIDA" and "salida" not in permissions)
+        or (tipo.startswith("CAJA_") and dependencies.normalized_role(current_user) != "ADMIN")
     ):
-    estadia = parking_service.registrar_salida_vehiculo(
-        db, patente, current_user.id, current_user.sucursal_id, metodo_pago,
-    )
+        raise operation_error("PERMISO_INSUFICIENTE", "No tiene permiso para recuperar esa operación", 403)
+    return operation_result(db, current_user.sucursal_id, current_user.id, tipo, clave)
 
-    # Notificación inmediata por WebSocket
-    await manager.broadcast( 
-        {
-            "event": "NUEVA_SALIDA", 
-            "id": estadia.id,
-        },
-        current_user.sucursal_id
-    )
 
-    return estadia
+@router.get("/comprobantes-propios", response_model=schemas.EstadiaPaginated)
+def comprobantes_propios(page: int = Query(1, ge=1), size: int = Query(20, ge=1, le=100),
+                         db: Session = Depends(dependencies.get_db),
+                         current_user: db_models.Usuario = Depends(dependencies.require_operational_user)):
+    return parking_service.comprobantes_propios(db, current_user.sucursal_id, current_user.id,
+                                              dependencies.effective_permissions(current_user), page, size)
+
+
+@router.post("/{estadia_id}/revisar-fecha", response_model=schemas.EstadiaOut)
+def revisar_fecha(estadia_id: RecordId, data: schemas.FechaHeredadaRevision,
+                   db: Session = Depends(dependencies.get_db),
+                   current_user: db_models.Usuario = Depends(dependencies.require_local_admin)):
+    return parking_service.revisar_fecha_heredada(db, estadia_id, current_user.sucursal_id,
+                                                current_user.id, data.fecha_entrada_utc, data.motivo)
 
 @router.get("/activas", response_model=list[schemas.EstadiaOut])
 def listar_activas(
@@ -117,14 +165,11 @@ def update_config(
     if obj_in.fraccion_minutos is not None:
         sucursal.fraccion_minutos = obj_in.fraccion_minutos
 
-    background_tasks.add_task(
-        manager.broadcast,
-        {"event": "CONFIG_UPDATED"},
-        current_user.sucursal_id
-    )
+    scope = current_user.sucursal_id
 
     db.commit()
     db.refresh(sucursal)
+    background_tasks.add_task(publish_change, "CONFIG_UPDATED", scope)
     return sucursal
 
 @router.get("/auditoria", response_model=list[schemas.AuditoriaOut])
@@ -138,7 +183,7 @@ def obtener_logs(
 
 @router.get("/{estadia_id}/pdf")
 def download_ticket_pdf(
-    estadia_id: int, 
+    estadia_id: RecordId,
     db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.get_current_branch_user),
 ):

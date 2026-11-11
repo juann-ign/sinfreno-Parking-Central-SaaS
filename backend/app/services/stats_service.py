@@ -2,9 +2,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import sqlalchemy as sa
 from app.models import db_models
-from zoneinfo import ZoneInfo
 from app.core.config import settings
 from app.core.timezone_utils import get_today_range_utc
+from decimal import Decimal
 
 def get_dashboard_summary(db: Session, sucursal_id: int, include_financial: bool = False):
     # Usamos el helper para filtrar "Hoy" según Argentina
@@ -30,9 +30,9 @@ def get_dashboard_summary(db: Session, sucursal_id: int, include_financial: bool
         summary["recaudacion_hoy"] = db.query(func.sum(db_models.Estadia.monto)).join(db_models.Torre).filter(
             db_models.Torre.sucursal_id == sucursal_id,
             db_models.Estadia.estado == "FINALIZADO",
-            db_models.Estadia.fecha_salida >= inicio_utc,
-            db_models.Estadia.fecha_salida <= fin_utc,
-        ).scalar() or 0.0
+            db_models.Estadia.fecha_salida_utc >= inicio_utc,
+            db_models.Estadia.fecha_salida_utc <= fin_utc,
+        ).scalar() or Decimal("0.00")
     return summary
 
 def get_hourly_revenue(db: Session, sucursal_id: int):
@@ -42,17 +42,17 @@ def get_hourly_revenue(db: Session, sucursal_id: int):
     # Usamos func.extract para obtener la hora de la fecha_salida
     # Filtramos por sucursal, estado FINALIZADO y que la salida sea HOY
     results = db.query(
-        func.extract('hour', db_models.Estadia.fecha_salida.op('AT TIME ZONE')('UTC').op('AT TIME ZONE')(tz_local)).label('hora'),
+        func.extract('hour', db_models.Estadia.fecha_salida_utc.op('AT TIME ZONE')(tz_local)).label('hora'),
         func.sum(db_models.Estadia.monto).label('monto')
     ).join(db_models.Torre).filter(
         db_models.Torre.sucursal_id == sucursal_id,
         db_models.Estadia.estado == "FINALIZADO",
-        db_models.Estadia.fecha_salida >= inicio_utc,
-        db_models.Estadia.fecha_salida <= fin_utc
+        db_models.Estadia.fecha_salida_utc >= inicio_utc,
+        db_models.Estadia.fecha_salida_utc <= fin_utc
     ).group_by('hora').order_by('hora').all()
 
     # Convertimos los resultados de la DB (tuplas) a una lista de diccionarios
-    return [{"hora": int(r.hora), "monto": float(r.monto)} for r in results]
+    return [{"hora": int(r.hora), "monto": r.monto} for r in results]
 
 def get_peak_hour(db: Session, sucursal_id: int):
     """
@@ -61,10 +61,11 @@ def get_peak_hour(db: Session, sucursal_id: int):
     """
     # Extraemos la hora de la fecha_entrada y contamos
     result = db.query(
-        func.extract('hour', db_models.Estadia.fecha_entrada).label('hora'),
+        func.extract('hour', db_models.Estadia.fecha_entrada_utc.op('AT TIME ZONE')(settings.APP_TZ)).label('hora'),
         func.count(db_models.Estadia.id).label('cantidad')
     ).join(db_models.Torre).filter(
-        db_models.Torre.sucursal_id == sucursal_id
+        db_models.Torre.sucursal_id == sucursal_id,
+        db_models.Estadia.fecha_entrada_utc.isnot(None),
     ).group_by('hora').order_by(sa.desc('cantidad')).first()
 
     if not result:

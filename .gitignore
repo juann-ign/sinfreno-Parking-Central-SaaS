@@ -5,6 +5,10 @@ env/
 ENV/
 .env
 .env.local
+.env.*
+!.env.example
+!**/.env.example
+deploy/production.env
 backend/.env
 __pycache__/
 *.log

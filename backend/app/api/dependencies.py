@@ -1,7 +1,7 @@
 from typing import Generator
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import SessionLocal
@@ -31,12 +31,12 @@ def authenticate_token(token: str, db: Session) -> db_models.Usuario:
     )
     try:
         payload = decode_access_token(token)
-    except (JWTError, ValueError, TypeError, OverflowError):
+    except (InvalidTokenError, ValueError, TypeError, OverflowError):
         raise credentials_exception
     user = db.query(db_models.Usuario).filter(
         db_models.Usuario.id == int(payload["sub"])
     ).first()
-    if user is None:
+    if user is None or not user.activo:
         raise credentials_exception
     return user
 
@@ -51,6 +51,8 @@ get_current_active_user = get_current_user
 
 
 def require_branch_user(user: db_models.Usuario) -> db_models.Usuario:
+    if not user.activo:
+        raise HTTPException(status_code=401, detail="Credencial no válida", headers={"WWW-Authenticate": "Bearer"})
     if (
         normalized_role(user) not in {"ADMIN", "OPERADOR"}
         or not user.sucursal_id or user.sucursal is None

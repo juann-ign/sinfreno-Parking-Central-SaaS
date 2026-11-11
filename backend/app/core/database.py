@@ -1,13 +1,10 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
+from app.core.config import settings
 
-load_dotenv()
-
-# Si estamos en Docker usamos la URL de Postgres, sino un SQLite local para tests rápidos
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./parking.db")
+# The same validated URL is used by authentication, migrations and API sessions.
+DATABASE_URL = settings.DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL, 

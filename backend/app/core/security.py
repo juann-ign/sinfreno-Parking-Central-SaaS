@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union
-from jose import jwt, JWTError
+import jwt
+from jwt import InvalidTokenError
 import math
 import re
 from passlib.context import CryptContext
@@ -35,7 +36,7 @@ def decode_access_token(token: str) -> dict:
     """Valida firma, expiración obligatoria y un identificador PostgreSQL válido."""
     payload = jwt.decode(
         token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM],
-        options={"require_exp": True, "require_sub": True},
+        options={"require": ["exp", "sub"]},
     )
     subject = payload.get("sub")
     expiry = payload.get("exp")
@@ -48,7 +49,7 @@ def decode_access_token(token: str) -> dict:
         or not math.isfinite(expiry)
         or expiry <= datetime.now(timezone.utc).timestamp()
     ):
-        raise JWTError("Credencial inválida")
+        raise InvalidTokenError("Credencial inválida")
     return payload
 
 def get_password_hash(password: str) -> str:

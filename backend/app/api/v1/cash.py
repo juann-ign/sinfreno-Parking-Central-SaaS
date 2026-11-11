@@ -1,63 +1,62 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
+
 from app.api import dependencies
-from app.models import schemas, db_models
-from app.services import caja_service 
-from app.services.notification_service import send_telegram_message, format_cash_report
-from app.core.websocket_manager import manager
+from app.api.operation_inputs import RecordId, idempotency_key
+from app.models import schemas, db_models as m
+from app.services import caja_service
+from app.services.events import publish_change
+from app.services.idempotency import operation_error
 
 router = APIRouter(prefix="/cash", tags=["Cash Management"])
 
+
 @router.get("/status", response_model=schemas.CierreCajaOut | schemas.CajaOperativaOut)
-def get_status(
-    db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.require_operational_user)
-):
-    """Retorna la caja abierta actual o 404 si no hay ninguna."""
-    # Usamos la función del service que definimos antes
+def get_status(db: Session = Depends(dependencies.get_db),
+               current_user: m.Usuario = Depends(dependencies.require_operational_user)):
     caja = caja_service.obtener_caja_actual(db, current_user.sucursal_id)
-    if not caja:
+    if caja is None:
         raise HTTPException(status_code=404, detail="No hay caja abierta")
     if dependencies.normalized_role(current_user) == "ADMIN":
-        return schemas.CierreCajaOut.model_validate(caja)
+        return caja_service.respuesta_caja(db, caja)
     return schemas.CajaOperativaOut.model_validate(caja)
 
+
 @router.post("/abrir", response_model=schemas.CierreCajaOut)
-def abrir(
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.require_local_admin)
-):
-    caja = caja_service.abrir_caja(db, current_user.sucursal_id, current_user.id)
-    background_tasks.add_task(manager.broadcast, {"event": "CONFIG_UPDATED"}, current_user.sucursal_id)
-    return caja
+def abrir(data: schemas.CierreCajaCreate, background_tasks: BackgroundTasks, response: Response,
+          key: str = Depends(idempotency_key), db: Session = Depends(dependencies.get_db),
+          current_user: m.Usuario = Depends(dependencies.require_local_admin)):
+    scope = current_user.sucursal_id
+    result, replayed = caja_service.abrir_caja(db, scope, current_user.id, key, data.notas)
+    response.headers["Idempotency-Replayed"] = str(replayed).lower()
+    response.headers["Idempotency-Resolved"] = "true"
+    if not replayed:
+        background_tasks.add_task(publish_change, "CONFIG_UPDATED", scope)
+    return result
 
-@router.post("/cerrar", response_model=schemas.CierreCajaOut)
-def cerrar(
-    data: schemas.CierreCajaFinalizar,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.require_local_admin)
-):
-    caja = caja_service.cerrar_caja(
-        db, 
-        current_user.sucursal_id, 
-        data.monto_real, 
-        data.notas
-    )
 
-    mensaje = format_cash_report(caja, current_user.sucursal.nombre)
-    background_tasks.add_task(send_telegram_message, mensaje)
-    background_tasks.add_task(manager.broadcast, {"event": "CONFIG_UPDATED"}, current_user.sucursal_id)
+@router.post("/cerrar")
+def legacy_cerrar(current_user: m.Usuario = Depends(dependencies.require_local_admin)):
+    raise operation_error("COMANDO_CON_IDS_REQUERIDO", "Cerrar por ID de caja e Idempotency-Key; la caja actual no identifica un reintento", 422)
 
-    return caja
+
+@router.post("/{caja_id}/cerrar", response_model=schemas.CierreCajaOut)
+def cerrar(caja_id: RecordId, data: schemas.CierreCajaFinalizar, background_tasks: BackgroundTasks,
+           response: Response, key: str = Depends(idempotency_key),
+           db: Session = Depends(dependencies.get_db),
+           current_user: m.Usuario = Depends(dependencies.require_local_admin)):
+    scope = current_user.sucursal_id
+    result, replayed = caja_service.cerrar_caja(db, scope, current_user.id, caja_id,
+                                              data.monto_real, data.notas, key)
+    response.headers["Idempotency-Replayed"] = str(replayed).lower()
+    response.headers["Idempotency-Resolved"] = "true"
+    if not replayed:
+        background_tasks.add_task(publish_change, "CONFIG_UPDATED", scope)
+    return result
+
 
 @router.get("/history", response_model=list[schemas.CierreCajaOut])
-def get_cash_history(
-    db: Session = Depends(dependencies.get_db),
-    current_user: db_models.Usuario = Depends(dependencies.require_local_admin)
-):
-    """Retorna todos los cierres de caja de la sucursal actual."""
-    return db.query(db_models.CierreCaja).filter(
-        db_models.CierreCaja.sucursal_id == current_user.sucursal_id
-    ).order_by(db_models.CierreCaja.fecha_apertura.desc()).all()
+def get_cash_history(db: Session = Depends(dependencies.get_db),
+                     current_user: m.Usuario = Depends(dependencies.require_local_admin)):
+    boxes = db.query(m.CierreCaja).filter_by(sucursal_id=current_user.sucursal_id).order_by(m.CierreCaja.id.desc()).all()
+    return [caja_service.respuesta_caja(db, caja) for caja in boxes]

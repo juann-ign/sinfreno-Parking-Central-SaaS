@@ -20,7 +20,10 @@ services:
   backend:
     build:
       context: ./backend
+      args:
+        INSTALL_DEV: "true"
     environment:
+      APP_ENV: development
       DATABASE_URL: postgresql://sf02a_demo:sf02a_local_disposable@db:5432/sf02a_disposable
       SECRET_KEY: sf02a-local-disposable-key-do-not-deploy
       CORS_ORIGINS: '["http://127.0.0.1:15174","http://localhost:15174"]'

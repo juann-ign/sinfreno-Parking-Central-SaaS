@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import time
 
 from fastapi import HTTPException
-from jose import JWTError
+from jwt import InvalidTokenError
 
 from app.api.dependencies import authenticate_token, can_operate, require_branch_user
 from app.core.database import SessionLocal
@@ -36,7 +36,7 @@ def authenticate_websocket(token: str, requested_sucursal_id: int) -> WebSocketP
         _require_socket_access(user, requested_sucursal_id)
         try:
             claims = decode_access_token(token)
-        except JWTError:
+        except InvalidTokenError:
             raise HTTPException(status_code=401, detail="Credencial no válida") from None
         return WebSocketPrincipal(user.id, user.sucursal_id, float(claims["exp"]))
 
@@ -46,7 +46,7 @@ def revalidate_websocket(principal: WebSocketPrincipal) -> None:
         raise HTTPException(status_code=401, detail="Credencial vencida")
     with SessionLocal() as db:
         user = db.query(db_models.Usuario).filter_by(id=principal.user_id).first()
-        if user is None:
+        if user is None or not user.activo:
             raise HTTPException(status_code=401, detail="Credencial no válida")
         _require_socket_access(user, principal.sucursal_id)
     # Authorization queries may consume the final part of the credential lifetime.
