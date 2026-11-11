@@ -55,7 +55,7 @@ El ensayo está preparado para usar sólo `release_restore_disposable` y un proy
 
 ## CI y dependencias
 
-`.github/workflows/quality.yml` está preparada con Actions fijadas por SHA oficial, permisos de lectura, Node 22 y Python 3.11, instalación desde lock npm, lint/build/tests de sesión/WS/conexiones, PostgreSQL descartable, migraciones, suite backend completa y auditorías npm/Python. Rechaza runs sin pruebas o con skips. No publica ni despliega. Sólo un run observado en GitHub permite afirmar que Actions pasó; las verificaciones locales se registran por separado.
+`.github/workflows/quality.yml` está preparada con Actions fijadas por SHA oficial, permisos de lectura, Node 22 y Python 3.11, instalación desde lock npm, lint/build/suite frontend completa, PostgreSQL descartable, migraciones, suite backend completa y auditorías npm/Python. Rechaza runs sin pruebas o con skips. No publica ni despliega. Sólo un run observado en GitHub permite afirmar que Actions pasó; las verificaciones locales se registran por separado.
 
 `backend/requirements.txt` contiene runtime; `requirements-dev.txt` agrega pytest, pytest-asyncio y pip-audit. La imagen normal excluye esas herramientas; el Compose de release activa `INSTALL_DEV=true`. Sus constraints `requirements-runtime.lock` y `requirements-dev.lock` fijan también las versiones transitivas resueltas para Linux/Python 3.11. Los resultados concretos de auditoría se guardan en `.recovery/`. Una auditoría sin avisos conocidos no garantiza ausencia de fallos.
 

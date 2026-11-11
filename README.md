@@ -29,9 +29,9 @@ Abrir [la aplicación local](http://127.0.0.1:15175). API y OpenAPI:
 
 | Cuenta ficticia | Rol y alcance |
 | --- | --- |
-| `admin@release.example.com` | ADMIN, sucursal Central |
-| `operador@release.example.com` | OPERADOR Central: ingreso, salida y ocupación |
-| `admin.norte@release.example.com` | ADMIN, sucursal Norte |
+| `admin@release.example.com` | ADMIN, sucursal Demo Centro |
+| `operador@release.example.com` | OPERADOR Demo Centro: ingreso, salida y ocupación |
+| `admin.norte@release.example.com` | ADMIN, sucursal Demo Norte |
 
 Contraseña de estas tres cuentas: `Sinfreno-demo-local-2026`. Son exclusivamente
 para la base local descartable; el seed no crea SUPERADMIN.
@@ -124,7 +124,8 @@ docker --context desktop-linux compose --env-file .recovery/release.env -p sinfr
 ```
 
 La suite backend **reinicia únicamente la base descartable release_disposable**;
-detener operaciones de demo antes de ejecutarla y volver a sembrarla después.
+detener operaciones de demo antes de ejecutarla y volver a sembrarla después
+agregando `--reset` al comando del seed, para reemplazar las fixtures de pruebas.
 No ejecutar sobre datos conservados. En PowerShell usar `npm.cmd` evita cambiar
 ExecutionPolicy. [CI](.github/workflows/quality.yml) prepara estas verificaciones
 con PostgreSQL en GitHub; no se observó aún un run remoto.
