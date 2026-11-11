@@ -1,0 +1,57 @@
+# Local HTTPS/proxy regression only. No public ports, migrations, seed or DB reset.
+services:
+  api_qa:
+    image: ${RELEASE_QA_BACKEND_IMAGE:?Use scripts/test-release-proxy.mjs}
+    env_file: ../.recovery/proxy-qa.env
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "172.30.250.3"]
+    networks:
+      restored_data:
+      proxies:
+        ipv4_address: 172.30.250.4
+        aliases: [backend]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 2s
+      timeout: 4s
+      retries: 20
+    labels:
+      com.sinfreno.purpose: release-proxy-qa
+  frontend:
+    image: sinfreno-release-frontend-static:20261115
+    ports:
+      - "127.0.0.1:15176:8080"
+    networks:
+      proxies:
+        ipv4_address: 172.30.250.3
+    depends_on:
+      api_qa:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    labels:
+      com.sinfreno.purpose: release-proxy-qa
+  gateway:
+    image: caddy:2-alpine
+    ports:
+      - "127.0.0.1:15177:8443"
+    volumes:
+      - ./Caddyfile.qa:/etc/caddy/Caddyfile:ro
+    networks:
+      proxies:
+        ipv4_address: 172.30.250.2
+    depends_on:
+      frontend:
+        condition: service_healthy
+    labels:
+      com.sinfreno.purpose: release-proxy-qa
+networks:
+  restored_data:
+    external: true
+    name: sinfreno-release-20261115_default
+  proxies:
+    ipam:
+      config:
+        - subnet: 172.30.250.0/28

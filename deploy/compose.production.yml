@@ -1,0 +1,97 @@
+# Prepared configuration. Running it on a public host requires separate approval.
+# No development account or seed is created by any startup command.
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: sinfreno
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a private database password}
+      POSTGRES_DB: sinfreno
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sinfreno -d sinfreno"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - data
+
+  backend:
+    build:
+      context: ../backend
+      args:
+        INSTALL_DEV: "false"
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?Set the private PostgreSQL connection URL}
+      SECRET_KEY: ${SECRET_KEY:?Set a private random signing key}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Set the exact HTTPS frontend origin as a JSON list}
+      TELEGRAM_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+      FORWARDED_ALLOW_IPS: "172.30.250.3"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 10s
+      timeout: 4s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      data:
+      proxies:
+        ipv4_address: 172.30.250.4
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.production
+      args:
+        VITE_BACKEND_URL: /
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      proxies:
+        ipv4_address: 172.30.250.3
+
+  gateway:
+    image: caddy:2-alpine
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set the chosen public DNS hostname}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      proxies:
+        ipv4_address: 172.30.250.2
+
+networks:
+  data:
+    internal: true
+  proxies:
+    ipam:
+      config:
+        - subnet: 172.30.250.0/28
+
+volumes:
+  postgres:
+  caddy_data:
+  caddy_config:
