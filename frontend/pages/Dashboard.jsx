@@ -1,18 +1,18 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useAuth } from "../src/context/AuthContext";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useAuth } from "../src/context/useAuth";
 import api from "../api/axios";
+import { getWebSocketUrl } from "../config/connections.js";
 import ActiveTable from "../components/ActiveTable";
 import EntryForm from "../components/EntryForm";
 import RevenueChart from "../components/RevenueChart";
 import OccupancyPieChart from "../components/OccupancyPieChart";
 import TicketModal from "../components/TicketModal";
-import CashModal from "../components/cashModal";
+import CashModal from "../components/CashModal";
 import {
   Car,
   LogOut,
   History as HistoryIcon,
   Search,
-  DollarSign,
   Settings as SettingsIcon,
   Wallet,
   AlertTriangle,
@@ -50,13 +50,11 @@ const Dashboard = ({ onLogout }) => {
 
   // Función de carga de datos (Memorizada para evitar re-renders)
   const fetchData = useCallback(
-    async (showLoading = false) => {
-      if (showLoading) setLoading(true);
-      try {
-        const [statsRes, activeRes] = await Promise.all([
-          api.get("/stats/summary"),
-          api.get("/parking/activas"),
-        ]);
+    () => Promise.all([
+      api.get("/stats/summary"),
+      api.get("/parking/activas"),
+    ])
+      .then(async ([statsRes, activeRes]) => {
         setStats(statsRes.data);
         setActiveVehicles(activeRes.data);
 
@@ -64,31 +62,32 @@ const Dashboard = ({ onLogout }) => {
           const hourlyRes = await api.get("/stats/revenue-hourly");
           setHourlyData(hourlyRes.data);
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error("Error cargando datos", error);
-      } finally {
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    },
+      }),
     [hasPermission],
   );
 
   // Función para verificar si hay caja abierta
-  const checkCashStatus = useCallback(async () => {
-    setIsCashLoading(true);
-    try {
-      const res = await api.get("/cash/status");
-      setCashSession(res.data);
-    } catch (error) {
-      setCashSession(null); // 404 significa que no hay caja abierta
-    } finally {
-      setIsCashLoading(false);
-    }
-  }, []);
+  const checkCashStatus = useCallback(() =>
+    api.get("/cash/status")
+      .then((res) => {
+        setCashSession(res.data);
+      })
+      .catch(() => {
+        setCashSession(null); // 404 significa que no hay caja abierta
+      })
+      .finally(() => {
+        setIsCashLoading(false);
+      }), []);
 
   // 1. Carga inicial de datos
   useEffect(() => {
-    fetchData(true);
+    fetchData();
     checkCashStatus();
   }, [fetchData, checkCashStatus]);
 
@@ -100,7 +99,7 @@ const Dashboard = ({ onLogout }) => {
     const connect = () => {
       if (socketRef.current?.readyState === WebSocket.OPEN) return;
 
-      const socket = new WebSocket(`ws://localhost:8000/ws/${sucursalId}`);
+      const socket = new WebSocket(getWebSocketUrl(sucursalId));
       socketRef.current = socket;
 
       socket.onmessage = (event) => {
@@ -374,7 +373,7 @@ const Dashboard = ({ onLogout }) => {
         toast.success("Caja cerrada correctamente.");
       }
       setShowCashModal(false);
-    } catch (err) {
+    } catch {
       toast.error("Error en operación de caja");
     }
   };

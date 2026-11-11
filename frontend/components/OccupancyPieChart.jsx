@@ -1,4 +1,3 @@
-import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 // --- COMPONENTE DE TOOLTIP PERSONALIZADO (UX FIX) ---

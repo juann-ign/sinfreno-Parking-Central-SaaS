@@ -1,6 +1,5 @@
 // frontend/components/RevenueChart.jsx
 
-import React from "react";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 const RevenueChart = ({ data }) => {

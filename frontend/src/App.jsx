@@ -1,6 +1,5 @@
-import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "../pages/Login"; // Asegurate que sea minúscula si el archivo es login.jsx
+import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import History from "../pages/History";
 import Settings from "../pages/Settings";
@@ -8,7 +7,8 @@ import CashHistory from "../pages/CashHistory";
 import Users from "../pages/Users";
 import SuperAdmin from "../pages/SuperAdmin";
 import { Toaster } from "sonner";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { useAuth } from "./context/useAuth";
 
 // Este componente decide qué ver según si el usuario está logueado
 const RootNavigation = () => {

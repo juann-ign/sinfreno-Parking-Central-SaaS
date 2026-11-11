@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import api from "../api/axios";
-import { useAuth } from "../src/context/AuthContext";
+import { useAuth } from "../src/context/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { Car, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ const Login = ({ onLoginSuccess }) => {
       const res = await api.post(`/auth/discovery?email=${email}`);
       setBranding(res.data);
       setStep(2);
-    } catch (err) {
+    } catch {
       toast.error("Error al verificar el correo");
     } finally {
       setLoading(false);
@@ -55,7 +55,7 @@ const Login = ({ onLoginSuccess }) => {
       }
 
       onLoginSuccess();
-    } catch (err) {
+    } catch {
       toast.error("Contraseña incorrecta");
     } finally {
       setLoading(false);

@@ -1,6 +1,6 @@
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Printer, X, CheckCircle2 } from "lucide-react";
+import { Printer, CheckCircle2 } from "lucide-react";
+import { getTicketUrl } from "../config/connections.js";
 
 const TicketModal = ({ isOpen, ticketData, onClose }) => {
   if (!isOpen || !ticketData) return null;
@@ -29,21 +29,21 @@ const TicketModal = ({ isOpen, ticketData, onClose }) => {
     const cleanPhone = phone.replace(/\D/g, "");
 
     const mensaje = isIngreso
-      ? `*¡BIENVENIDO A ${ticketData.sucursal || "NUESTRO PARKING"}!* 🚗%0A%0A` +
-        `Hemos registrado el ingreso de tu vehículo:%0A` +
-        `• *Patente:* ${ticketData.patente}%0A` +
-        `• *Hora:* ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}hs%0A%0A` +
-        `Puedes consultar los detalles de tu estadía y tarifas aquí: %0A` +
-        `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`
-      : `*GRACIAS POR TU VISITA* ✨%0A%0A` +
-        `Se ha procesado el pago de tu estadía:%0A` +
-        `• *Vehículo:* ${ticketData.patente}%0A` +
-        `• *Monto:* $${ticketData.monto}%0A` +
-        `• *Medio de pago:* ${ticketData.metodo_pago}%0A%0A` +
-        `Descarga tu comprobante oficial aquí: %0A` +
-        `http://localhost:8000/api/v1/parking/${ticketData.id}/pdf`;
+      ? `*¡BIENVENIDO A ${ticketData.sucursal || "NUESTRO PARKING"}!* 🚗\n\n` +
+        `Hemos registrado el ingreso de tu vehículo:\n` +
+        `• *Patente:* ${ticketData.patente}\n` +
+        `• *Hora:* ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}hs\n\n` +
+        `Puedes consultar los detalles de tu estadía y tarifas aquí: \n` +
+        getTicketUrl(ticketData.id)
+      : `*GRACIAS POR TU VISITA* ✨\n\n` +
+        `Se ha procesado el pago de tu estadía:\n` +
+        `• *Vehículo:* ${ticketData.patente}\n` +
+        `• *Monto:* $${ticketData.monto}\n` +
+        `• *Medio de pago:* ${ticketData.metodo_pago}\n\n` +
+        `Descarga tu comprobante oficial aquí: \n` +
+        getTicketUrl(ticketData.id);
 
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${mensaje}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(mensaje)}`;
 
     window.open(whatsappUrl, "_blank");
   };

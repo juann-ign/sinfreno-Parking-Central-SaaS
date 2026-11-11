@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import api from "../api/axios";
-import { useAuth } from "../src/context/AuthContext";
+import { useAuth } from "../src/context/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Save, ArrowLeft, Palette, Clock, DollarSign } from "lucide-react";
+import { Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
-const Settings = () => {
-  const { user, login } = useAuth();
+const SettingsForm = ({ user, login }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => user?.sucursal ? {
+    nombre: user.sucursal.nombre,
+    tarifa_auto: user.sucursal.tarifa_auto || 1000,
+    tarifa_moto: user.sucursal.tarifa_moto || 500,
+    tarifa_camioneta: user.sucursal.tarifa_camioneta || 1500,
+    tiempo_cortesia_min: user.sucursal.tiempo_cortesia_min || 10,
+    fraccion_minutos: user.sucursal.fraccion_minutos || 15,
+    color_primario: user.sucursal.color || "#4f46e5",
+    logo_url: user.sucursal.logo || "",
+  } : {
     nombre: "",
     tarifa_auto: 0,
     tarifa_moto: 0,
@@ -19,21 +27,6 @@ const Settings = () => {
     color_primario: "#4f46e5",
     logo_url: "",
   });
-
-  useEffect(() => {
-    if (user?.sucursal) {
-      setFormData({
-        nombre: user.sucursal.nombre,
-        tarifa_auto: user.sucursal.tarifa_auto || 1000,
-        tarifa_moto: user.sucursal.tarifa_moto || 500,
-        tarifa_camioneta: user.sucursal.tarifa_camioneta || 1500,
-        tiempo_cortesia_min: user.sucursal.tiempo_cortesia_min || 10,
-        fraccion_minutos: user.sucursal.fraccion_minutos || 15,
-        color_primario: user.sucursal.color || "#4f46e5",
-        logo_url: user.sucursal.logo || "",
-      });
-    }
-  }, [user]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -50,7 +43,7 @@ const Settings = () => {
         },
       });
       toast.success("CONFIGURACIÓN ACTUALIZADA");
-    } catch (error) {
+    } catch {
       toast.error("ERROR AL GUARDAR");
     } finally {
       setLoading(false);
@@ -216,6 +209,11 @@ const Settings = () => {
       </main>
     </div>
   );
+};
+
+const Settings = () => {
+  const { user, login } = useAuth();
+  return <SettingsForm key={JSON.stringify(user?.sucursal)} user={user} login={login} />;
 };
 
 export default Settings;

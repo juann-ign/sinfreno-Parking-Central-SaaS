@@ -1,6 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
-
-const AuthContext = createContext(null);
+import { useCallback, useState } from "react";
+import { AuthContext } from "./auth-context.js";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -12,7 +11,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       return JSON.parse(savedUser);
-    } catch (e) {
+    } catch {
       return null;
     }
   });
@@ -29,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     window.location.href = "/";
   };
 
-  const hasPermission = (permission) => {
+  const hasPermission = useCallback((permission) => {
     if (!user) return false;
 
     const rolSuperior = user.rol?.toUpperCase();
@@ -39,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     const permisosLimpios = user.permisos?.map((p) => p.trim()) || [];
 
     return permisosLimpios.includes(permission);
-  };
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, hasPermission }}>
@@ -47,5 +46,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

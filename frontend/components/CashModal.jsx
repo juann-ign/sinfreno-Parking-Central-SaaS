@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, X, Calculator, AlertTriangle } from "lucide-react";
+import { Wallet } from "lucide-react";
 
 const CashModal = ({ isOpen, mode, expectedAmount, onConfirm, onClose }) => {
   const [amount, setAmount] = useState("");

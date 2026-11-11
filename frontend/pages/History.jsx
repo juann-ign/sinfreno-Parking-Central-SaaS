@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar, Search, FileStack } from "lucide-react";
@@ -34,7 +34,7 @@ const History = () => {
         `/parking/historial?size=50&patente=${term}`,
       );
       setRecords(response.data.items);
-    } catch (error) {
+    } catch {
       console.error("Error al cargar historial");
     } finally {
       // Agregamos un pequeño delay artificial de 500ms

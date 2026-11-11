@@ -2,37 +2,33 @@ import { useState, useEffect } from "react";
 import { TableRowSkeleton } from "./Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 import { differenceInMinutes } from "date-fns";
-import { useAuth } from "../src/context/AuthContext";
+import { useAuth } from "../src/context/useAuth";
 import { X } from "lucide-react";
 
 const TimeBadge = ({ entryDate }) => {
   const { user } = useAuth();
   const courtesyMin = Number(user?.sucursal?.tiempo_cortesia_min) || 10;
 
+  const [now, setNow] = useState(Date.now);
+
   const getMinutes = () => {
-    const now = new Date();
     // FORZAMOS UTC: Si la fecha no termina en Z, se la agregamos
     const utcDate = entryDate.endsWith("Z") ? entryDate : `${entryDate}Z`;
     const entry = new Date(utcDate);
 
-    const diff = differenceInMinutes(now, entry);
+    const diff = differenceInMinutes(new Date(now), entry);
     // Si diff es negativo (por segundos de diferencia entre server/client), es 0
     return diff < 0 ? 0 : diff;
   };
 
-  const [minutes, setMinutes] = useState(getMinutes());
+  const minutes = getMinutes();
 
   useEffect(() => {
-    setMinutes(getMinutes());
     const interval = setInterval(() => {
-      const m = getMinutes();
-      console.log(
-        `DEBUG: Patente: ${m} min transcurridos | Cortesía: ${courtesyMin}`,
-      );
-      setMinutes(m);
+      setNow(Date.now());
     }, 15000);
     return () => clearInterval(interval);
-  }, [entryDate, courtesyMin]);
+  }, []);
 
   let colorClass = "";
   let label = "";

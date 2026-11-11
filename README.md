@@ -82,8 +82,14 @@ sinfreno/
 
 ---
 
-## 🛠️ Instalación con un solo comando
+## 🛠️ Entorno local de recuperación (SF-01)
 
-```bash
-docker-compose up --build
+Desde PowerShell, con Docker Desktop iniciado:
+
+```powershell
+docker --context desktop-linux compose -p sinfreno-sf01-20261110 -f docker-compose.recovery.yml up -d --build --wait --wait-timeout 120
 ```
+
+Abrir http://127.0.0.1:15173. Cuenta ficticia de esta base descartable: `admin@sinfreno.com` / `admin123`.
+
+El [reporte SF-01](docs/recovery/01-entorno.md) documenta las verificaciones, recursos aislados, instrucciones de desarrollo y limitaciones. El Compose original y cualquier base anterior se conservan. La revisión de seguridad, cobro y caja sigue pendiente antes de publicar.

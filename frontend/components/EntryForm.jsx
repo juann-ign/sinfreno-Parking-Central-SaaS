@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
-  Car,
-  ChevronRight,
   Globe,
   AlertCircle,
   CheckCircle2,
@@ -65,8 +63,8 @@ const EntryForm = ({ onEntrySuccess, disabled }) => {
       try {
         const res = await api.get("/parking/config"); // Recordá que este endpoint devuelve la sucursal con sus torres
         setTowers(res.data.torres);
-        if (res.data.torres.length > 0 && !torreId) {
-          setTorreId(res.data.torres[0].id.toString()); // Seleccionamos la primera por defecto
+        if (res.data.torres.length > 0) {
+          setTorreId((current) => current || res.data.torres[0].id.toString());
         }
       } catch (err) {
         console.error("Error cargando torres", err);

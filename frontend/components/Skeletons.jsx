@@ -1,4 +1,3 @@
-import React from "react";
 
 // Simula las tarjetas de arriba (Recaudación, Ocupación)
 export const SkeletonCard = () => (

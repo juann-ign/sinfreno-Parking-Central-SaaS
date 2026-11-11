@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  Wallet,
-  Calendar,
   User,
-  AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
 
 const CashHistory = () => {
@@ -20,7 +16,7 @@ const CashHistory = () => {
       try {
         const res = await api.get("/cash/history");
         setHistory(res.data);
-      } catch (err) {
+      } catch {
         console.error("Error al cargar historial de cajas");
       } finally {
         setLoading(false);

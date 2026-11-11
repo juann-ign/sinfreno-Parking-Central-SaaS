@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, UserPlus, Trash2, Shield, Mail } from "lucide-react";
+import { ArrowLeft, UserPlus, Trash2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -15,15 +14,14 @@ const Users = () => {
   });
   const navigate = useNavigate();
 
-  const fetchUsers = async () => {
-    try {
-      const res = await api.get("/auth/users");
-      setUsers(res.data);
-    } catch (err) {
-      toast.error("Error al cargar usuarios");
-    } finally {
-      setLoading(false);
-    }
+  const fetchUsers = () => {
+    return api.get("/auth/users")
+      .then((res) => {
+        setUsers(res.data);
+      })
+      .catch(() => {
+        toast.error("Error al cargar usuarios");
+      });
   };
 
   useEffect(() => {
@@ -52,7 +50,7 @@ const Users = () => {
       await api.delete(`/auth/users/${id}`);
       toast.success("ACCESO REVOCADO");
       fetchUsers();
-    } catch (err) {
+    } catch {
       toast.error("No se pudo eliminar");
     }
   };

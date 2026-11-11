@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Dar permisos de ejecución al script
-RUN chmod +x start.sh
+# Normalizar CRLF al construir desde Windows y habilitar el script en Linux.
+RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
 CMD ["./start.sh"]
