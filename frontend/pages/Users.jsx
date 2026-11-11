@@ -1,187 +1,298 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, UserPlus, Trash2, Mail } from "lucide-react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, UserRound } from "lucide-react";
+import api from "../api/axios.js";
+import { useAuth } from "../src/context/useAuth.js";
+import { errorMessage } from "../ui/format.js";
+import PageHeader from "../components/PageHeader.jsx";
+import Dialog from "../components/Dialog.jsx";
 
-const Users = () => {
-  const [users, setUsers] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
+const grants = {
+  ingreso: "Registrar ingresos",
+  salida: "Cotizar y registrar cobros",
+  ver_ocupacion: "Consultar ocupación",
+  ver_historial: "Consultar historial y PDF de la sucursal",
+  ver_stats: "Consultar recaudación agregada",
+};
+function CreateUser({ onClose, onCreated }) {
+  const [form, setForm] = useState({
     email: "",
     password: "",
     rol: "OPERADOR",
+    permisos: ["ingreso", "salida", "ver_ocupacion"],
   });
-  const navigate = useNavigate();
-
-  const fetchUsers = () => {
-    return api.get("/auth/users")
-      .then((res) => {
-        setUsers(res.data);
-      })
-      .catch(() => {
-        toast.error("Error al cargar usuarios");
-      });
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (event) => {
+    event.preventDefault();
+    setBusy(true);
     try {
       await api.post("/auth/users", {
-        ...formData,
-        permisos: ["ingreso", "salida"],
+        ...form,
+        permisos: form.rol === "ADMIN" ? [] : form.permisos,
       });
-      toast.success("USUARIO CREADO CORRECTAMENTE");
-      setShowModal(false);
-      setFormData({ email: "", password: "", rol: "OPERADOR" });
-      fetchUsers();
-    } catch (err) {
-      toast.error(err.response?.data?.detail || "Error al crear usuario");
+      onCreated();
+    } catch (failure) {
+      setError(errorMessage(failure, "No se pudo crear el usuario local."));
+    } finally {
+      setBusy(false);
     }
   };
-
-  const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar este acceso?")) return;
-    try {
-      await api.delete(`/auth/users/${id}`);
-      toast.success("ACCESO REVOCADO");
-      fetchUsers();
-    } catch {
-      toast.error("No se pudo eliminar");
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+    <Dialog open title="Crear acceso local" onClose={onClose} busy={busy}>
+      <form onSubmit={submit}>
+        <p className="sf-help">
+          La sucursal se hereda de tu cuenta. Este formulario no crea accesos
+          globales.
+        </p>
+        <label className="sf-field">
+          Email
+          <input
+            type="email"
+            required
+            data-autofocus
+            value={form.email}
+            onChange={(event) =>
+              setForm({ ...form, email: event.target.value })
+            }
+            disabled={busy}
+          />
+        </label>
+        <label className="sf-field">
+          Contraseña temporal
+          <input
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={form.password}
+            onChange={(event) =>
+              setForm({ ...form, password: event.target.value })
+            }
+            disabled={busy}
+          />
+        </label>
+        <label className="sf-field">
+          Rol local
+          <select
+            value={form.rol}
+            onChange={(event) => setForm({ ...form, rol: event.target.value })}
+            disabled={busy}
           >
-            <ArrowLeft size={24} />
+            <option value="OPERADOR">Operador</option>
+            <option value="ADMIN">Administrador de esta sucursal</option>
+          </select>
+        </label>
+        {form.rol === "ADMIN" ? (
+          <p className="sf-notice sf-warning">
+            El administrador puede gestionar usuarios, configuración, turnos y
+            reportes de esta sucursal.
+          </p>
+        ) : (
+          <fieldset className="sf-permissions" disabled={busy}>
+            <legend>Permisos concedidos</legend>
+            {Object.entries(grants).map(([value, label]) => (
+              <label key={value}>
+                <input
+                  type="checkbox"
+                  checked={form.permisos.includes(value)}
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      permisos: event.target.checked
+                        ? [...form.permisos, value]
+                        : form.permisos.filter(
+                            (permission) => permission !== value,
+                          ),
+                    })
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
+        )}
+        {error && (
+          <p className="sf-notice sf-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="sf-dialog-actions">
+          <button
+            type="button"
+            className="sf-button"
+            disabled={busy}
+            onClick={onClose}
+          >
+            Cancelar
           </button>
-          <h1 className="text-xl font-black text-slate-800 uppercase tracking-tighter">
-            Gestión de <span className="text-indigo-600">Staff</span>
-          </h1>
+          <button className="sf-button sf-primary" disabled={busy}>
+            {busy ? "Creando…" : "Crear usuario de esta sucursal"}
+          </button>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-600 transition-all"
-        >
-          <UserPlus size={14} /> Nuevo Usuario
-        </button>
-      </nav>
+      </form>
+    </Dialog>
+  );
+}
 
-      <main className="p-8 max-w-5xl mx-auto">
-        <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+export default function Users() {
+  const { user } = useAuth();
+  const [state, setState] = useState({ users: [], loading: true, error: "" });
+  const [creating, setCreating] = useState(false);
+  const [target, setTarget] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const load = useCallback(
+    () =>
+      api
+        .get("/auth/users")
+        .then(({ data }) =>
+          setState({ users: data, loading: false, error: "" }),
+        )
+        .catch((failure) =>
+          setState({ users: [], loading: false, error: errorMessage(failure) }),
+        ),
+    [],
+  );
+  useEffect(() => {
+    load();
+  }, [load]);
+  const deactivate = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await api.delete(`/auth/users/${target.id}`);
+      setTarget(null);
+      load();
+    } catch (failure) {
+      setError(errorMessage(failure, "No se pudo desactivar el usuario."));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="sf-app">
+      <PageHeader
+        title="Equipo de la sucursal"
+        subtitle="Los usuarios desactivados conservan su identidad y el historial de operaciones."
+      >
+        <button
+          className="sf-button sf-primary"
+          onClick={() => setCreating(true)}
+        >
+          <Plus size={18} />
+          Crear acceso
+        </button>
+      </PageHeader>
+      <main className="sf-workspace">
+        {state.error && (
+          <p className="sf-notice sf-error" role="alert">
+            {state.error}{" "}
+            <button className="sf-button" onClick={load}>
+              Reintentar
+            </button>
+          </p>
+        )}
+        <section className="sf-card sf-table-wrap">
+          <table className="sf-table">
+            <caption className="sr-only">Usuarios de tu sucursal</caption>
+            <thead>
               <tr>
-                <th className="px-8 py-5">Usuario</th>
-                <th className="px-8 py-5">Rol</th>
-                <th className="px-8 py-5 text-right">Acciones</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado de acceso</th>
+                <th>Acción</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {users.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                        <Mail size={16} />
-                      </div>
-                      <span className="font-bold text-slate-700">
-                        {u.email}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span
-                      className={`text-[9px] font-black px-3 py-1 rounded-lg border ${
-                        u.rol === "ADMIN"
-                          ? "bg-amber-50 text-amber-600 border-amber-100"
-                          : "bg-blue-50 text-blue-600 border-blue-100"
-                      }`}
-                    >
-                      {u.rol}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <button
-                      onClick={() => handleDelete(u.id)}
-                      className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+            <tbody>
+              {state.loading ? (
+                <tr>
+                  <td colSpan={4} role="status">
+                    Cargando equipo…
                   </td>
                 </tr>
-              ))}
+              ) : (
+                state.users.map((member) => (
+                  <tr key={member.id}>
+                    <td>
+                      <UserRound size={16} className="inline" /> {member.email}
+                      {member.email === user.email && <small>Tu cuenta</small>}
+                    </td>
+                    <td>
+                      {member.rol === "ADMIN" ? "Administrador" : "Operador"}
+                    </td>
+                    <td>
+                      <span
+                        className={`sf-badge ${member.activo === false ? "sf-badge-warning" : "sf-badge-success"}`}
+                      >
+                        {member.activo === false
+                          ? "Desactivado · historial conservado"
+                          : "Activo"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="sf-button sf-danger"
+                        disabled={
+                          member.activo === false || member.email === user.email
+                        }
+                        onClick={() => {
+                          setError("");
+                          setTarget(member);
+                        }}
+                      >
+                        Desactivar acceso
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
+        </section>
       </main>
-
-      {/* MODAL DE CREACIÓN (Simple y efectivo) */}
-      {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
-            <h2 className="text-xl font-black uppercase text-slate-800 mb-6">
-              Nuevo Acceso
-            </h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <input
-                type="email"
-                placeholder="Email del empleado"
-                required
-                className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 outline-none font-bold"
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-              />
-              <input
-                type="password"
-                placeholder="Contraseña temporal"
-                required
-                className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 outline-none font-bold"
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-              <select
-                className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 outline-none font-bold"
-                onChange={(e) =>
-                  setFormData({ ...formData, rol: e.target.value })
-                }
-              >
-                <option value="OPERADOR">OPERADOR</option>
-                <option value="ADMIN">ADMINISTRADOR</option>
-              </select>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-4 font-black text-[10px] uppercase text-slate-400"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest"
-                >
-                  Crear Cuenta
-                </button>
-              </div>
-            </form>
+      {creating && (
+        <CreateUser
+          onClose={() => setCreating(false)}
+          onCreated={() => {
+            setCreating(false);
+            load();
+          }}
+        />
+      )}
+      {target && (
+        <Dialog
+          open
+          title="Desactivar acceso"
+          onClose={() => setTarget(null)}
+          busy={busy}
+        >
+          <p>
+            Se impedirá que <strong>{target.email}</strong> inicie sesión o use
+            credenciales existentes. Su identidad e historial se conservarán.
+          </p>
+          {error && (
+            <p className="sf-notice sf-error" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="sf-dialog-actions">
+            <button
+              className="sf-button"
+              disabled={busy}
+              onClick={() => setTarget(null)}
+            >
+              Cancelar
+            </button>
+            <button
+              className="sf-button sf-danger"
+              disabled={busy}
+              onClick={deactivate}
+            >
+              {busy ? "Desactivando…" : "Confirmar desactivación"}
+            </button>
           </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );
-};
-
-export default Users;
+}

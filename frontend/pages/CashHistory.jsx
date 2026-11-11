@@ -1,134 +1,220 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  User,
-} from "lucide-react";
+import api from "../api/axios.js";
+import { dateTime, errorMessage, money, paymentLabels } from "../ui/format.js";
+import PageHeader from "../components/PageHeader.jsx";
+import Dialog from "../components/Dialog.jsx";
 
-const CashHistory = () => {
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
+export default function CashHistory() {
+  const [state, setState] = useState({ data: [], loading: true, error: "" });
+  const [retry, setRetry] = useState(0);
+  const [selected, setSelected] = useState(null);
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await api.get("/cash/history");
-        setHistory(res.data);
-      } catch {
-        console.error("Error al cargar historial de cajas");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHistory();
-  }, []);
-
+    const controller = new AbortController();
+    api
+      .get("/cash/history", { signal: controller.signal, timeout: 12000 })
+      .then(({ data }) => setState({ data, loading: false, error: "" }))
+      .catch((failure) => {
+        if (!controller.signal.aborted)
+          setState({
+            data: [],
+            loading: false,
+            error: errorMessage(
+              failure,
+              "No se pudieron consultar los turnos.",
+            ),
+          });
+      });
+    return () => controller.abort();
+  }, [retry]);
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-xl font-black text-slate-800 uppercase tracking-tighter">
-            Control de <span className="text-indigo-600">Cajas</span>
-          </h1>
-        </div>
-      </nav>
-
-      <main className="p-4 lg:p-10 max-w-6xl mx-auto">
-        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <th className="px-8 py-5">Fecha / Turno</th>
-                <th className="px-8 py-5">Responsable</th>
-                <th className="px-8 py-5">Esperado</th>
-                <th className="px-8 py-5">Real</th>
-                <th className="px-8 py-5">Estado</th>
+    <div className="sf-app">
+      <PageHeader
+        title="Turnos de caja"
+        subtitle="Recaudación por turno y conciliación del efectivo físico, sin sumar otros medios como faltante."
+      />
+      <main className="sf-workspace">
+        <p className="sf-notice">
+          Los turnos nuevos de la demo inician con fondo cero. Los turnos
+          heredados pueden no tener desglose ni asignación de cobros confiable;
+          se muestran sin completar datos inventados.
+        </p>
+        {state.error && (
+          <p className="sf-notice sf-error" role="alert">
+            {state.error}{" "}
+            <button
+              className="sf-button"
+              onClick={() => setRetry((value) => value + 1)}
+            >
+              Reintentar
+            </button>
+          </p>
+        )}
+        <section className="sf-card sf-table-wrap">
+          <table className="sf-table">
+            <caption className="sr-only">
+              Turnos de caja de esta sucursal
+            </caption>
+            <thead>
+              <tr>
+                <th>Turno / apertura</th>
+                <th>Cierre</th>
+                <th>Recaudación</th>
+                <th>Efectivo esperado</th>
+                <th>Efectivo contado</th>
+                <th>Diferencia de efectivo</th>
+                <th>Estado</th>
+                <th>Detalle</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {history.map((c) => (
-                <tr
-                  key={c.id}
-                  className="hover:bg-slate-50/50 transition-colors"
-                >
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="font-black text-slate-700 text-sm">
-                        {new Date(c.fecha_apertura).toLocaleDateString()}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">
-                        {new Date(c.fecha_apertura).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        -
-                        {c.fecha_cierre
-                          ? new Date(c.fecha_cierre).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "ACTIVA"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2 text-slate-600 font-bold text-xs uppercase">
-                      <User size={14} className="text-slate-300" />
-                      ID: {c.usuario_id}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="font-black text-slate-500 text-sm">
-                      ${c.monto_esperado.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="font-black text-slate-900 text-base">
-                      ${c.monto_real?.toLocaleString() || "---"}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    {c.estado === "CERRADA" ? (
-                      <div className="flex items-center gap-2">
-                        {/* Cálculo de diferencia visual */}
-                        {c.monto_real === c.monto_esperado ? (
-                          <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-3 py-1 rounded-lg border border-emerald-200">
-                            OK
-                          </span>
-                        ) : (
-                          <span className="bg-rose-100 text-rose-700 text-[9px] font-black px-3 py-1 rounded-lg border border-rose-200">
-                            DIFF: $
-                            {(c.monto_real - c.monto_esperado).toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="animate-pulse bg-indigo-100 text-indigo-700 text-[9px] font-black px-3 py-1 rounded-lg border border-indigo-200">
-                        ABIERTA
-                      </span>
-                    )}
+            <tbody>
+              {state.loading ? (
+                <tr>
+                  <td colSpan={8} role="status">
+                    Cargando turnos…
                   </td>
                 </tr>
-              ))}
+              ) : !state.data.length ? (
+                <tr>
+                  <td className="sf-empty" colSpan={8}>
+                    Todavía no hay turnos de caja.
+                  </td>
+                </tr>
+              ) : (
+                state.data.map((cash) => (
+                  <tr key={cash.id}>
+                    <td>
+                      <strong>Turno #{cash.id}</strong>
+                      <small>{dateTime(cash.fecha_apertura)}</small>
+                    </td>
+                    <td>{dateTime(cash.fecha_cierre)}</td>
+                    {cash.origen_datos === "UTC_POR_TURNO" ? (
+                      <>
+                        <td>{money(cash.recaudacion_total)}</td>
+                        <td>{money(cash.monto_esperado)}</td>
+                        <td>{money(cash.monto_real)}</td>
+                        <td>{money(cash.diferencia)}</td>
+                      </>
+                    ) : (
+                      <td colSpan={4}>
+                        <span className="sf-badge sf-badge-warning">
+                          Sin conciliación histórica
+                        </span>
+                        <small>
+                          Importes originales conservados en el detalle, sin
+                          reinterpretar como efectivo.
+                        </small>
+                      </td>
+                    )}
+                    <td>
+                      <span
+                        className={`sf-badge ${cash.estado === "ABIERTA" ? "sf-badge-success" : ""}`}
+                      >
+                        {cash.estado === "ABIERTA" ? "Abierto" : "Cerrado"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="sf-button"
+                        onClick={() => setSelected(cash)}
+                      >
+                        Ver turno
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-          {history.length === 0 && !loading && (
-            <div className="p-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">
-              No hay registros de cajas cerradas
-            </div>
-          )}
-        </div>
+        </section>
       </main>
+      {selected && (
+        <Dialog
+          open
+          title={`Turno #${selected.id}`}
+          onClose={() => setSelected(null)}
+        >
+          <dl className="sf-cash-totals">
+            <div>
+              <dt>Apertura</dt>
+              <dd>{dateTime(selected.fecha_apertura)}</dd>
+            </div>
+            <div>
+              <dt>Cierre</dt>
+              <dd>{dateTime(selected.fecha_cierre)}</dd>
+            </div>
+            <div>
+              <dt>Responsable de apertura</dt>
+              <dd>Usuario #{selected.usuario_id}</dd>
+            </div>
+            {selected.origen_datos === "UTC_POR_TURNO" ? (
+              <>
+                {Object.entries(selected.totales_por_medio || {}).map(
+                  ([method, amount]) => (
+                    <div key={method}>
+                      <dt>{paymentLabels[method] || method}</dt>
+                      <dd>{money(amount)}</dd>
+                    </div>
+                  ),
+                )}
+                <div>
+                  <dt>Recaudación total</dt>
+                  <dd>{money(selected.recaudacion_total)}</dd>
+                </div>
+                <div>
+                  <dt>Fondo inicial</dt>
+                  <dd>{money(selected.fondo_inicial)}</dd>
+                </div>
+                <div>
+                  <dt>Efectivo esperado</dt>
+                  <dd>{money(selected.monto_esperado)}</dd>
+                </div>
+                <div>
+                  <dt>Efectivo contado</dt>
+                  <dd>{money(selected.monto_real)}</dd>
+                </div>
+                <div className="sf-total">
+                  <dt>Diferencia de efectivo</dt>
+                  <dd>{money(selected.diferencia)}</dd>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <dt>Recaudación y desglose por medio</dt>
+                  <dd>Sin conciliación histórica</dd>
+                </div>
+                <div>
+                  <dt>Fondo inicial</dt>
+                  <dd>Sin constancia histórica</dd>
+                </div>
+                <div>
+                  <dt>Importe esperado heredado, sin reinterpretar</dt>
+                  <dd>{money(selected.monto_esperado)}</dd>
+                </div>
+                <div>
+                  <dt>Importe declarado heredado, sin reinterpretar</dt>
+                  <dd>{money(selected.monto_real)}</dd>
+                </div>
+                <div>
+                  <dt>Diferencia heredada, sin reinterpretar</dt>
+                  <dd>{money(selected.diferencia)}</dd>
+                </div>
+              </>
+            )}
+          </dl>
+          {selected.origen_datos !== "UTC_POR_TURNO" && (
+            <p className="sf-notice sf-warning">
+              Estos importes pertenecen al esquema anterior. No constituyen un
+              arqueo de efectivo ni permiten reconstruir la recaudación o el
+              fondo inicial del turno.
+            </p>
+          )}
+          <h3>Notas conservadas</h3>
+          <p className="sf-help sf-preserve-whitespace">
+            {selected.notas || "Sin notas registradas."}
+          </p>
+        </Dialog>
+      )}
     </div>
   );
-};
-
-export default CashHistory;
+}

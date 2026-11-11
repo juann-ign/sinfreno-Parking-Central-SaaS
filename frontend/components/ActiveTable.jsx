@@ -1,220 +1,89 @@
-import { useState, useEffect } from "react";
-import { TableRowSkeleton } from "./Skeletons";
-import { motion, AnimatePresence } from "framer-motion";
-import { differenceInMinutes } from "date-fns";
-import { useAuth } from "../src/context/useAuth";
-import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { elapsedInfo } from "../ui/format.js";
 
-const TimeBadge = ({ entryDate }) => {
-  const { user } = useAuth();
-  const courtesyMin = Number(user?.sucursal?.tiempo_cortesia_min) || 10;
-
+function Duration({ value, courtesy }) {
   const [now, setNow] = useState(Date.now);
-
-  const getMinutes = () => {
-    // FORZAMOS UTC: Si la fecha no termina en Z, se la agregamos
-    const utcDate = entryDate.endsWith("Z") ? entryDate : `${entryDate}Z`;
-    const entry = new Date(utcDate);
-
-    const diff = differenceInMinutes(new Date(now), entry);
-    // Si diff es negativo (por segundos de diferencia entre server/client), es 0
-    return diff < 0 ? 0 : diff;
-  };
-
-  const minutes = getMinutes();
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(Date.now());
-    }, 15000);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
   }, []);
-
-  let colorClass = "";
-  let label = "";
-
-  if (minutes < courtesyMin) {
-    colorClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
-    label = "RECIÉN INGRESADO";
-  } else if (minutes < 60) {
-    colorClass = "bg-indigo-50 text-indigo-600 border-indigo-100";
-    label = `${minutes} MINUTOS`;
-  } else {
-    const days = Math.floor(minutes / 1440);
-    const hours = Math.floor((minutes % 1440) / 60);
-    const remMinutes = minutes % 60;
-
-    colorClass =
-      days >= 1
-        ? "bg-rose-600 text-white border-rose-700 shadow-sm"
-        : "bg-rose-50 text-rose-600 border-rose-200";
-
-    label = days >= 1 ? `${days}D ${hours}H` : `${hours}H ${remMinutes}M`;
-  }
-
+  const elapsed = elapsedInfo(value, now, courtesy);
+  if (!elapsed)
+    return <span className="sf-badge sf-badge-warning">Fecha a revisar</span>;
+  const { minutes, inCourtesy } = elapsed;
   return (
-    <div
-      className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border uppercase tracking-wider transition-all duration-500 ${colorClass}`}
-    >
-      <span
-        className={`w-1.5 h-1.5 rounded-full bg-current mr-2 ${minutes < courtesyMin ? "animate-pulse" : ""}`}
-      />
-      {label}
-    </div>
+    <span className={`sf-badge ${inCourtesy ? "sf-badge-success" : ""}`}>
+      {inCourtesy ? "En cortesía · " : ""}
+      {minutes < 60
+        ? `${minutes} min`
+        : `${Math.floor(minutes / 60)} h ${minutes % 60} min`}
+    </span>
   );
-};
-
-const ActiveTable = ({ vehicles, onCheckout, canCheckout, isLoading }) => {
-  const [isProcessing, setIsProcessing] = useState(null); // Guarda la patente que se está cobrando
-
-  const handleQuickCheckout = (patente, metodo) => {
-    onCheckout(patente, metodo);
-    setIsProcessing(null);
-  };
-
+}
+export default function ActiveTable({
+  vehicles,
+  towers,
+  onQuote,
+  canQuote,
+  loading,
+  courtesy,
+}) {
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
-      {/* Header adaptable */}
-      <div className="p-5 lg:px-8 lg:py-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
-        <h3 className="font-arvo text-base lg:text-lg font-bold text-slate-800 uppercase">
-          Vehículos en Planta
-        </h3>
-        <span className="bg-white border border-slate-200 text-slate-400 text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm">
-          {vehicles.length} Activos
-        </span>
-      </div>
-
-      <div className="overflow-y-auto flex-1 custom-scroll">
-        <table className="w-full text-left border-collapse">
-          {/* OCULTAR THEAD EN MOBILE */}
-          <thead className="hidden lg:table-header-group bg-white sticky top-0 z-20">
-            <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
-              <th className="px-8 py-5">Vehículo</th>
-              <th className="px-8 py-5">Ubicación</th>
-              <th className="px-8 py-5">Tiempo</th>
-              <th className="px-8 py-5 text-right">Acción</th>
+    <div className="sf-table-wrap">
+      <table className="sf-table">
+        <caption className="sr-only">
+          Vehículos activos de esta sucursal
+        </caption>
+        <thead>
+          <tr>
+            <th>Patente / categoría</th>
+            <th>Sector</th>
+            <th>Tiempo transcurrido</th>
+            <th>
+              <span className="sr-only">Acción</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={4} role="status">
+                Cargando vehículos…
+              </td>
             </tr>
-          </thead>
-
-          <motion.tbody layout className="flex flex-col lg:table-row-group">
-            <AnimatePresence mode="popLayout">
-              {vehicles.map((v) => (
-                <motion.tr
-                  key={v.id}
-                  layout
-                  className="flex flex-col lg:table-row border-b border-slate-100 p-4 lg:p-0 hover:bg-slate-50 transition-colors"
-                >
-                  {/* Vehículo */}
-                  <td className="px-4 lg:px-8 py-2 lg:py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-slate-100 flex items-center justify-center text-xl lg:text-2xl">
-                        {v.tipo_vehiculo === "MOTO"
-                          ? "🏍️"
-                          : v.tipo_vehiculo === "CAMIONETA"
-                            ? "🚐"
-                            : "🚗"}
-                      </div>
-                      <div>
-                        <p className="font-black text-slate-800 text-base lg:text-lg leading-none uppercase">
-                          {v.patente}
-                        </p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-widest lg:hidden">
-                          {v.tipo_vehiculo} • Torre {v.torre_id}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Ubicación - OCULTA EN MOBILE (se integra arriba) */}
-                  <td className="hidden lg:table-cell px-8 py-6">
-                    <span className="text-sm font-black text-slate-600 uppercase italic">
-                      Torre {v.torre_id}
-                    </span>
-                  </td>
-
-                  {/* Tiempo */}
-                  <td className="px-4 lg:px-8 py-2 lg:py-6">
-                    <TimeBadge entryDate={v.fecha_entrada} />
-                  </td>
-
-                  {/* Acción - Botón grande en mobile */}
-                  <td className="px-4 lg:px-8 py-4 lg:py-6 text-right">
-                    <div className="relative flex justify-end items-center h-10">
-                      <AnimatePresence mode="wait">
-                        {canCheckout && isProcessing === v.patente ? (
-                          <motion.div
-                            key="options"
-                            initial={{ opacity: 0, scale: 0.8, x: 10 }}
-                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.8, x: 10 }}
-                            className="flex gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner"
-                          >
-                            <motion.button
-                              whileHover={{
-                                scale: 1.05,
-                                backgroundColor: "#ecfdf5",
-                              }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() =>
-                                handleQuickCheckout(v.patente, "EFECTIVO")
-                              }
-                              className="px-3 py-1.5 bg-white text-emerald-600 rounded-lg text-[9px] font-black uppercase shadow-sm border border-emerald-100 transition-colors"
-                            >
-                              💵 Efvo
-                            </motion.button>
-
-                            <motion.button
-                              whileHover={{
-                                scale: 1.05,
-                                backgroundColor: "#eff6ff",
-                              }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() =>
-                                handleQuickCheckout(v.patente, "DEBITO")
-                              }
-                              className="px-3 py-1.5 bg-white text-blue-600 rounded-lg text-[9px] font-black uppercase shadow-sm border border-blue-100 transition-colors"
-                            >
-                              💳 Card
-                            </motion.button>
-
-                            <button
-                              onClick={() => setIsProcessing(null)}
-                              className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
-                          </motion.div>
-                        ) : (
-                          <motion.button
-                            key="button"
-                            disabled={!canCheckout}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsProcessing(v.patente)}
-                            className="w-full lg:w-auto bg-slate-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all"
-                          >
-                            Cobrar
-                          </motion.button>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-              {isLoading && (
-                <>
-                  <TableRowSkeleton key="s1" />
-                  <TableRowSkeleton key="s2" />
-                  <TableRowSkeleton key="s3" />
-                </>
-              )}
-            </AnimatePresence>
-          </motion.tbody>
-        </table>
-      </div>
+          ) : !vehicles.length ? (
+            <tr>
+              <td colSpan={4} className="sf-empty">
+                No hay vehículos que coincidan con la búsqueda.
+              </td>
+            </tr>
+          ) : (
+            vehicles.map((stay) => (
+              <tr key={stay.id}>
+                <td>
+                  <strong className="sf-plate">{stay.patente}</strong>
+                  <small>{stay.tipo_vehiculo}</small>
+                </td>
+                <td>
+                  {towers.find((tower) => tower.id === stay.torre_id)
+                    ? `Sector ${towers.find((tower) => tower.id === stay.torre_id).numero}`
+                    : `Sector · ID ${stay.torre_id}`}
+                </td>
+                <td>
+                  <Duration value={stay.fecha_entrada} courtesy={courtesy} />
+                </td>
+                <td className="sf-row-action">
+                  {canQuote && (
+                    <button className="sf-button" onClick={() => onQuote(stay)}>
+                      Cotizar salida
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
-};
-
-export default ActiveTable;
+}

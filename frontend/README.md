@@ -1,6 +1,6 @@
 # Frontend de Sinfreno
 
-React 19, Vite 6 y JavaScript/JSX. El informe de recuperación y el arranque completo con recursos descartables están en [SF-01](../docs/recovery/01-entorno.md).
+React 19, Vite 7 y JavaScript/JSX. Node requerido: `^20.19.0 || >=22.12.0`; el entorno verificado usa Node 24 en Windows y Node 22 en Docker. El estado vigente del recorrido completo está en [el registro de release](../docs/recovery/RELEASE_2026-11-15.md); [SF-01](../docs/recovery/01-entorno.md) conserva la evidencia histórica de recuperación.
 
 Desde `C:\dev\sinfreno\frontend`, en PowerShell:
 
@@ -9,6 +9,7 @@ npm.cmd ci --cache ..\.recovery\npm-cache --no-audit --no-fund
 npm.cmd run lint
 npm.cmd run test:connections
 npm.cmd run test:realtime
+npm.cmd test
 npm.cmd run build
 npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort
 ```
@@ -29,9 +30,23 @@ Las rutas que empiezan por `/` heredan el origen del frontend y su esquema TLS. 
 
 La configuración central está en `config/connections.js`. Sus pruebas cubren protocolos, prefijos, URLs independientes, valores inválidos y codificación de identificadores. Los comprobantes se descargan desde el botón PDF usando el cliente Axios autenticado y un blob local; no se comparten URLs públicas ni tokens mediante WhatsApp.
 
-El WebSocket envía la credencial en un primer mensaje y espera confirmación antes de procesar avisos. Origin lo agrega el navegador. Los avisos sólo invalidan lecturas HTTP autorizadas; el resultado individual y el comprobante provienen de la respuesta HTTP de la terminal que hizo la operación. Al cerrar sesión o recibir 401/4401 se limpia la sesión y se cierra el socket. Los rechazos 4403/1008 no se reintentan; las desconexiones transitorias tienen hasta cinco reintentos (1, 2, 4, 8 y 15 segundos), sin reiniciar ese límite dentro de la misma conexión lógica. Después hace falta recargar. El servidor cierra la conexión al vencer la credencial.
+El WebSocket envía la credencial en un primer mensaje y espera confirmación antes de procesar avisos. Origin lo agrega el navegador. Los avisos sólo invalidan lecturas HTTP autorizadas; el resultado individual y el comprobante provienen de la respuesta HTTP de la terminal que hizo la operación. Al cerrar sesión o recibir 401/4401 se limpia la sesión y se cierra el socket. Los rechazos 4403/1008 no se reintentan; las desconexiones transitorias tienen hasta cinco reintentos (1, 2, 4, 8 y 15 segundos), sin reiniciar ese límite dentro de la misma conexión lógica. Después se ofrece Reconectar o recargar. El servidor cierra la conexión al vencer la credencial.
 
-Al restaurar una sesión se consulta `/auth/me` para consumir rol, permisos y sucursal actuales; el almacenamiento local sólo conserva la sesión entre recargas. La autorización real se aplica en backend. Los tests de `api/realtime.test.js` verifican el ciclo del cliente con un WebSocket simulado; no reemplazan las pruebas integradas de autenticación y aislamiento.
+Al restaurar una sesión se consulta `/auth/me` para consumir rol, permisos y sucursal actuales. Un error transitorio conserva las credenciales y muestra una pantalla cerrada con reintento; 401/logout invalidan y las respuestas tardías no restauran otra identidad. La autorización real se aplica en backend. Los tests de ciclo WS simulan WebSocket/timers y los de sesión controlan respuestas diferidas; no reemplazan integración ni observación en navegador.
+
+## Operación y recuperación
+
+- Ingreso: patente + Enter, con categoría y sector preseleccionados; requiere una caja abierta. `N` enfoca ingreso y `/` enfoca búsqueda cuando no se está escribiendo ni en un diálogo.
+- Salida: seleccionar estadía, consultar cotización del servidor, elegir medio y confirmar el importe visible. Si vence, se solicita cotizar otra vez. La UI distingue datos heredados y permite al ADMIN revisar una fecha con fuente verificable.
+- Los comandos de ingreso, cobro, apertura y cierre conservan una clave de intento, su cuerpo y los IDs concretos antes de enviarse. Ante timeout/red/5xx se ofrece recuperar el resultado o reenviar el mismo intento. No se genera otro comando del mismo tipo mientras el anterior sea incierto. No hay soporte offline con conciliación automática.
+- Los intentos se guardan en `localStorage` por usuario y sucursal. No limpiar el almacenamiento ante una respuesta incierta. Para cuentas simultáneas usar perfiles de navegador independientes. Las claves no conceden autorización: el servidor verifica identidad, autoría y sucursal.
+- Mis comprobantes permite recuperar operaciones propias después de cerrar un aviso o recargar. El historial completo exige su permiso y usa la paginación real de la API.
+- Caja muestra turno, recaudación general y totales por medio cuando corresponden. El contado y la diferencia son de efectivo físico; los otros medios no se contabilizan como faltante. El cierre conserva el ID del turno seleccionado aunque otra terminal cambie la caja actual.
+- “Cobro registrado” describe el registro local; no confirma una transacción bancaria. PDF e impresión no inventan CUIT ni QR funcionales.
+
+Los diálogos usan `<dialog>` con foco inicial, Escape, retorno de foco y bloqueo durante mutaciones. Hay diseño adaptable para notebook, desktop y pantallas estrechas, con reducción de movimiento y foco visible. La observación real en 1366×768, zoom, teclado, descarga e impresión debe constar separadamente en el registro de release; un build no acredita QA visual.
+
+Inter y Arvo se sirven localmente desde las distribuciones oficiales Fontsource 5.3.0: subset Latin WOFF2, Inter 400/600/700/900 y Arvo 700, sin petición a Google Fonts. Las licencias OFL se conservan en `public/fonts/LICENSE-Inter.txt` y `LICENSE-Arvo.txt`, que también se incluyen en el build. Esto elimina la dependencia externa de tipografía; no implica soporte offline de las operaciones.
 
 ## Lint
 

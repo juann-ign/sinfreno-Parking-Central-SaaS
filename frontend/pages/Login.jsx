@@ -1,193 +1,136 @@
-import { useState } from "react";
-import api from "../api/axios";
-import { useAuth } from "../src/context/useAuth";
-import { motion, AnimatePresence } from "framer-motion";
-import { Car, ArrowRight, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, LockKeyhole } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios.js";
+import { useAuth } from "../src/context/useAuth.js";
+import { errorMessage } from "../ui/format.js";
 
-const Login = ({ onLoginSuccess }) => {
+export default function Login() {
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: Email, 2: Password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [branding, setBranding] = useState({
-    color: "#4f46e5",
-    logo: null,
-    empresa: "Sinfreno",
-  });
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-
-  const handleNextStep = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const [branding, setBranding] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const request = useRef(null);
+  const currentEmail = useRef("");
+  useEffect(() => () => request.current?.abort(), []);
+  const submit = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    const controller = new AbortController();
+    request.current = controller;
+    setBusy(true);
+    setError("");
     try {
-      const res = await api.post(`/auth/discovery?email=${email}`);
-      setBranding(res.data);
-      setStep(2);
-    } catch {
-      toast.error("Error al verificar el correo");
+      const body = new URLSearchParams({ username: email.trim(), password });
+      const { data } = await api.post("/auth/login", body, {
+        signal: controller.signal,
+        timeout: 12000,
+      });
+      if (controller.signal.aborted) return;
+      localStorage.setItem("token", data.access_token);
+      login(data.user_info);
+      navigate(
+        data.user_info.rol === "SUPERADMIN" ? "/superadmin" : "/dashboard",
+        { replace: true },
+      );
+    } catch (failure) {
+      if (!controller.signal.aborted)
+        setError(
+          errorMessage(
+            failure,
+            "El servicio de acceso no está disponible. Verificá tu conexión y reintentá.",
+          ),
+        );
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("username", email);
-      formData.append("password", password);
-
-      const response = await api.post("/auth/login", formData);
-      localStorage.setItem("token", response.data.access_token);
-
-      const userInfo = response.data.user_info;
-      login(userInfo);
-
-      // --- LÓGICA DE REDIRECCIÓN POR ROL ---
-      if (userInfo.rol === "SUPERADMIN") {
-        navigate("/superadmin");
-      } else {
-        navigate("/dashboard");
-      }
-
-      onLoginSuccess();
-    } catch {
-      toast.error("Contraseña incorrecta");
-    } finally {
-      setLoading(false);
-    }
+  const discover = () => {
+    if (!email.includes("@")) return;
+    const requestedEmail = email;
+    api
+      .post("/auth/discovery", null, { params: { email }, timeout: 5000 })
+      .then(({ data }) => {
+        if (requestedEmail === currentEmail.current) setBranding(data);
+      })
+      .catch(() => {});
   };
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6">
-      {/* LOGO DINÁMICO */}
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="mb-8 flex flex-col items-center"
-      >
-        {branding.logo ? (
-          <img
-            src={branding.logo}
-            alt="Logo"
-            className="h-12 w-auto object-contain"
-          />
-        ) : (
-          <div
-            className="p-3 rounded-2xl text-white shadow-lg"
-            style={{ backgroundColor: branding.color }}
-          >
-            <Car size={32} />
-          </div>
-        )}
-        <h2 className="mt-4 font-arvo text-xl font-bold text-slate-800 uppercase tracking-tight">
-          Sign in to{" "}
-          <span style={{ color: branding.color }}>{branding.empresa}</span>
-        </h2>
-      </motion.div>
-
-      <div className="w-full max-w-[400px] bg-white rounded-[2rem] shadow-xl shadow-slate-200/60 border border-slate-100 p-8">
-        <AnimatePresence mode="wait">
-          {step === 1 ? (
-            <motion.form
-              key="step1"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
-              onSubmit={handleNextStep}
-              className="space-y-6"
-            >
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="tu@empresa.com"
-                  className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-slate-700"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
-              >
-                Continuar <ArrowRight size={16} />
-              </button>
-
-              <div className="relative py-4 flex items-center">
-                <div className="flex-grow border-t border-slate-100"></div>
-                <span className="flex-shrink mx-4 text-[10px] font-black text-slate-300 uppercase">
-                  O
-                </span>
-                <div className="flex-grow border-t border-slate-100"></div>
-              </div>
-
-              <button
-                type="button"
-                className="w-full py-4 border-2 border-slate-100 rounded-2xl font-black text-[10px] uppercase text-slate-500 flex items-center justify-center gap-3 hover:bg-slate-50 transition-all"
-              >
-                <img
-                  src="https://www.svgrepo.com/show/355037/google.svg"
-                  className="h-4 w-4"
-                />{" "}
-                Continuar con Google
-              </button>
-            </motion.form>
-          ) : (
-            <motion.form
-              key="step2"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -20, opacity: 0 }}
-              onSubmit={handleSubmit}
-              className="space-y-6"
-            >
-              <button
-                onClick={() => setStep(1)}
-                className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase hover:text-slate-600 transition-colors"
-              >
-                <ArrowLeft size={14} /> {email}
-              </button>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  required
-                  autoFocus
-                  className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-slate-700"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  style={{ focusBorderColor: branding.color }}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg transition-all"
-                style={{ backgroundColor: branding.color }}
-              >
-                {loading ? "Verificando..." : "Entrar al Panel"}
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
+    <main className="sf-login">
+      <div className="sf-login-intro">
+        <a className="sf-brand" href="/">
+          Sinfreno<span>.</span>
+        </a>
+        <h1>
+          Tu cochera,
+          <br />
+          en movimiento.
+        </h1>
+        <p>Ingresos claros, cobros verificables y turnos de caja ordenados.</p>
+        <div className="sf-login-rule">
+          <span />
+          Operación simple. Cada movimiento, en su lugar.
+        </div>
       </div>
-      <p className="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-        ¿No tienes cuenta?{" "}
-        <span className="text-indigo-600 cursor-pointer">Contáctanos</span>
-      </p>
-    </div>
+      <section className="sf-login-card">
+        <div className="sf-login-lock">
+          <LockKeyhole size={24} />
+        </div>
+        <span className="sf-eyebrow">Acceso a tu sucursal</span>
+        <h2>Bienvenido de nuevo</h2>
+        <p className="sf-help">
+          {branding?.empresa && branding.empresa !== "Sinfreno"
+            ? branding.empresa
+            : "Ingresá con tu cuenta autorizada."}
+        </p>
+        <form onSubmit={submit}>
+          <label className="sf-field" htmlFor="login-email">
+            Email
+            <input
+              id="login-email"
+              type="email"
+              autoComplete="username"
+              required
+              autoFocus
+              value={email}
+              disabled={busy}
+              onBlur={discover}
+              onChange={(event) => {
+                currentEmail.current = event.target.value;
+                setEmail(event.target.value);
+                setBranding(null);
+              }}
+            />
+          </label>
+          <label className="sf-field" htmlFor="login-password">
+            Contraseña
+            <input
+              id="login-password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              disabled={busy}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </label>
+          {error && (
+            <p role="alert" className="sf-notice sf-error">
+              {error}
+            </p>
+          )}
+          <button className="sf-button sf-primary" disabled={busy}>
+            {busy ? "Verificando acceso…" : "Ingresar"}
+            <ArrowRight size={18} />
+          </button>
+        </form>
+        <p className="sf-login-note">
+          Tu rol y tu sucursal determinan las operaciones disponibles.
+        </p>
+      </section>
+    </main>
   );
-};
-
-export default Login;
+}

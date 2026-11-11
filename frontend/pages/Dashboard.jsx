@@ -1,402 +1,534 @@
-import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "../src/context/useAuth";
-import api from "../api/axios";
-import { getWebSocketUrl } from "../config/connections.js";
-import { connectAuthenticatedSocket } from "../api/realtime.js";
-import { SESSION_ENDED_EVENT } from "../api/session.js";
-import ActiveTable from "../components/ActiveTable";
-import EntryForm from "../components/EntryForm";
-import RevenueChart from "../components/RevenueChart";
-import OccupancyPieChart from "../components/OccupancyPieChart";
-import TicketModal from "../components/TicketModal";
-import CashModal from "../components/CashModal";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  Car,
+  ArrowUpRight,
+  CircleHelp,
+  History,
   LogOut,
-  History as HistoryIcon,
+  RefreshCw,
   Search,
-  Settings as SettingsIcon,
-  Wallet,
-  AlertTriangle,
+  Settings,
   Users,
-  FileStack,
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../src/context/useAuth.js";
+import api from "../api/axios.js";
+import { useOperations } from "../api/useOperations.js";
+import { connectAuthenticatedSocket } from "../api/realtime.js";
+import { SESSION_ENDED_EVENT } from "../api/session.js";
+import { getWebSocketUrl } from "../config/connections.js";
+import { errorMessage, money } from "../ui/format.js";
+import EntryForm from "../components/EntryForm.jsx";
+import ActiveTable from "../components/ActiveTable.jsx";
+import CashModal from "../components/CashModal.jsx";
+import TicketModal from "../components/TicketModal.jsx";
+import OwnReceipts from "../components/OwnReceipts.jsx";
+import QuotePanel from "../components/QuotePanel.jsx";
+import PendingOperations from "../components/PendingOperations.jsx";
+import ReviewDateDialog from "../components/ReviewDateDialog.jsx";
 
-const Dashboard = ({ onLogout }) => {
+export default function Dashboard({ onLogout }) {
   const { user, hasPermission, login, logout } = useAuth();
-  const isAdmin = user?.rol === "ADMIN";
-  const [stats, setStats] = useState(null);
-  const [activeVehicles, setActiveVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hourlyData, setHourlyData] = useState([]);
-  const [filterTerm, setFilterTerm] = useState("");
-
-  const navigate = useNavigate();
-
-  const [showTicket, setShowTicket] = useState(false);
-  const [lastTicketData, setLastTicketData] = useState(null);
-
-  const [isCashLoading, setIsCashLoading] = useState(true);
-  const [cashSession, setCashSession] = useState(null); // Guardará la caja abierta
-  const [showCashModal, setShowCashModal] = useState(false);
-  const [cashMode, setCashMode] = useState("open");
-
-  // Función de carga de datos (Memorizada para evitar re-renders)
-  const fetchData = useCallback(
-    () => Promise.all([
-      api.get("/stats/summary"),
-      api.get("/parking/activas"),
+  const isAdmin = user.rol === "ADMIN";
+  const [data, setData] = useState({
+    stays: [],
+    config: null,
+    summary: null,
+    loading: true,
+    error: "",
+  });
+  const [cash, setCash] = useState({
+    status: "loading",
+    value: null,
+    error: "",
+  });
+  const [term, setTerm] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [quote, setQuote] = useState({
+    value: null,
+    loading: false,
+    error: null,
+  });
+  const [receipt, setReceipt] = useState(null);
+  const [cashDialog, setCashDialog] = useState(null);
+  const [reviewDate, setReviewDate] = useState(false);
+  const [version, setVersion] = useState(0);
+  const [connection, setConnection] = useState("connecting");
+  const [reconnect, setReconnect] = useState(0);
+  const queryAbort = useRef(null);
+  const quoteAbort = useRef(null);
+  const searchRef = useRef(null);
+  const refresh = useCallback(() => {
+    queryAbort.current?.abort();
+    const controller = new AbortController();
+    queryAbort.current = controller;
+    const options = { signal: controller.signal, timeout: 12000 };
+    Promise.all([
+      api.get("/parking/activas", options),
+      api.get("/parking/config", options),
+      api.get("/stats/summary", options),
     ])
-      .then(async ([statsRes, activeRes]) => {
-        setStats(statsRes.data);
-        setActiveVehicles(activeRes.data);
-
-        if (hasPermission("ver_stats")) {
-          const hourlyRes = await api.get("/stats/revenue-hourly");
-          setHourlyData(hourlyRes.data);
-        }
-      })
-      .catch((error) => {
-        toast.error(error.response?.status === 403 ? "No tenés permiso para consultar estos datos." : "No se pudieron cargar los datos del dashboard.", { id: "dashboard-load" });
-      })
-      .finally(() => {
-        setLoading(false);
-      }),
-    [hasPermission],
-  );
-
-  // Función para verificar si hay caja abierta
-  const checkCashStatus = useCallback(() =>
-    api.get("/cash/status")
-      .then((res) => {
-        setCashSession(res.data);
-      })
-      .catch((error) => {
-        if (error.response?.status !== 404) toast.error("No se pudo consultar el estado de caja.", { id: "cash-status" });
-        setCashSession(null); // 404 significa que no hay caja abierta
-      })
-      .finally(() => {
-        setIsCashLoading(false);
-      }), []);
-
-  // 1. Carga inicial de datos
+      .then(([stays, config, summary]) =>
+        setData({
+          stays: stays.data,
+          config: config.data,
+          summary: summary.data,
+          loading: false,
+          error: "",
+        }),
+      )
+      .catch((failure) => {
+        if (!controller.signal.aborted)
+          setData((previous) => ({
+            ...previous,
+            loading: false,
+            error: errorMessage(
+              failure,
+              "No pudimos actualizar la lista. Los datos anteriores pueden estar desactualizados.",
+            ),
+          }));
+      });
+    api
+      .get("/cash/status", options)
+      .then(({ data: value }) => setCash({ status: "open", value, error: "" }))
+      .catch((failure) => {
+        if (!controller.signal.aborted)
+          setCash({
+            status: failure.response?.status === 404 ? "closed" : "error",
+            value: null,
+            error:
+              failure.response?.status === 403
+                ? "No tenés permiso para consultar la caja."
+                : "No pudimos consultar el estado de caja. Reintentá antes de operar.",
+          });
+      });
+  }, []);
   useEffect(() => {
-    fetchData();
-    checkCashStatus();
-  }, [fetchData, checkCashStatus]);
-
-  // Socket messages only invalidate authorized HTTP reads.
-  useEffect(() => {
-    const sucursalId = user?.sucursal?.id;
-    if (!sucursalId) return;
-    const refresh = () => {
-      fetchData();
-      checkCashStatus();
+    refresh();
+    return () => {
+      queryAbort.current?.abort();
+      quoteAbort.current?.abort();
     };
+  }, [refresh]);
+  useEffect(() => {
+    const shortcut = (event) => {
+      if (
+        document.querySelector("dialog[open]") ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) ||
+        event.target.isContentEditable
+      )
+        return;
+      if (event.key === "/") {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        document.getElementById("entry-plate")?.focus();
+      }
+    };
+    document.addEventListener("keydown", shortcut);
+    return () => document.removeEventListener("keydown", shortcut);
+  }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
     const stop = connectAuthenticatedSocket({
-      url: getWebSocketUrl(sucursalId),
-      token: localStorage.getItem("token"),
+      url: getWebSocketUrl(user.sucursal.id),
+      token,
+      onStatus: setConnection,
       onReady: refresh,
-      onEvent: ({ event }) => {
-        if (event === "CONFIG_UPDATED") {
-          api.get("/auth/me")
-            .then(({ data }) => login(data))
-            .catch(() => toast.error("No se pudo actualizar la configuración de la sesión."));
-        } else {
-          refresh();
-        }
+      onEvent: ({ event, id }) => {
+        refresh();
+        setVersion((value) => value + 1);
+        if (event === "NUEVA_SALIDA")
+          setSelected((previous) => (previous?.id === id ? null : previous));
+        if (event === "CONFIG_UPDATED")
+          api
+            .get("/auth/me", { sessionToken: token, timeout: 12000 })
+            .then(({ data: profile }) => login(profile, token))
+            .catch(() => {});
       },
-      onUnauthorized: logout,
-      onForbidden: () => toast.error("Sin acceso a las actualizaciones en tiempo real.", { id: "realtime-access" }),
-      onUnavailable: () => toast.error("No se pudieron conectar las actualizaciones. Recargá para volver a intentar.", { id: "realtime-offline" }),
+      onUnauthorized: () => {
+        if (localStorage.getItem("token") === token) logout();
+      },
+      onForbidden: () => setConnection("forbidden"),
+      onUnavailable: () => setConnection("offline"),
     });
     window.addEventListener(SESSION_ENDED_EVENT, stop);
     return () => {
       window.removeEventListener(SESSION_ENDED_EVENT, stop);
       stop();
     };
-  }, [user?.sucursal?.id, fetchData, checkCashStatus, login, logout]);
-
-  const showOperationResult = (data, isExit) => {
-    toast.success(isExit
-      ? "Salida de " + data.patente + ": $" + data.monto + " (" + data.metodo_pago + ")"
-      : "Ingreso registrado: " + data.patente, {
-      duration: 8000,
-      action: {
-        label: "Ver comprobante",
-        onClick: () => {
-          setLastTicketData(data);
-          setShowTicket(true);
-        },
-      },
-    });
-    fetchData();
-  };
-
-  const handleCheckout = async (patente, metodo = "EFECTIVO") => {
-    try {
-      const { data } = await api.post("/parking/salida", null, {
-        params: { patente, metodo_pago: metodo },
-      });
-      showOperationResult(data, true);
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Error al procesar salida");
-    }
-  };
-
-  const handleCashAction = async (data) => {
-    try {
-      if (cashMode === "open") {
-        const res = await api.post("/cash/abrir");
-        setCashSession(res.data);
-        toast.success("Caja abierta. ¡Buen turno!");
+  }, [user.sucursal.id, login, logout, refresh, reconnect]);
+  const onOperation = useCallback(
+    (type, result) => {
+      refresh();
+      setVersion((value) => value + 1);
+      if (type === "INGRESO" || type === "SALIDA") {
+        if (type === "SALIDA") {
+          setSelected(null);
+          setQuote({ value: null, loading: false, error: null });
+        }
+        toast.success(
+          type === "INGRESO"
+            ? `Ingreso registrado · ${result.patente}`
+            : `Cobro registrado · ${result.patente} · ${money(result.monto)}`,
+          {
+            action: { label: "Comprobante", onClick: () => setReceipt(result) },
+            duration: 7000,
+          },
+        );
       } else {
-        await api.post("/cash/cerrar", {
-          monto_real: data.amount,
-          notas: data.notes,
-        });
-        setCashSession(null);
-        toast.success("Caja cerrada correctamente.");
+        setCashDialog(null);
+        toast.success(
+          type === "CAJA_ABRIR"
+            ? `Turno #${result.id} abierto`
+            : `Turno #${result.id} cerrado`,
+        );
       }
-      setShowCashModal(false);
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Error en operación de caja");
-    }
-  };
-
-  const filteredVehicles = activeVehicles.filter((v) =>
-    v.patente.toLowerCase().includes(filterTerm.toLowerCase()),
+    },
+    [refresh],
   );
-
+  const operations = useOperations(
+    `${user.email}/${user.sucursal.id}`,
+    onOperation,
+  );
+  const pendingExit = operations.pending.some((item) => item.type === "SALIDA");
+  const openCash = cash.status === "open" ? cash.value : null;
+  const fetchQuote = useCallback((stay) => {
+    quoteAbort.current?.abort();
+    const controller = new AbortController();
+    quoteAbort.current = controller;
+    setSelected(stay);
+    setQuote({ value: null, loading: true, error: null });
+    api
+      .post(`/parking/${stay.id}/cotizaciones`, null, {
+        signal: controller.signal,
+        timeout: 12000,
+      })
+      .then(({ data: value }) =>
+        setQuote({ value, loading: false, error: null }),
+      )
+      .catch((failure) => {
+        if (!controller.signal.aborted)
+          setQuote({
+            value: null,
+            loading: false,
+            error: {
+              message: errorMessage(
+                failure,
+                "No pudimos calcular la cotización.",
+              ),
+              code: failure.response?.data?.detail?.code,
+            },
+          });
+      });
+  }, []);
+  const filtered = data.stays.filter((stay) =>
+    stay.patente.includes(term.trim().toUpperCase()),
+  );
+  const cashText = {
+    loading: "Consultando caja…",
+    closed: "Caja cerrada",
+    error: "Caja no consultable",
+    open: `Caja abierta · turno #${openCash?.id}`,
+  }[cash.status];
+  const connectionText =
+    {
+      connecting: "Conectando actualizaciones",
+      connected: "Actualizado en tiempo real",
+      reconnecting: "Reconectando actualizaciones",
+      offline: "Conexión en tiempo real interrumpida",
+      forbidden: "Actualizaciones sin autorización",
+    }[connection] || "Conectando actualizaciones";
   return (
-    // h-screen en desktop, auto en mobile para permitir scroll
-    <div className="min-h-screen lg:h-screen w-full flex flex-col bg-slate-50 overflow-x-hidden font-sans">
-      {/* HEADER: Adaptable */}
-      {/* HEADER: Siempre horizontal y compacto */}
-      <nav className="h-16 lg:h-20 w-full bg-white border-b border-slate-100 px-4 lg:px-10 flex justify-between items-center shrink-0 z-50">
-        {/* LADO IZQUIERDO: Logo y Título */}
-        <div className="flex items-center gap-2 lg:gap-4 min-w-0">
-          <div
-            className="p-2 lg:p-2.5 rounded-xl lg:rounded-2xl text-white shadow-lg shrink-0"
-            style={{ backgroundColor: user?.sucursal?.color || "#4f46e5" }}
-          >
-            <Car size={18} lg:size={22} strokeWidth={2.5} />
-          </div>
-          {/* truncate evita que el nombre largo de la empresa rompa el layout en móviles */}
-          <h1 className="font-arvo text-lg lg:text-2xl font-bold text-slate-900 tracking-tight truncate">
-            {user?.sucursal?.nombre || "Sinfreno"}
-            <span className="text-indigo-600">.</span>
-          </h1>
+    <div className="sf-app">
+      <header className="sf-topbar">
+        <Link className="sf-brand" to="/">
+          Sinfreno<span>.</span>
+        </Link>
+        <div className="sf-branch">
+          <strong>{user.sucursal.nombre}</strong>
+          <small>
+            {user.email} · {isAdmin ? "Administrador" : "Operador"}
+          </small>
         </div>
-
-        {/* LADO DERECHO: Botones de Acción */}
-        <div className="flex items-center gap-1 sm:gap-3 lg:gap-8 shrink-0">
-          {/* BOTÓN CAJA */}
-          <button
-            disabled={!isAdmin}
-            title={isAdmin ? "Administrar caja" : "La caja la administra un administrador"}
-            onClick={() => {
-              setCashMode(cashSession ? "close" : "open");
-              setShowCashModal(true);
-            }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all ${
-              cashSession
-                ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                : "bg-rose-50 border-rose-100 text-rose-600 animate-pulse"
-            }`}
-          >
-            <Wallet size={16} />
-            <span className="text-[10px] font-black uppercase tracking-widest">
-              {cashSession ? "Caja Abierta" : "Caja Cerrada"}
-            </span>
-          </button>
-
-          {isAdmin && <button
-            onClick={() => navigate("/cash-history")}
-            className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all shadow-sm"
-            title="Historial de Cajas"
-          >
-            <FileStack size={18} />
-          </button>}
-
-          {/* BOTÓN HISTORIAL */}
+        <nav aria-label="Navegación principal">
           {hasPermission("ver_historial") && (
-            <button
-              onClick={() => navigate("/history")}
-              className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-slate-50 lg:hover:bg-transparent transition-all"
-            >
-              <div className="p-1.5 lg:p-0 bg-slate-50 lg:bg-transparent rounded-md lg:rounded-none text-slate-400 group-hover:text-indigo-600">
-                <HistoryIcon size={18} lg:size={16} />
-              </div>
-              {/* El texto se oculta en móviles muy pequeños para no amontonar */}
-              <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-slate-400 group-hover:text-indigo-600 tracking-[0.15em] transition-all">
-                HISTORIAL
-              </span>
-            </button>
+            <Link className="sf-nav-link" to="/history">
+              <History size={18} />
+              Historial
+            </Link>
           )}
-
-          {/*  BOTÓN CONFIGURACIÓN  */}
-          {hasPermission("config_sucursal") && (
-            <button
-              onClick={() => navigate("/settings")}
-              className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-slate-50 lg:hover:bg-transparent transition-all"
-            >
-              <div className="p-1.5 lg:p-0 bg-slate-50 lg:bg-transparent rounded-md lg:rounded-none text-slate-400 group-hover:text-indigo-600">
-                <SettingsIcon size={18} lg:size={16} />
-              </div>
-              <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-slate-400 group-hover:text-indigo-600 tracking-[0.15em] transition-all">
-                AJUSTES
-              </span>
-            </button>
+          {isAdmin && (
+            <>
+              <Link className="sf-nav-link" to="/cash-history">
+                <Wallet size={18} />
+                Turnos
+              </Link>
+              <Link className="sf-nav-link" to="/users">
+                <Users size={18} />
+                Equipo
+              </Link>
+              <Link className="sf-nav-link" to="/settings">
+                <Settings size={18} />
+                Configuración
+              </Link>
+            </>
           )}
-          {/* BOTÓN USUARIOS */}
-          {hasPermission("config_sucursal") && (
-            <button
-              onClick={() => navigate("/users")}
-              className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-slate-50 lg:hover:bg-transparent transition-all"
+          <button className="sf-nav-link" onClick={onLogout}>
+            <LogOut size={18} />
+            Salir
+          </button>
+        </nav>
+      </header>
+      <main className="sf-workspace">
+        <div className="sf-workspace-title">
+          <div>
+            <span className="sf-eyebrow">Operación de la sucursal</span>
+            <h1>Entradas y salidas</h1>
+          </div>
+          <div className="sf-cash-status">
+            <span
+              className={`sf-badge ${cash.status === "open" ? "sf-badge-success" : "sf-badge-warning"}`}
             >
-              <div className="p-1.5 lg:p-0 bg-slate-50 lg:bg-transparent rounded-md lg:rounded-none text-slate-400 group-hover:text-indigo-600">
-                <Users size={18} lg:size={16} />
-              </div>
-              <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-slate-400 group-hover:text-indigo-600 tracking-[0.15em] transition-all">
-                STAFF
-              </span>
-            </button>
-          )}
-
-          {/* BOTÓN SALIR */}
-          <button
-            onClick={onLogout}
-            className="group flex items-center gap-2 p-2 lg:p-0 rounded-lg hover:bg-rose-50 lg:hover:bg-transparent transition-all"
-          >
-            <div className="p-1.5 lg:p-0 bg-rose-50 lg:bg-transparent rounded-md lg:rounded-none text-rose-400 group-hover:text-rose-500">
-              <LogOut size={18} lg:size={16} />
-            </div>
-            <span className="hidden sm:inline font-sans text-[10px] lg:text-xs font-bold text-rose-400 group-hover:text-rose-500 tracking-[0.15em] transition-all">
-              SALIR
+              {cashText}
             </span>
+            {isAdmin &&
+              cash.status !== "loading" &&
+              cash.status !== "error" && (
+                <button
+                  className="sf-button"
+                  disabled={operations.busy}
+                  onClick={() => {
+                    operations.clearError();
+                    setCashDialog({
+                      mode: openCash ? "close" : "open",
+                      cash: openCash,
+                    });
+                  }}
+                >
+                  {openCash ? "Cerrar turno" : "Abrir caja"}
+                </button>
+              )}
+          </div>
+        </div>
+        <div className="sf-status-row">
+          <span className={connection === "connected" ? "sf-live" : "sf-muted"}>
+            {connectionText}
+          </span>
+          {connection !== "connected" && connection !== "connecting" && (
+            <button
+              className="sf-text-button"
+              onClick={() => setReconnect((value) => value + 1)}
+            >
+              Reconectar
+            </button>
+          )}
+          <button className="sf-text-button" onClick={refresh}>
+            <RefreshCw size={15} />
+            Actualizar datos
           </button>
         </div>
-      </nav>
-
-      {/* CONTENIDO PRINCIPAL: Stack en mobile, Row en Desktop */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-4 lg:p-6 gap-6">
-        {/* COLUMNA OPERATIVA (Izquierda) */}
-        <section className="flex-1 lg:flex-[7] flex flex-col gap-6 min-w-0">
-          {/* Overlay de bloqueo si no hay caja */}
-          {!isCashLoading && !cashSession && (hasPermission("ingreso") || hasPermission("salida")) && (
-            <div className="absolute inset-0 z-40 bg-slate-50/60 backdrop-blur-[2px] flex items-center justify-center rounded-[2rem]">
-              <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center max-w-sm">
-                <AlertTriangle
-                  className="mx-auto text-rose-500 mb-4"
-                  size={48}
-                />
-                <h3 className="font-black text-slate-800 uppercase mb-2">
-                  Operación Bloqueada
-                </h3>
-                <p className="text-sm text-slate-500 font-bold mb-6">
-                  {isAdmin ? "Debes abrir la caja antes de registrar ingresos o salidas." : "Solicitá a un administrador que abra la caja para operar."}
-                </p>
-                {isAdmin && <button
-                  onClick={() => {
-                    setCashMode("open");
-                    setShowCashModal(true);
-                  }}
-                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest"
-                >
-                  Abrir Caja Ahora
-                </button>}
-              </div>
+        {cash.status === "error" && (
+          <p className="sf-notice sf-error" role="alert">
+            {cash.error}{" "}
+            <button className="sf-button" onClick={refresh}>
+              Consultar nuevamente
+            </button>
+          </p>
+        )}
+        {cash.status === "closed" && (
+          <p className="sf-notice sf-warning">
+            La caja está cerrada. Podés buscar y cotizar;{" "}
+            {isAdmin
+              ? "abrí un turno para registrar ingresos o cobros."
+              : "pedí a un administrador que abra el turno antes de registrar ingresos o cobros."}
+          </p>
+        )}
+        <PendingOperations operations={operations} />
+        {operations.error && !selected && !cashDialog && (
+          <p className="sf-notice sf-error" role="alert">
+            {operations.error}
+          </p>
+        )}
+        {hasPermission("ingreso") && (
+          <EntryForm
+            towers={data.config?.torres || []}
+            cashId={openCash?.id}
+            busy={operations.busy}
+            pending={operations.pending.some((item) => item.type === "INGRESO")}
+            onSubmit={(body) =>
+              operations.run("INGRESO", { url: "/parking/ingreso", body })
+            }
+          />
+        )}
+        {data.summary && (
+          <section className="sf-summary" aria-label="Resumen de la sucursal">
+            <div>
+              <span>Vehículos activos</span>
+              <strong>{data.summary.autos_adentro}</strong>
             </div>
-          )}
-
-          <div className="shrink-0">
-            {hasPermission("ingreso") && <EntryForm
-              onEntrySuccess={(data) => showOperationResult(data, false)}
-              disabled={!cashSession || isCashLoading}
-            />}
-          </div>
-
-          <div className="shrink-0 relative">
-            <Search
-              className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 text-slate-400"
-              size={20}
-              lg:size={24}
-            />
-            <input
-              type="text"
-              placeholder="BUSCAR PATENTE..."
-              className="w-full pl-12 lg:pl-16 pr-6 lg:pr-8 py-4 lg:py-5 rounded-2xl lg:rounded-[2rem] bg-white border-2 border-transparent shadow-sm focus:border-indigo-500 outline-none font-sans font-semibold text-lg lg:text-xl transition-all"
-              value={filterTerm}
-              onChange={(e) => setFilterTerm(e.target.value.toUpperCase())}
-            />
-          </div>
-
-          {/* Tabla que se vuelve scrollable solo en desktop */}
-          <div className="lg:flex-1 min-h-[400px] bg-white rounded-[2rem] lg:rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-            <ActiveTable
-              vehicles={filteredVehicles}
-              onCheckout={handleCheckout}
-              canCheckout={hasPermission("salida") && Boolean(cashSession) && !isCashLoading}
-              isLoading={loading}
-            />
-          </div>
-        </section>
-
-        {/* ASIDE (Derecha / Abajo en mobile) */}
-        <aside className="lg:flex-[3] flex flex-col gap-4 min-w-0 lg:min-w-[340px]">
-          {hasPermission("ver_stats") && stats?.recaudacion_hoy !== undefined && (
-            <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shrink-0">
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                Caja Hoy
-              </p>
-              <h3 className="text-3xl lg:text-4xl font-black mb-4 tracking-tighter">
-                ${stats?.recaudacion_hoy || 0}
-              </h3>
-              <div className="flex justify-between text-[10px] font-black border-t border-white/10 pt-3">
-                <span className="opacity-50 uppercase">Disponibles</span>
-                <span className="text-emerald-400">
-                  {stats?.capacidad_disponible} LUGARES
-                </span>
-              </div>
+            <div>
+              <span>Plazas disponibles</span>
+              <strong>{data.summary.capacidad_disponible}</strong>
             </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 flex-1">
-            <div className="min-h-[350px] h-full">
-              {hasPermission("ver_ocupacion") && (
-                <OccupancyPieChart
-                  occupied={stats?.autos_adentro || 0}
-                  available={stats?.capacidad_disponible || 0}
-                />
-              )}
-              {hasPermission("ver_stats") && (
-                <div className="h-60 lg:h-auto lg:flex-1">
-                  <RevenueChart data={hourlyData} />
+            {hasPermission("ver_stats") &&
+              data.summary.recaudacion_hoy !== undefined && (
+                <div>
+                  <span>Recaudación del día</span>
+                  <strong>{money(data.summary.recaudacion_hoy)}</strong>
                 </div>
               )}
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <TicketModal
-        isOpen={showTicket}
-        ticketData={lastTicketData}
-        onClose={() => setShowTicket(false)}
-      />
-
-      <CashModal
-        isOpen={showCashModal}
-        mode={cashMode}
-        expectedAmount={stats?.recaudacion_hoy}
-        onConfirm={handleCashAction}
-        onClose={() => setShowCashModal(false)}
-      />
+            {isAdmin &&
+              openCash?.origen_datos === "UTC_POR_TURNO" &&
+              openCash?.recaudacion_total !== undefined && (
+                <div>
+                  <span>Recaudación del turno #{openCash.id}</span>
+                  <strong>{money(openCash.recaudacion_total)}</strong>
+                </div>
+              )}
+          </section>
+        )}
+        <div className={`sf-operating-grid ${selected ? "sf-with-quote" : ""}`}>
+          <section className="sf-card sf-active-list">
+            <header className="sf-section-heading">
+              <div>
+                <span className="sf-eyebrow">Vehículos en planta</span>
+                <h2>Buscar y cotizar</h2>
+              </div>
+              <span className="sf-hint">
+                {filtered.length} de {data.stays.length} activos
+              </span>
+            </header>
+            <label className="sf-search">
+              <Search size={20} />
+              <span className="sr-only">Buscar patente activa</span>
+              <input
+                ref={searchRef}
+                placeholder="Buscar patente…"
+                autoComplete="off"
+                value={term}
+                onChange={(event) => setTerm(event.target.value.toUpperCase())}
+              />
+              <kbd>/</kbd>
+            </label>
+            {data.error && (
+              <p className="sf-notice sf-error" role="alert">
+                {data.error}
+              </p>
+            )}
+            <ActiveTable
+              vehicles={filtered}
+              towers={data.config?.torres || []}
+              loading={data.loading}
+              canQuote={
+                hasPermission("salida") && !operations.busy && !pendingExit
+              }
+              onQuote={fetchQuote}
+              courtesy={Number(
+                data.config?.tiempo_cortesia_min ??
+                  user.sucursal.tiempo_cortesia_min ??
+                  0,
+              )}
+            />
+          </section>
+          {selected && (
+            <QuotePanel
+              key={selected.id}
+              stay={selected}
+              quote={quote.value}
+              loading={quote.loading}
+              error={quote.error}
+              cash={openCash}
+              operations={operations}
+              onRefresh={() => {
+                operations.clearError();
+                fetchQuote(selected);
+              }}
+              onClose={() => {
+                quoteAbort.current?.abort();
+                setSelected(null);
+                refresh();
+              }}
+              canReview={isAdmin}
+              onReview={() => setReviewDate(true)}
+              onConfirm={(method) =>
+                operations.run("SALIDA", {
+                  url: `/parking/${selected.id}/salida`,
+                  body: {
+                    cotizacion_id: quote.value.id,
+                    caja_id: openCash.id,
+                    metodo_pago: method,
+                  },
+                })
+              }
+            />
+          )}
+        </div>
+        {(hasPermission("ingreso") ||
+          hasPermission("salida") ||
+          hasPermission("ver_historial")) && (
+          <OwnReceipts version={version} onView={setReceipt} />
+        )}
+        <footer className="sf-footer">
+          <CircleHelp size={16} />
+          <span>
+            Atajos: <kbd>N</kbd> nuevo ingreso · <kbd>/</kbd> buscar. Consultas
+            y cotizaciones no registran un cobro.
+          </span>
+          <span>
+            Hora de Buenos Aires · ARS <ArrowUpRight size={14} />
+          </span>
+        </footer>
+      </main>
+      {cashDialog && isAdmin && (
+        <CashModal
+          key={`${cashDialog.mode}-${cashDialog.cash?.id || "new"}`}
+          mode={cashDialog.mode}
+          cash={cashDialog.cash}
+          operations={operations}
+          onClose={() => setCashDialog(null)}
+          onConfirm={({ amount, notes }) =>
+            operations.run(
+              cashDialog.mode === "open" ? "CAJA_ABRIR" : "CAJA_CERRAR",
+              {
+                url:
+                  cashDialog.mode === "open"
+                    ? "/cash/abrir"
+                    : `/cash/${cashDialog.cash.id}/cerrar`,
+                body:
+                  cashDialog.mode === "open"
+                    ? { notas: notes }
+                    : { monto_real: amount, notas: notes },
+              },
+            )
+          }
+        />
+      )}
+      {receipt && (
+        <TicketModal
+          key={receipt.id}
+          isOpen
+          ticketData={receipt}
+          onClose={() => setReceipt(null)}
+        />
+      )}
+      {reviewDate && selected && (
+        <ReviewDateDialog
+          stay={selected}
+          onClose={() => setReviewDate(false)}
+          onReviewed={() => {
+            setReviewDate(false);
+            fetchQuote(selected);
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
-};
-
-export default Dashboard;
+}

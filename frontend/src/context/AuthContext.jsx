@@ -5,13 +5,25 @@ import { clearSession, SESSION_ENDED_EVENT } from "../../api/session.js";
 import { createSessionController } from "../../api/session-controller.js";
 
 export const AuthProvider = ({ children }) => {
-  const [controller] = useState(() => createSessionController({
-    storage: localStorage,
-    requestProfile: (token, signal) => api.get("/auth/me", { signal, sessionToken: token, timeout: 12000 }).then(({ data }) => data),
-    onInvalid: clearSession,
-  }));
-  const { user, status: sessionStatus, error: sessionError } = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
-  const login = useCallback((userData) => controller.login(userData), [controller]);
+  const [controller] = useState(() =>
+    createSessionController({
+      storage: localStorage,
+      requestProfile: (token, signal) =>
+        api
+          .get("/auth/me", { signal, sessionToken: token, timeout: 12000 })
+          .then(({ data }) => data),
+      onInvalid: clearSession,
+    }),
+  );
+  const {
+    user,
+    status: sessionStatus,
+    error: sessionError,
+  } = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
+  const login = useCallback(
+    (userData, expectedToken) => controller.login(userData, expectedToken),
+    [controller],
+  );
   const retrySession = useCallback(() => controller.restore(), [controller]);
 
   const logout = useCallback(() => {
@@ -23,9 +35,16 @@ export const AuthProvider = ({ children }) => {
     const endSession = controller.end;
     const storageChanged = (event) => {
       if (event.storageArea !== localStorage) return;
-      if ((event.key === "token" && event.newValue === null)
-        || (event.key === null && !localStorage.getItem("token"))) {
+      if (
+        (event.key === "token" && event.newValue === null) ||
+        (event.key === null && !localStorage.getItem("token"))
+      ) {
         clearSession();
+      } else if (event.key === "token") {
+        window.dispatchEvent(new Event(SESSION_ENDED_EVENT));
+        controller.requireVerification(
+          "La cuenta cambió en otra pestaña. Verificá la sesión antes de continuar; para cuentas simultáneas usá perfiles independientes.",
+        );
       }
     };
     window.addEventListener(SESSION_ENDED_EVENT, endSession);
@@ -38,14 +57,28 @@ export const AuthProvider = ({ children }) => {
     };
   }, [controller]);
 
-  const hasPermission = useCallback((permission) => {
-    if (!user) return false;
+  const hasPermission = useCallback(
+    (permission) => {
+      if (!user) return false;
 
-    return Array.isArray(user.permisos) && user.permisos.includes(permission);
-  }, [user]);
+      return Array.isArray(user.permisos) && user.permisos.includes(permission);
+    },
+    [user],
+  );
 
   return (
-    <AuthContext.Provider value={{ user, checkingSession: sessionStatus === "checking", sessionStatus, sessionError, retrySession, login, logout, hasPermission }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        checkingSession: sessionStatus === "checking",
+        sessionStatus,
+        sessionError,
+        retrySession,
+        login,
+        logout,
+        hasPermission,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

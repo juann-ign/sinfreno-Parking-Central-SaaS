@@ -1,10 +1,24 @@
-const UPDATE_EVENTS = new Set(["NUEVO_INGRESO", "NUEVA_SALIDA", "CONFIG_UPDATED"]);
+const UPDATE_EVENTS = new Set([
+  "NUEVO_INGRESO",
+  "NUEVA_SALIDA",
+  "CONFIG_UPDATED",
+]);
 const RETRY_DELAYS = [1000, 2000, 4000, 8000, 15000];
 
 // The browser supplies Origin. Credentials only travel in the first frame.
-export function connectAuthenticatedSocket({
-  url, token, onEvent, onReady = () => {}, onUnauthorized, onForbidden, onUnavailable,
-}, runtime = globalThis) {
+export function connectAuthenticatedSocket(
+  {
+    url,
+    token,
+    onEvent,
+    onReady = () => {},
+    onStatus = () => {},
+    onUnauthorized,
+    onForbidden,
+    onUnavailable,
+  },
+  runtime = globalThis,
+) {
   let socket;
   let stopped = false;
   let retries = 0;
@@ -25,6 +39,7 @@ export function connectAuthenticatedSocket({
 
   const connect = () => {
     if (stopped) return;
+    onStatus(retries ? "reconnecting" : "connecting");
     let authenticated = false;
     try {
       socket = new runtime.WebSocket(url);
@@ -39,7 +54,8 @@ export function connectAuthenticatedSocket({
     }, 7000);
 
     socket.onopen = () => {
-      if (!stopped) socket.send(JSON.stringify({ type: "authenticate", token }));
+      if (!stopped)
+        socket.send(JSON.stringify({ type: "authenticate", token }));
     };
     socket.onmessage = ({ data }) => {
       let message;
@@ -52,12 +68,14 @@ export function connectAuthenticatedSocket({
       if (!authenticated) {
         if (message.type === "authenticated") {
           authenticated = true;
+          onStatus("connected");
           runtime.clearTimeout(authTimer);
           onReady();
         }
         return;
       }
-      if (UPDATE_EVENTS.has(message.event)) onEvent({ event: message.event, id: message.id });
+      if (UPDATE_EVENTS.has(message.event))
+        onEvent({ event: message.event, id: message.id });
     };
     socket.onclose = ({ code }) => {
       runtime.clearTimeout(authTimer);
@@ -72,6 +90,7 @@ export function connectAuthenticatedSocket({
         stop();
         onUnavailable();
       } else {
+        onStatus("reconnecting");
         retryTimer = runtime.setTimeout(connect, RETRY_DELAYS[retries++]);
       }
     };

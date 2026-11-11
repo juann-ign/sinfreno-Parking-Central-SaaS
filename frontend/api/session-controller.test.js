@@ -1,22 +1,41 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createSessionController, isCurrentSessionFailure } from "./session-controller.js";
+import {
+  createSessionController,
+  isCurrentSessionFailure,
+} from "./session-controller.js";
 
 function setup() {
-  const values = new Map([["token", "credential-A"], ["user_info", "saved-profile"]]);
-  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const values = new Map([
+    ["token", "credential-A"],
+    ["user_info", "saved-profile"],
+  ]);
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+  };
   const requests = [];
   let invalidations = 0;
   const controller = createSessionController({
     storage,
-    requestProfile: (token, signal) => new Promise((resolve, reject) => requests.push({ token, signal, resolve, reject })),
-    onInvalid: () => { invalidations++; values.delete("token"); values.delete("user_info"); },
+    requestProfile: (token, signal) =>
+      new Promise((resolve, reject) =>
+        requests.push({ token, signal, resolve, reject }),
+      ),
+    onInvalid: () => {
+      invalidations++;
+      values.delete("token");
+      values.delete("user_info");
+    },
   });
   return { values, requests, controller, invalidations: () => invalidations };
 }
 
 test("503 and network failure retain credentials, close protected UI and allow a verified retry", async () => {
-  for (const failure of [{ response: { status: 503 } }, new TypeError("Network unavailable")]) {
+  for (const failure of [
+    { response: { status: 503 } },
+    new TypeError("Network unavailable"),
+  ]) {
     const h = setup();
     const first = h.controller.restore();
     h.requests[0].reject(failure);
@@ -82,9 +101,43 @@ test("an obsolete retry response cannot supersede the latest verification", asyn
 });
 
 test("Axios invalidation is scoped to the credential that actually failed", () => {
-  const error = { response: { status: 401 }, config: { sessionToken: "credential-A" } };
+  const error = {
+    response: { status: 401 },
+    config: { sessionToken: "credential-A" },
+  };
   assert.equal(isCurrentSessionFailure(error, "credential-A"), true);
   assert.equal(isCurrentSessionFailure(error, "credential-B"), false);
   assert.equal(isCurrentSessionFailure(error, null), false);
-  assert.equal(isCurrentSessionFailure({ ...error, response: { status: 503 } }, "credential-A"), false);
+  assert.equal(
+    isCurrentSessionFailure(
+      { ...error, response: { status: 503 } },
+      "credential-A",
+    ),
+    false,
+  );
+});
+
+test("late background profile refresh cannot replace another credential's identity", () => {
+  const h = setup();
+  h.values.set("token", "credential-B");
+  h.controller.login({ email: "b@example.com" });
+  h.controller.login({ email: "stale-a@example.com" }, "credential-A");
+  assert.equal(h.controller.getSnapshot().user.email, "b@example.com");
+});
+test("credential replacement locks the old UI until explicit verification of the new identity", async () => {
+  const h = setup();
+  h.controller.login({ email: "a@example.com" });
+  const stale = h.controller.restore();
+  h.values.set("token", "credential-B");
+  h.controller.requireVerification("Cuenta cambiada");
+  h.requests[0].resolve({ email: "a@example.com" });
+  await stale;
+  assert.equal(h.controller.getSnapshot().user, null);
+  assert.equal(h.controller.getSnapshot().status, "unavailable");
+  assert.equal(h.values.get("token"), "credential-B");
+  const verify = h.controller.restore();
+  assert.equal(h.requests[1].token, "credential-B");
+  h.requests[1].resolve({ email: "b@example.com" });
+  await verify;
+  assert.equal(h.controller.getSnapshot().user.email, "b@example.com");
 });
