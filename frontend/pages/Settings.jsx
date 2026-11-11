@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../api/axios.js";
 import { useAuth } from "../src/context/useAuth.js";
 import { errorMessage } from "../ui/format.js";
 import PageHeader from "../components/PageHeader.jsx";
 
-function SettingsForm({ user, login }) {
+function SettingsForm({ user, login, retrySession }) {
   const [form, setForm] = useState(() => ({
     nombre: user.sucursal.nombre,
     tarifa_auto: String(user.sucursal.tarifa_auto ?? "1000.00"),
@@ -16,30 +16,65 @@ function SettingsForm({ user, login }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [profileWarning, setProfileWarning] = useState("");
+  const mounted = useRef(false);
+  const profileRequest = useRef(null);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      profileRequest.current?.abort();
+    };
+  }, []);
   const save = async (event) => {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError("");
     setSuccess(false);
+    setProfileWarning("");
     const token = localStorage.getItem("token");
+    const isCurrent = () => mounted.current && localStorage.getItem("token") === token;
     try {
-      await api.patch("/parking/config", {
-        ...form,
-        tiempo_cortesia_min: Number(form.tiempo_cortesia_min),
-        fraccion_minutos: Number(form.fraccion_minutos),
-      });
-      const { data } = await api.get("/auth/me", { sessionToken: token });
-      login(data, token);
-      setSuccess(true);
-    } catch (failure) {
-      setError(
-        errorMessage(
-          failure,
-          "No pudimos guardar la configuración. Consultá los valores antes de reintentar.",
-        ),
+      await api.patch(
+        "/parking/config",
+        {
+          ...form,
+          tiempo_cortesia_min: Number(form.tiempo_cortesia_min),
+          fraccion_minutos: Number(form.fraccion_minutos),
+        },
+        { sessionToken: token, timeout: 12000 },
       );
+    } catch (failure) {
+      if (isCurrent()) setError(errorMessage(failure,
+        "No pudimos confirmar el guardado. Consultá los valores antes de reintentar.",
+      ));
+      if (mounted.current) setBusy(false);
+      return;
+    }
+    if (!isCurrent()) {
+      if (mounted.current) setBusy(false);
+      return;
+    }
+    setSuccess(true);
+    const controller = new AbortController();
+    profileRequest.current = controller;
+    try {
+      const { data } = await api.get("/auth/me", {
+        sessionToken: token, signal: controller.signal, timeout: 12000,
+      });
+      if (!isCurrent() || controller.signal.aborted) return;
+      if (data.email !== user.email || data.sucursal?.id !== user.sucursal.id) {
+        retrySession();
+        return;
+      }
+      login(data, token);
+    } catch {
+      if (isCurrent() && !controller.signal.aborted) {
+        setProfileWarning("La configuración quedó guardada, pero no pudimos actualizar el perfil de la sesión. No hace falta volver a guardar; recargá o verificá la sesión para actualizarlo.");
+      }
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
   return (
@@ -146,12 +181,13 @@ function SettingsForm({ user, login }) {
                 Configuración guardada.
               </p>
             )}
+            {profileWarning && <p className="sf-notice sf-warning" role="status">{profileWarning}</p>}
             <p className="sf-help">
               Las estadías heredadas sin snapshot usan la configuración vigente
               al cotizar y se identifican expresamente como heredadas.
             </p>
             <button className="sf-button sf-primary" disabled={busy}>
-              {busy ? "Guardando…" : "Guardar configuración local"}
+              {busy ? success ? "Actualizando sesión…" : "Guardando…" : "Guardar configuración local"}
             </button>
           </section>
         </form>
@@ -160,6 +196,15 @@ function SettingsForm({ user, login }) {
   );
 }
 export default function Settings() {
-  const { user, login } = useAuth();
-  return <SettingsForm key={user.sucursal.id} user={user} login={login} />;
+  const { user, login, retrySession, logout } = useAuth();
+  if (!user?.sucursal) return (
+    <div className="sf-app">
+      <PageHeader title="Configuración no disponible" />
+      <main className="sf-workspace">
+        <p className="sf-notice sf-warning" role="alert">Tu sesión no tiene una sucursal asignada para configurar. No se muestran ni modifican datos de otra sucursal.</p>
+        <button className="sf-button" onClick={logout}>Cerrar sesión</button>
+      </main>
+    </div>
+  );
+  return <SettingsForm key={`${user.email}/${user.sucursal.id}`} user={user} login={login} retrySession={retrySession} />;
 }

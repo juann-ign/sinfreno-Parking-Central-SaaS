@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CarFront } from "lucide-react";
 
 export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
@@ -7,7 +7,16 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
   const [tower, setTower] = useState("");
   const plateRef = useRef(null);
   const selectedTower = tower || String(towers[0]?.id || "");
-  const disabled = !cashId || busy || pending;
+  const disabled = !cashId || !selectedTower || busy || pending;
+  const initialFocusHandled = useRef(false);
+  useEffect(() => {
+    if (disabled || initialFocusHandled.current) return;
+    initialFocusHandled.current = true;
+    const active = document.activeElement;
+    if (document.querySelector("dialog[open]")) return;
+    if (active && active !== document.body && active !== document.documentElement) return;
+    plateRef.current?.focus();
+  }, [disabled]);
   const submit = async (event) => {
     event.preventDefault();
     if (disabled || !selectedTower) return;
@@ -39,7 +48,6 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
             Patente
             <input
               ref={plateRef}
-              autoFocus
               id="entry-plate"
               autoComplete="off"
               spellCheck="false"
