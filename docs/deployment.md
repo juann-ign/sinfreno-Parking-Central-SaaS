@@ -47,9 +47,12 @@ Estado de esta sesión: YAML y scripts revisados estáticamente; la imagen está
 Después del backup/restauración y con las imágenes locales disponibles:
 
 ```powershell
+docker --context desktop-linux pull caddy:2-alpine
 docker --context desktop-linux build -t sinfreno-release-frontend-static:20261115 -f frontend/Dockerfile.production frontend
 node scripts/test-release-proxy.mjs --confirm-disposable
 ```
+
+La descarga explícita de Caddy es un prerrequisito para un checkout en una máquina nueva. Ejecutarla sólo después de recuperar espacio y Docker; el ensayo conserva `--pull never` para no iniciar descargas inesperadas.
 
 El ensayo está preparado para usar sólo `release_restore_disposable` y un proyecto QA nuevo, con puertos loopback 15176/15177. Comprueba que la subred no colisiona; exige imágenes ya presentes y no descarga durante el test. Caddy genera una CA local privada; los clientes verifican TLS confiando explícitamente sólo su certificado público, sin desactivar la verificación ni modificar el almacén de confianza del host. El script comprueba estáticos/fuentes, login, lecturas, PDF, ACK WSS y redirecciones HTTPS con puerto conservado, incluso ante X-Forwarded-Proto manipulado. No equivale a navegador, eventos entre terminales ni certificado público/ACME. Elimina sólo sus contenedores/red/volúmenes QA y su archivo privado temporal; conserva el certificado público para evidencia. No ejecuta migraciones ni seed.
 
