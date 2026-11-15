@@ -5,10 +5,11 @@ comprobantes y turnos de caja. Está dirigido a operadores y administradores de
 cocheras, con permisos y datos separados por sucursal.
 
 La release de portfolio del 15/11/2026 usa datos ficticios. El circuito está
-implementado y cuenta con pruebas contra PostgreSQL. Instalación, pruebas y build
-Linux pasaron en GitHub Actions; la imagen estática y el ensayo local HTTPS/WSS
-también pasaron. Sigue pendiente el QA visual/teclado/impresión: el host de
-navegador automatizado no está disponible. No hay demo pública ni piloto en uso.
+implementado y cuenta con pruebas contra PostgreSQL. En una revisión anterior,
+instalación, pruebas y build Linux pasaron en GitHub Actions; también pasaron la
+imagen estática y el ensayo local HTTPS/WSS. Sigue pendiente el QA
+visual/teclado/impresión: el host de navegador automatizado no está disponible.
+No hay demo pública ni piloto en uso.
 El [registro de continuidad](docs/recovery/RELEASE_2026-11-15.md) distingue los
 resultados observados de esas verificaciones pendientes.
 
@@ -69,16 +70,25 @@ ARS 1.000, cortesía 10 minutos y fracción 15 minutos: 10 minutos cuestan cero,
 La política es una decisión de demo que debe acordarse con una cochera.
 
 Los importes usan Decimal/NUMERIC y redondeo `ROUND_HALF_UP` a dos decimales al
-final. Cada ingreso nuevo conserva tarifas y reglas; los heredados sin snapshot
-identifican la configuración vigente usada al cotizar. Fechas nuevas en UTC,
-visualización Buenos Aires; las históricas ambiguas requieren revisión explícita
-sin inventar su zona horaria.
+final. Cada ingreso nuevo conserva tarifas y reglas. El indicador de cortesía
+usa los minutos de esa estadía, incluido cero, igual que la cotización: un ingreso
+con 10 minutos sigue fuera de cortesía a los 15 aunque la configuración cambie a
+20. Los heredados sin snapshot indican explícitamente que usan la configuración
+actual; si las reglas no son válidas, la cortesía queda a revisar. Fechas nuevas
+en UTC, visualización Buenos Aires; las históricas ambiguas requieren revisión
+explícita sin inventar su zona horaria.
 
 El servidor confirma el importe de la cotización persistida. Ingreso, cobro y
 caja usan transacciones y claves idempotentes persistidas, con IDs concretos de
 estadía y turno. Ante respuesta incierta, la UI conserva el mismo intento para
 consultarlo o reenviarlo: no limpiar su almacenamiento ni iniciar un cobro nuevo.
 El resultado no depende de recibir un evento WS. No hay conciliación offline.
+
+Si los importes del turno cambian durante el conteo, el cierre actualiza los
+totales, conserva el efectivo contado y las notas, y pide revisarlos antes de
+confirmar. La interfaz verifica el turno seleccionado y envía la revisión de los
+importes mostrados; el servidor rechaza una revisión desactualizada. El diálogo
+conserva el turno original si se cierra o se abre otro.
 
 Fondo inicial de caja: cero. No se modelan retiros, gastos ni caja chica. Registrar
 un medio significa **Cobro registrado**, sin confirmación bancaria. Los
@@ -106,8 +116,8 @@ y `scripts/` (entorno descartable, backup y ensayo de proxy).
 
 ## Verificación
 
-Resultados observados: **132 tests backend, cero skips**, PostgreSQL real;
-smoke HTTP/WS; actualización representativa de esquema; backup/restauración con
+Evidencia histórica anterior a estos ajustes: **132 tests backend, cero skips**,
+PostgreSQL real; smoke HTTP/WS; actualización representativa de esquema; backup/restauración con
 11 tablas coincidentes. Frontend Windows: lint, **30 tests**, build y auditorías
 aprobados. Auditorías npm completo/producción y Python runtime/dev: cero avisos
 conocidos en la ejecución registrada. Esto no equivale a ausencia de todo riesgo.
@@ -130,8 +140,8 @@ agregando `--reset` al comando del seed, para reemplazar las fixtures de pruebas
 No ejecutar sobre datos conservados. En PowerShell usar `npm.cmd` evita cambiar
 ExecutionPolicy. [CI](.github/workflows/quality.yml) ejecuta estas verificaciones
 con PostgreSQL en GitHub. El [run43771434803](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/43771434803)
-aprobó frontend y backend desde checkout limpio. El registro detalla por separado
-los resultados del job complementario de imagen, respaldo y TLS.
+aprobó frontend y backend desde checkout limpio para esa revisión. El registro
+detalla por separado los resultados del job complementario de imagen, respaldo y TLS.
 
 ## Despliegue, recuperación y presentación
 

@@ -1,0 +1,116 @@
+# Invoked only by scripts/test-production-runtime.mjs. All resources are new,
+# invocation-scoped and local; this never attaches to a release/demo database.
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: production_qa
+      POSTGRES_PASSWORD: ${PRODUCTION_QA_DB_PASSWORD:?Use the production QA runner}
+      POSTGRES_DB: production_qa_disposable
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U production_qa -d production_qa_disposable"]
+      interval: 2s
+      timeout: 3s
+      retries: 40
+    labels:
+      com.sinfreno.purpose: production-runtime-qa
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN:?Use the production QA runner}
+
+  backend:
+    image: ${PRODUCTION_QA_BACKEND_IMAGE:?Use the production QA runner}
+    build:
+      context: ../backend
+      args:
+        INSTALL_DEV: "false"
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?Use the production QA runner}
+      SECRET_KEY: ${SECRET_KEY:?Use the production QA runner}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Use the production QA runner}
+      TELEGRAM_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+      FORWARDED_ALLOW_IPS: ${PRODUCTION_QA_FRONTEND_IP:?Use the production QA runner}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      data:
+      proxies:
+        ipv4_address: ${PRODUCTION_QA_BACKEND_IP:?Use the production QA runner}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 2s
+      timeout: 4s
+      retries: 40
+      start_period: 10s
+    labels:
+      com.sinfreno.purpose: production-runtime-qa
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+
+  frontend:
+    image: ${PRODUCTION_QA_FRONTEND_IMAGE:?Pass --frontend-image to the production QA runner}
+    ports:
+      - "127.0.0.1:${PRODUCTION_QA_HTTP_PORT:?Use the production QA runner}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      proxies:
+        ipv4_address: ${PRODUCTION_QA_FRONTEND_IP}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    labels:
+      com.sinfreno.purpose: production-runtime-qa
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+
+  gateway:
+    image: caddy:2-alpine
+    ports:
+      - "127.0.0.1:${PRODUCTION_QA_HTTPS_PORT:?Use the production QA runner}:8443"
+    volumes:
+      - ./Caddyfile.qa:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    networks:
+      proxies:
+        ipv4_address: ${PRODUCTION_QA_GATEWAY_IP:?Use the production QA runner}
+    labels:
+      com.sinfreno.purpose: production-runtime-qa
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+
+networks:
+  data:
+    internal: true
+    # Keep Docker's automatic allocation from consuming the production proxy /28.
+    ipam:
+      config:
+        - subnet: 172.30.251.0/28
+    labels:
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+  proxies:
+    ipam:
+      config:
+        - subnet: ${PRODUCTION_QA_SUBNET:?Use the production QA runner}
+    labels:
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+
+volumes:
+  postgres:
+    labels:
+      com.sinfreno.purpose: production-runtime-qa
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+  caddy_data:
+    labels:
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}
+  caddy_config:
+    labels:
+      com.sinfreno.qa-invocation: ${PRODUCTION_QA_RUN}

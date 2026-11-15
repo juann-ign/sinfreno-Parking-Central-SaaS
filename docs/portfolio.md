@@ -12,9 +12,11 @@ Sinfreno reúne ingreso, búsqueda, cotización, registro de cobro, comprobantes
 
 - Patente, búsqueda, importe y caja tienen prioridad visual. El ingreso frecuente propone patente + Enter; es un objetivo de interacción, no una medición de productividad.
 - La cotización muestra monto, explicación, medio y vigencia en el mismo contexto. Confirmar registra exactamente una cotización válida o pide actualizarla.
+- El indicador de cortesía usa las reglas de cada ingreso, incluido cero. Cambiar la configuración no altera el indicador de una estadía con reglas guardadas; los ingresos históricos muestran explícitamente cuándo usan la configuración actual.
 - “Cobro registrado” describe lo que el sistema hizo. Seleccionar QR o tarjeta no certifica un pago bancario.
 - Una respuesta incierta conserva el intento y permite consultar o reenviar su misma identidad. El usuario recibe una salida concreta para continuar, sin crear otro cobro por desconocer el resultado.
 - Los comprobantes pueden recuperarse según autoría y permisos. El WS actualiza datos; la respuesta HTTP de la operación sostiene su resultado y comprobante.
+- Si cambian los importes mientras se cuenta la caja, el cierre muestra los nuevos totales, conserva el efectivo contado y las notas, y exige revisarlos. Mantiene el turno elegido aunque deje de estar abierto o se abra otro.
 - Caja cerrada, error de conexión, sesión inválida y lista vacía tienen mensajes distintos. Foco, teclado y reducción de movimiento forman parte de la interfaz.
 
 ## Decisiones técnicas que sostienen el flujo
@@ -28,9 +30,9 @@ Sinfreno reúne ingreso, búsqueda, cotización, registro de cobro, comprobantes
 | Historial financiero sin separación suficiente | Alcance de sucursal y permisos efectivos desde la base |
 | Broadcast con información de cobro | WS autenticado con avisos mínimos; lecturas HTTP autorizadas |
 
-Las nuevas estadías guardan reglas al ingresar. Los datos heredados se identifican y no reciben tarifas o zonas horarias históricas inventadas. La cortesía inclusiva, primera hora y fracciones conservan la política elegida para la demo.
+Las nuevas estadías guardan reglas al ingresar. La cotización y los metadatos mínimos del indicador resuelven las mismas reglas; un snapshot inválido deja la cortesía a revisar. Los datos heredados se identifican y no reciben tarifas o zonas horarias históricas inventadas. La cortesía inclusiva, primera hora y fracciones conservan la política elegida para la demo.
 
-Las mutaciones usan transacciones e idempotencia persistida con alcance de sucursal, operación y autor. Los cobros pertenecen a un turno concreto; el arqueo separa efectivo de medios no físicos. Las verificaciones de dinero, aislamiento y concurrencia se consultan en el registro, con sus límites de ejecución.
+Las mutaciones usan transacciones e idempotencia persistida con alcance de sucursal, operación y autor. Los cobros pertenecen a un turno concreto; el arqueo separa efectivo de medios no físicos. La interfaz envía la revisión financiera del turno mostrado y el servidor rechaza un cierre con esa revisión desactualizada dentro de la transacción. Los reintentos conservan su identidad y sus datos originales. Las verificaciones de dinero, aislamiento y concurrencia se consultan en el registro, con sus límites de ejecución.
 
 ## Guion breve de demostración
 

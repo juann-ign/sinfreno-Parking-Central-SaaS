@@ -131,6 +131,10 @@ jobs:
         run: docker --context desktop-linux pull caddy:2-alpine
       - name: Verify local HTTPS, proxy trust and authenticated WSS
         run: node scripts/test-release-proxy.mjs --confirm-disposable
+      - name: Verify production-only image, empty migrations and real HTTPS/WSS operations
+        run: >-
+          node scripts/test-production-runtime.mjs --confirm-disposable
+          --frontend-image sinfreno-release-frontend-static:20261115
       - name: Remove only this job's disposable resources and private files
         if: ${{ always() }}
         env:

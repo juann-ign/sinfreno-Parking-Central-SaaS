@@ -22,16 +22,7 @@ El archivo `.recovery/release.env` generado contiene secretos locales nuevos: es
 
 ### Revisión manual breve
 
-La demo del 15/11 está disponible en `http://127.0.0.1:15175`; el navegador automatizado no tiene host conectado. Usar un perfil de navegador dedicado al dataset ficticio actual. No reiniciar datos ni limpiar almacenamiento mientras haya intentos inciertos que recuperar.
-
-1. Entrar como ADMIN de Demo Centro. Revisar el turno histórico: total ARS 3.000, efectivo ARS 1.000 y diferencia cero. El turno actual empieza sin recaudación; cerrarlo contando cero y abrir uno nuevo para comprobar ambas acciones.
-2. Entrar como OPERADOR en otro perfil, o cerrar la sesión anterior. Ingresar la patente ficticia `MVP1511` con Enter y revisar el comprobante de entrada.
-3. Buscar `DEMO004` (MOTO de Demo Centro), pedir cotización y comprobar importe/explicación/vigencia. Elegir EFECTIVO y confirmar el importe mostrado; no tratarlo como una confirmación bancaria.
-4. Cerrar el aviso, recargar y recuperar el egreso en Mis comprobantes. Descargar su PDF y abrir vista previa de impresión: sólo comprobante de salida, sin dashboard. Revisar también la entrada de `MVP1511`.
-5. Volver como ADMIN y cerrar el turno con el efectivo del cobro simulado. Confirmar total, efectivo esperado, contado y diferencia cero; los cobros anteriores pertenecen a su turno histórico.
-6. Comprobar teclado/Escape/foco, notebook 1366×768 y zoom 200%. En Demo Norte debe seguir apareciendo su vehículo, sin ver operaciones de Demo Centro. Registrar fallos y capturas reales en el control de release.
-
-La recuperación ante respuesta incierta se prueba sólo con datos descartables: consultar o reenviar el mismo intento, conservando clave, estadía y turno. El checklist ampliado está en el registro. Esta guía no acredita haber observado el recorrido en navegador.
+La demo está en `http://127.0.0.1:15175`; el navegador automatizado no tiene host conectado. La única checklist manual está en [el registro de continuidad](recovery/RELEASE_2026-11-15.md#qa-humano-agrupado). Usar perfiles separados para las terminales ficticias. No reiniciar datos ni limpiar almacenamiento mientras haya intentos inciertos que recuperar. No se acreditan capturas ni impresión física.
 
 ## Producción preparada
 
@@ -70,6 +61,14 @@ La descarga explícita de Caddy es un prerrequisito para un checkout en una máq
 El ensayo está preparado para usar sólo `release_restore_disposable` y un proyecto QA nuevo, con puertos loopback 15176/15177. Comprueba que la subred no colisiona; exige imágenes ya presentes y no descarga durante el test. Caddy genera una CA local privada; los clientes verifican TLS confiando explícitamente sólo su certificado público, sin desactivar la verificación ni modificar el almacén de confianza del host. El script comprueba estáticos/fuentes, login, lecturas, PDF, ACK WSS y redirecciones HTTPS con puerto conservado, incluso ante X-Forwarded-Proto manipulado. No equivale a navegador, eventos entre terminales ni certificado público/ACME. Elimina sólo sus contenedores/red/volúmenes QA y su archivo privado temporal; conserva el certificado público para evidencia. No ejecuta migraciones ni seed.
 
 ## CI y dependencias
+
+La variante real del backend de producción se verifica, además, con:
+
+```powershell
+node scripts/test-production-runtime.mjs --confirm-disposable --frontend-image sinfreno-release-frontend-static:20261115
+```
+
+El runner construye `INSTALL_DEV=false` y ejecuta `APP_ENV=production` sobre PostgreSQL vacío en un proyecto nuevo con nonce, secretos efímeros y puertos sólo loopback15178/15179. Verifica migraciones, cero cuentas automáticas, UID10001, ausencia de pytest/pip-audit, `pip check` y rechazo del seed de demo. El fixture externo vive fuera del contexto de la imagen, exige identidad/nonce de la base y no habilita seed productivo. Prueba autenticación, ingreso/cotización/cobro, reintento/recuperación, PDF, cierre y WSS con CA y hostname verificados. Limpia sólo sus recursos y conserva un informe JSON sin secretos en `.recovery/`. El15/11 este comando pasó localmente; la CI correspondiente se registra por separado. No despliega la aplicación.
 
 `.github/workflows/quality.yml` está preparada con Actions fijadas por SHA oficial, permisos de lectura, Node 22 y Python 3.11, instalación desde lock npm, lint/build/suite frontend completa, PostgreSQL descartable, migraciones, suite backend completa y auditorías npm/Python. Rechaza runs sin pruebas o con skips. No publica ni despliega. Sólo un run observado en GitHub permite afirmar que Actions pasó; las verificaciones locales se registran por separado.
 
