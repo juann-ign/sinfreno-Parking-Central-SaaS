@@ -5,9 +5,10 @@ comprobantes y turnos de caja. Está dirigido a operadores y administradores de
 cocheras, con permisos y datos separados por sucursal.
 
 La release de portfolio del 15/11/2026 usa datos ficticios. El circuito está
-implementado y cuenta con pruebas contra PostgreSQL; siguen pendientes el QA en
-navegador, el build Linux final y el ensayo del proxy HTTPS tras un fallo de
-espacio del entorno local. No hay demo pública verificada ni piloto en uso.
+implementado y cuenta con pruebas contra PostgreSQL. Instalación, pruebas y build
+Linux pasaron en GitHub Actions; la imagen estática y el ensayo local HTTPS/WSS
+también pasaron. Sigue pendiente el QA visual/teclado/impresión: el host de
+navegador automatizado no está disponible. No hay demo pública ni piloto en uso.
 El [registro de continuidad](docs/recovery/RELEASE_2026-11-15.md) distingue los
 resultados observados de esas verificaciones pendientes.
 
@@ -127,8 +128,10 @@ La suite backend **reinicia únicamente la base descartable release_disposable**
 detener operaciones de demo antes de ejecutarla y volver a sembrarla después
 agregando `--reset` al comando del seed, para reemplazar las fixtures de pruebas.
 No ejecutar sobre datos conservados. En PowerShell usar `npm.cmd` evita cambiar
-ExecutionPolicy. [CI](.github/workflows/quality.yml) prepara estas verificaciones
-con PostgreSQL en GitHub; no se observó aún un run remoto.
+ExecutionPolicy. [CI](.github/workflows/quality.yml) ejecuta estas verificaciones
+con PostgreSQL en GitHub. El [run43771434803](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/43771434803)
+aprobó frontend y backend desde checkout limpio. El registro detalla por separado
+los resultados del job complementario de imagen, respaldo y TLS.
 
 ## Despliegue, recuperación y presentación
 
@@ -140,8 +143,9 @@ con PostgreSQL en GitHub; no se observó aún un run remoto.
   [SF-02A](docs/recovery/02a-accesos.md).
 
 La configuración preparada usa Caddy HTTPS, Nginx estático y API/WS del mismo
-origen, con PostgreSQL privado. Falta validar la imagen/proxy final, elegir host y
-dominio, proveer secretos propios y autorizar la publicación. Los secretos que
+origen, con PostgreSQL privado. Imagen/proxy se comprobaron en el ensayo local;
+falta elegir host y dominio, proveer secretos propios y autorizar el despliegue.
+El código y la documentación están publicados en la rama de release. Los secretos que
 existieron en el historial requieren rotación externa por su titular; sanear un
 ejemplo no los rota.
 

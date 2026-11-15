@@ -20,9 +20,22 @@ El dataset usa servicios productivos con reloj UTC sintético acotado al proceso
 
 El archivo `.recovery/release.env` generado contiene secretos locales nuevos: está fuera de Git y de las imágenes. Conservarlo mientras se conserve la base demo. El `.env` anterior no se utiliza ni modifica.
 
+### Revisión manual breve
+
+La demo del 15/11 está disponible en `http://127.0.0.1:15175`; el navegador automatizado no tiene host conectado. Usar un perfil de navegador dedicado al dataset ficticio actual. No reiniciar datos ni limpiar almacenamiento mientras haya intentos inciertos que recuperar.
+
+1. Entrar como ADMIN de Demo Centro. Revisar el turno histórico: total ARS 3.000, efectivo ARS 1.000 y diferencia cero. El turno actual empieza sin recaudación; cerrarlo contando cero y abrir uno nuevo para comprobar ambas acciones.
+2. Entrar como OPERADOR en otro perfil, o cerrar la sesión anterior. Ingresar la patente ficticia `MVP1511` con Enter y revisar el comprobante de entrada.
+3. Buscar `DEMO004`, pedir cotización y comprobar importe/explicación/vigencia. Elegir EFECTIVO y confirmar el importe mostrado; no tratarlo como una confirmación bancaria.
+4. Cerrar el aviso, recargar y recuperar el egreso en Mis comprobantes. Descargar su PDF y abrir vista previa de impresión: sólo comprobante de salida, sin dashboard. Revisar también la entrada de `MVP1511`.
+5. Volver como ADMIN y cerrar el turno con el efectivo del cobro simulado. Confirmar total, efectivo esperado, contado y diferencia cero; los cobros anteriores pertenecen a su turno histórico.
+6. Comprobar teclado/Escape/foco, notebook 1366×768 y zoom 200%. En Demo Norte debe seguir apareciendo su vehículo, sin ver operaciones de Demo Centro. Registrar fallos y capturas reales en el control de release.
+
+La recuperación ante respuesta incierta se prueba sólo con datos descartables: consultar o reenviar el mismo intento, conservando clave, estadía y turno. El checklist ampliado está en el registro. Esta guía no acredita haber observado el recorrido en navegador.
+
 ## Producción preparada
 
-No se encontró hosting configurado en el repositorio: GitHub no declara homepage/Pages ni ejecuciones Actions previas. La propuesta preparada usa un host Linux con Docker/Compose, PostgreSQL privado persistente y un dominio propio. Caddy termina HTTPS y reenvía al frontend estático Nginx; éste publica API y WebSocket sobre el mismo origen. La publicación requiere elegir/habilitar host y DNS, proveer credenciales privadas y autorización específica para desplegar.
+No se encontró hosting de aplicación configurado en el repositorio: GitHub tiene Pages deshabilitado y homepage vacía. Los pushes de la rama de release ejecutan CI de validación, sin desplegar. La propuesta preparada usa un host Linux con Docker/Compose, PostgreSQL privado persistente y un dominio propio. Caddy termina HTTPS y reenvía al frontend estático Nginx; éste publica API y WebSocket sobre el mismo origen. El despliegue requiere elegir/habilitar host y DNS, proveer credenciales privadas y autorización específica.
 
 Archivos: `deploy/compose.production.yml`, `deploy/Caddyfile`, `deploy/production.env.example`, `frontend/Dockerfile.production` y `frontend/nginx.production.conf`.
 
@@ -42,7 +55,7 @@ Después de desplegar, verificar certificado/origen, login, sesión, PDF autenti
 
 ### Ensayo local de HTTPS y proxies
 
-Estado de esta sesión: YAML y scripts revisados estáticamente; la imagen estática no llegó a construirse porque el daemon Docker respondió 500 en `/_ping`, durante una incidencia de espacio. El ensayo HTTPS/WSS local que sigue **no se ejecutó** y no se crearon sus recursos QA. La verificación de Caddy anterior al ajuste de confianza pasó en un contenedor sin red; el ajuste final de proxies todavía necesita esta ejecución.
+Resultado observado el15/11: imagen estática construida y ensayo local aprobado. Se comprobaron dos estáticos, cinco fuentes locales, redirecciones HTTPS con puerto conservado, rechazo de esquema manipulado, login/lecturas, PDF autenticado y WSS con CA verificada. Los recursos QA temporales se limpiaron. No equivale a navegador, impresión ni certificado público. El fallo de espacio del11/11 queda como evidencia histórica en el registro.
 
 Después del backup/restauración y con las imágenes locales disponibles:
 
@@ -60,7 +73,7 @@ El ensayo está preparado para usar sólo `release_restore_disposable` y un proy
 
 `.github/workflows/quality.yml` está preparada con Actions fijadas por SHA oficial, permisos de lectura, Node 22 y Python 3.11, instalación desde lock npm, lint/build/suite frontend completa, PostgreSQL descartable, migraciones, suite backend completa y auditorías npm/Python. Rechaza runs sin pruebas o con skips. No publica ni despliega. Sólo un run observado en GitHub permite afirmar que Actions pasó; las verificaciones locales se registran por separado.
 
-El job independiente `release-image-proxy` parte de un checkout nuevo en Ubuntu: crea su contexto Docker sólo en el runner efímero y credenciales descartables, construye y arranca únicamente DB/API, comprueba que el arranque no crea usuarios y ejecuta el seed explícito. Después ensaya el respaldo/restauración, construye la imagen estática de producción y verifica HTTPS/WSS local con CA privada y los proxies sobre la base restaurada. La limpieza se ejecuta siempre y se limita a los proyectos release/QA de ese runner, sus volúmenes y archivos temporales; no se suben secretos ni respaldos como artifacts. Este job todavía requiere un run observado; no acredita despliegue, certificado público/ACME, QA en navegador ni eventos entre terminales.
+El job independiente `release-image-proxy` parte de un checkout nuevo en Ubuntu: crea su contexto Docker sólo en el runner efímero y credenciales descartables, construye y arranca únicamente DB/API, comprueba que el arranque no crea usuarios y ejecuta el seed explícito. Después ensaya el respaldo/restauración, construye la imagen estática de producción y verifica HTTPS/WSS local con CA privada y los proxies sobre la base restaurada. La limpieza se ejecuta siempre y se limita a los proyectos release/QA de ese runner, sus volúmenes y archivos temporales; no se suben secretos ni respaldos como artifacts. El [run43772380802](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/43772380802) aprobó este job y los otros dos. No acredita despliegue, certificado público/ACME, QA en navegador ni eventos entre terminales.
 
 `backend/requirements.txt` contiene runtime; `requirements-dev.txt` agrega pytest, pytest-asyncio y pip-audit. La imagen normal excluye esas herramientas; el Compose de release activa `INSTALL_DEV=true`. Sus constraints `requirements-runtime.lock` y `requirements-dev.lock` fijan también las versiones transitivas resueltas para Linux/Python 3.11. Los resultados concretos de auditoría se guardan en `.recovery/`. Una auditoría sin avisos conocidos no garantiza ausencia de fallos.
 
