@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import https from "node:https";
 import http from "node:http";
 import { resolve } from "node:path";
@@ -108,6 +108,9 @@ async function main() {
       catch { await sleep(500); }
     }
     assert.ok(copied, "Caddy no generó su CA local dentro del plazo");
+    // Public certificate only: docker cp preserves restrictive Unix permissions.
+    // The unprivileged API process must read it when verifying the WSS peer.
+    chmodSync(caPath, 0o644);
     const ca = readFileSync(caPath);
     const index = await request(true, "/", { ca });
     assert.equal(index.status, 200);
