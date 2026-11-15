@@ -79,3 +79,83 @@ jobs:
           assert sum(int(s.get('skipped', 0)) for s in suites) == 0, 'Skipped tests require explicit review'"
       - run: python -m pip_audit -r requirements.txt --progress-spinner off
       - run: python -m pip_audit -r requirements-dev.txt --progress-spinner off
+
+  release-image-proxy:
+    name: Release images, restore and HTTPS/WSS
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.23.3'
+      - name: Prepare this runner's disposable release environment
+        id: release_environment
+        run: |
+          # The scripts expect this context; it exists only on this ephemeral runner.
+          docker context create desktop-linux --docker host=unix:///var/run/docker.sock
+          echo 'context_created=true' >> "$GITHUB_OUTPUT"
+          node scripts/init-release.mjs
+      - name: Build and start only the release database and API
+        run: >-
+          docker --context desktop-linux compose --env-file .recovery/release.env
+          -p sinfreno-release-20261115 -f docker-compose.release.yml
+          up -d --build --wait --wait-timeout 180 db backend
+      - name: Verify normal startup creates no accounts
+        run: |
+          users=$(docker --context desktop-linux compose --env-file .recovery/release.env \
+            -p sinfreno-release-20261115 -f docker-compose.release.yml \
+            exec -T db psql -U release_demo -d release_disposable \
+            -v ON_ERROR_STOP=1 -Atqc 'SELECT count(*) FROM public.usuarios;')
+          if [ "$users" != '0' ]; then
+            echo 'Fresh release startup unexpectedly created accounts.' >&2
+            exit 1
+          fi
+      - name: Seed the disposable release explicitly
+        run: >-
+          docker --context desktop-linux compose --env-file .recovery/release.env
+          -p sinfreno-release-20261115 -f docker-compose.release.yml
+          exec -T backend python -m app.seed --confirm-disposable release_disposable
+      - name: Verify binary backup and restore into a new disposable database
+        run: node scripts/test-release-backup.mjs --confirm-disposable
+      - name: Build the production frontend image
+        run: >-
+          docker --context desktop-linux build -t sinfreno-release-frontend-static:20261115
+          -f frontend/Dockerfile.production frontend
+      - name: Load the local HTTPS gateway image
+        run: docker --context desktop-linux pull caddy:2-alpine
+      - name: Verify local HTTPS, proxy trust and authenticated WSS
+        run: node scripts/test-release-proxy.mjs --confirm-disposable
+      - name: Remove only this job's disposable resources and private files
+        if: ${{ always() }}
+        env:
+          RELEASE_CONTEXT_CREATED: ${{ steps.release_environment.outputs.context_created }}
+        run: |
+          cleanup_status=0
+          if [ "$RELEASE_CONTEXT_CREATED" = 'true' ]; then
+            # QA must detach from the release network before that network is removed.
+            # Labels avoid relying on proxy-qa.env, which the test removes itself.
+            for project in sinfreno-release-proxy-qa sinfreno-release-20261115; do
+              docker --context desktop-linux container ls --all --quiet \
+                --filter "label=com.docker.compose.project=$project" \
+                | xargs --no-run-if-empty docker --context desktop-linux container rm --force --volumes \
+                || cleanup_status=1
+              docker --context desktop-linux network ls --quiet \
+                --filter "label=com.docker.compose.project=$project" \
+                | xargs --no-run-if-empty docker --context desktop-linux network rm \
+                || cleanup_status=1
+              docker --context desktop-linux volume ls --quiet \
+                --filter "label=com.docker.compose.project=$project" \
+                | xargs --no-run-if-empty docker --context desktop-linux volume rm \
+                || cleanup_status=1
+            done
+            docker context rm desktop-linux || cleanup_status=1
+          fi
+          rm -f -- .recovery/release.env .recovery/proxy-qa.env \
+            .recovery/release-backup-*.dump .recovery/proxy-qa-ca-*.crt
+          exit "$cleanup_status"
