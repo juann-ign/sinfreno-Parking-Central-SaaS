@@ -41,7 +41,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd 'pg_isready -U release_demo -d release_disposable'
+          --health-cmd "pg_isready -U release_demo -d release_disposable"
           --health-interval 3s --health-timeout 3s --health-retries 20
     env:
       APP_ENV: test
