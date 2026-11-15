@@ -26,7 +26,7 @@ La demo del 15/11 está disponible en `http://127.0.0.1:15175`; el navegador aut
 
 1. Entrar como ADMIN de Demo Centro. Revisar el turno histórico: total ARS 3.000, efectivo ARS 1.000 y diferencia cero. El turno actual empieza sin recaudación; cerrarlo contando cero y abrir uno nuevo para comprobar ambas acciones.
 2. Entrar como OPERADOR en otro perfil, o cerrar la sesión anterior. Ingresar la patente ficticia `MVP1511` con Enter y revisar el comprobante de entrada.
-3. Buscar `DEMO004`, pedir cotización y comprobar importe/explicación/vigencia. Elegir EFECTIVO y confirmar el importe mostrado; no tratarlo como una confirmación bancaria.
+3. Buscar `DEMO004` (MOTO de Demo Centro), pedir cotización y comprobar importe/explicación/vigencia. Elegir EFECTIVO y confirmar el importe mostrado; no tratarlo como una confirmación bancaria.
 4. Cerrar el aviso, recargar y recuperar el egreso en Mis comprobantes. Descargar su PDF y abrir vista previa de impresión: sólo comprobante de salida, sin dashboard. Revisar también la entrada de `MVP1511`.
 5. Volver como ADMIN y cerrar el turno con el efectivo del cobro simulado. Confirmar total, efectivo esperado, contado y diferencia cero; los cobros anteriores pertenecen a su turno histórico.
 6. Comprobar teclado/Escape/foco, notebook 1366×768 y zoom 200%. En Demo Norte debe seguir apareciendo su vehículo, sin ver operaciones de Demo Centro. Registrar fallos y capturas reales en el control de release.
