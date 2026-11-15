@@ -46,6 +46,12 @@ Antes de grabar, completar acceso, PDF, impresión y teclado en navegador; revis
 
 ## Límites y aprendizaje
 
+El bloque final se comprobó con145tests de backend y40de frontend. La CI también
+construye la imagen del backend sin herramientas de test y la arranca como
+producción sobre una base vacía: verifica cero cuentas automáticas y el circuito
+de operación/PDF/WSS con TLS. Estos resultados son de datos sintéticos y pruebas
+técnicas; no son mediciones de productividad ni validación visual o comercial.
+
 La dificultad principal fue conectar permisos, dinero, tiempo y recuperación con las decisiones de la pantalla. Un botón deshabilitado ayuda al operador, pero la garantía necesita persistencia y controles del servidor. Una conexión abierta tampoco acredita aislamiento de eventos ni una descarga HTTP acredita calidad visual.
 
 Quedan fuera confirmación bancaria, integración fiscal, barreras, abonos, reservas y operación offline con sincronización. Un piloto exige acordar tarifas, usuarios, delegación de caja, equipo, impresión, contingencia y circuito de pagos con una cochera real.

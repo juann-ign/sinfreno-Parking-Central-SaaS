@@ -45,11 +45,12 @@ Telegram habilitado. Sólo para reiniciar deliberadamente **esta demo**, agregar
 `--reset` a su comando. Conservar el entorno mientras se conserve la base.
 El `.env` anterior y las demos SF-01/SF-02A no se utilizan ni se borran.
 
-La demo contiene dos sucursales, cuatro sectores, cuatro estadías activas y un
+Al sembrar la demo se crean dos sucursales, cuatro sectores, cuatro estadías activas y un
 turno cerrado con ARS 1.000 en efectivo y ARS 2.000 por QR: total ARS 3.000,
 efectivo esperado ARS 1.000 y diferencia cero al contar ARS 1.000. Tiene otro
-turno abierto para operar. Las métricas provienen de esos registros y dependen
-del día consultado; no son resultados comerciales.
+turno abierto para operar. Las operaciones posteriores modifican ese escenario;
+el estado observado de la demo está en el registro. Las métricas provienen de
+los registros y dependen del día consultado; no son resultados comerciales.
 
 ## Recorrido y reglas
 
@@ -116,10 +117,13 @@ y `scripts/` (entorno descartable, backup y ensayo de proxy).
 
 ## Verificación
 
-Evidencia histórica anterior a estos ajustes: **132 tests backend, cero skips**,
-PostgreSQL real; smoke HTTP/WS; actualización representativa de esquema; backup/restauración con
-11 tablas coincidentes. Frontend Windows: lint, **30 tests**, build y auditorías
-aprobados. Auditorías npm completo/producción y Python runtime/dev: cero avisos
+Verificación actual: **145 tests backend, cero skips**, PostgreSQL real;
+**40 tests frontend**, lint/build y auditorías aprobados. Se conserva la evidencia
+de smoke HTTP/WS, actualización representativa y backup/restauración con11tablas.
+La variante de imagen `INSTALL_DEV=false` y `APP_ENV=production` se probó desde
+base vacía, sin cuentas automáticas ni paquetes de test, con autenticación,
+ingreso/cotización/cobro, recuperación, cierre, PDF y WSS mediante proxy TLS.
+Auditorías npm completo/producción y Python runtime/dev: cero avisos
 conocidos en la ejecución registrada. Esto no equivale a ausencia de todo riesgo.
 
 En PowerShell, con la demo disponible:
@@ -139,9 +143,10 @@ detener operaciones de demo antes de ejecutarla y volver a sembrarla después
 agregando `--reset` al comando del seed, para reemplazar las fixtures de pruebas.
 No ejecutar sobre datos conservados. En PowerShell usar `npm.cmd` evita cambiar
 ExecutionPolicy. [CI](.github/workflows/quality.yml) ejecuta estas verificaciones
-con PostgreSQL en GitHub. El [run43771434803](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/43771434803)
-aprobó frontend y backend desde checkout limpio para esa revisión. El registro
-detalla por separado los resultados del job complementario de imagen, respaldo y TLS.
+con PostgreSQL en GitHub. El [run43776980855](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/43776980855)
+aprobó los tres jobs desde checkout limpio, incluido el backend productivo sin
+herramientas de test. El QA visual/manual restante figura en una única checklist
+del registro; una descarga PDF no acredita vista previa ni impresión física.
 
 ## Despliegue, recuperación y presentación
 
