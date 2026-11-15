@@ -19,6 +19,7 @@ import { connectAuthenticatedSocket } from "../api/realtime.js";
 import { SESSION_ENDED_EVENT } from "../api/session.js";
 import { getWebSocketUrl } from "../config/connections.js";
 import { errorMessage, money } from "../ui/format.js";
+import { checkCashClose } from "../ui/cash-close-state.js";
 import EntryForm from "../components/EntryForm.jsx";
 import ActiveTable from "../components/ActiveTable.jsx";
 import CashModal from "../components/CashModal.jsx";
@@ -52,12 +53,15 @@ export default function Dashboard({ onLogout }) {
   });
   const [receipt, setReceipt] = useState(null);
   const [cashDialog, setCashDialog] = useState(null);
+  const [cashChecking, setCashChecking] = useState(false);
   const [reviewDate, setReviewDate] = useState(false);
   const [version, setVersion] = useState(0);
   const [connection, setConnection] = useState("connecting");
   const [reconnect, setReconnect] = useState(0);
   const queryAbort = useRef(null);
   const quoteAbort = useRef(null);
+  const cashCheckAbort = useRef(null);
+  const cashCheckLock = useRef(false);
   const searchRef = useRef(null);
   const refresh = useCallback(() => {
     queryAbort.current?.abort();
@@ -69,15 +73,16 @@ export default function Dashboard({ onLogout }) {
       api.get("/parking/config", options),
       api.get("/stats/summary", options),
     ])
-      .then(([stays, config, summary]) =>
+      .then(([stays, config, summary]) => {
+        if (controller.signal.aborted) return;
         setData({
           stays: stays.data,
           config: config.data,
           summary: summary.data,
           loading: false,
           error: "",
-        }),
-      )
+        });
+      })
       .catch((failure) => {
         if (!controller.signal.aborted)
           setData((previous) => ({
@@ -91,7 +96,10 @@ export default function Dashboard({ onLogout }) {
       });
     api
       .get("/cash/status", options)
-      .then(({ data: value }) => setCash({ status: "open", value, error: "" }))
+      .then(({ data: value }) => {
+        if (!controller.signal.aborted)
+          setCash({ status: "open", value, error: "" });
+      })
       .catch((failure) => {
         if (!controller.signal.aborted)
           setCash({
@@ -104,11 +112,16 @@ export default function Dashboard({ onLogout }) {
           });
       });
   }, []);
+  const refreshRequested = () => {
+    setCash((previous) => ({ ...previous, status: "loading", error: "" }));
+    refresh();
+  };
   useEffect(() => {
     refresh();
     return () => {
       queryAbort.current?.abort();
       quoteAbort.current?.abort();
+      cashCheckAbort.current?.abort();
     };
   }, [refresh]);
   useEffect(() => {
@@ -199,6 +212,48 @@ export default function Dashboard({ onLogout }) {
   );
   const pendingExit = operations.pending.some((item) => item.type === "SALIDA");
   const openCash = cash.status === "open" ? cash.value : null;
+  const confirmCash = async ({ amount, notes, cashId, fingerprint }) => {
+    if (!cashDialog) return;
+    if (cashDialog.mode === "open") {
+      return operations.run("CAJA_ABRIR", {
+        url: "/cash/abrir", body: { notas: notes },
+      });
+    }
+    const selectedId = cashDialog.cash?.id;
+    if (cashCheckLock.current || cashId !== selectedId ||
+      operations.pending.some((attempt) => attempt.type === "CAJA_CERRAR")) return;
+    cashCheckLock.current = true;
+    const controller = new AbortController();
+    cashCheckAbort.current = controller;
+    const token = localStorage.getItem("token");
+    setCashChecking(true);
+    operations.clearError();
+    try {
+      const { data: value } = await api.get("/cash/status", {
+        signal: controller.signal, sessionToken: token, timeout: 12000,
+      });
+      if (controller.signal.aborted || localStorage.getItem("token") !== token) return;
+      const fresh = { status: "open", value, error: "" };
+      setCash(fresh);
+      if (!checkCashClose({ cashId: selectedId, fingerprint }, fresh).allowed) return;
+      await operations.run("CAJA_CERRAR", {
+        url: `/cash/${selectedId}/cerrar`,
+        body: { monto_real: amount, notas: notes, revision_cierre: value.revision_cierre },
+      });
+      if (!controller.signal.aborted) refresh();
+    } catch (failure) {
+      if (!controller.signal.aborted && localStorage.getItem("token") === token) {
+        setCash({
+          status: failure.response?.status === 404 ? "closed" : "error",
+          value: null,
+          error: "No pudimos verificar el turno seleccionado. Conservamos el conteo; actualizá antes de confirmar.",
+        });
+      }
+    } finally {
+      cashCheckLock.current = false;
+      if (!controller.signal.aborted) setCashChecking(false);
+    }
+  };
   const fetchQuote = useCallback((stay) => {
     quoteAbort.current?.abort();
     const controller = new AbortController();
@@ -329,7 +384,7 @@ export default function Dashboard({ onLogout }) {
               Reconectar
             </button>
           )}
-          <button className="sf-text-button" onClick={refresh}>
+          <button className="sf-text-button" onClick={refreshRequested}>
             <RefreshCw size={15} />
             Actualizar datos
           </button>
@@ -337,7 +392,7 @@ export default function Dashboard({ onLogout }) {
         {cash.status === "error" && (
           <p className="sf-notice sf-error" role="alert">
             {cash.error}{" "}
-            <button className="sf-button" onClick={refresh}>
+            <button className="sf-button" onClick={refreshRequested}>
               Consultar nuevamente
             </button>
           </p>
@@ -430,11 +485,6 @@ export default function Dashboard({ onLogout }) {
                 hasPermission("salida") && !operations.busy && !pendingExit
               }
               onQuote={fetchQuote}
-              courtesy={Number(
-                data.config?.tiempo_cortesia_min ??
-                  user.sucursal.tiempo_cortesia_min ??
-                  0,
-              )}
             />
           </section>
           {selected && (
@@ -491,23 +541,12 @@ export default function Dashboard({ onLogout }) {
           key={`${cashDialog.mode}-${cashDialog.cash?.id || "new"}`}
           mode={cashDialog.mode}
           cash={cashDialog.cash}
+          cashState={cash}
+          checking={cashChecking}
           operations={operations}
+          onRefresh={refreshRequested}
           onClose={() => setCashDialog(null)}
-          onConfirm={({ amount, notes }) =>
-            operations.run(
-              cashDialog.mode === "open" ? "CAJA_ABRIR" : "CAJA_CERRAR",
-              {
-                url:
-                  cashDialog.mode === "open"
-                    ? "/cash/abrir"
-                    : `/cash/${cashDialog.cash.id}/cerrar`,
-                body:
-                  cashDialog.mode === "open"
-                    ? { notas: notes }
-                    : { monto_real: amount, notas: notes },
-              },
-            )
-          }
+          onConfirm={confirmCash}
         />
       )}
       {receipt && (

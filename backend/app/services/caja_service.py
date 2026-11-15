@@ -1,4 +1,6 @@
 from decimal import Decimal
+from hashlib import sha256
+import json
 from sqlalchemy import func
 
 from app.models import db_models as m, schemas
@@ -43,7 +45,28 @@ def respuesta_caja(db, caja):
             "recaudacion_total": str(money(sum(totals.values(), Decimal("0")))),
             "monto_esperado": str(money(caja.fondo_inicial + totals["EFECTIVO"])),
         })
+    result["revision_cierre"] = revision_cierre(result)
     return result
+
+
+def revision_cierre(result):
+    """Opaque precondition for the concrete turn and its displayed financial state."""
+    if (result["origen_datos"] != "UTC_POR_TURNO"
+            or result.get("recaudacion_total") is None
+            or result.get("totales_por_medio") is None):
+        return None
+    state = {
+        "id": result["id"], "estado": result["estado"],
+        "fecha_apertura": result["fecha_apertura"],
+        "fondo_inicial": str(money(result["fondo_inicial"])),
+        "monto_esperado": str(money(result["monto_esperado"])),
+        "recaudacion_total": str(money(result["recaudacion_total"])),
+        "totales_por_medio": {
+            method: str(money(result["totales_por_medio"].get(method, "0.00")))
+            for method in PAYMENT_METHODS
+        },
+    }
+    return sha256(json.dumps(state, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 def abrir_caja(db, sucursal_id, usuario_id, key, notas=None):
@@ -79,9 +102,12 @@ def abrir_caja(db, sucursal_id, usuario_id, key, notas=None):
         raise
 
 
-def cerrar_caja(db, sucursal_id, usuario_id, caja_id, monto_real, notas, key):
+def cerrar_caja(db, sucursal_id, usuario_id, caja_id, monto_real, notas, key, revision_esperada=None):
     counted = money(monto_real)
     payload = {"caja_id": caja_id, "monto_real": str(counted), "notas": notas}
+    # Preserve fingerprints of attempts persisted before this optional guard existed.
+    if revision_esperada is not None:
+        payload["revision_cierre"] = revision_esperada
     savepoint = None
     try:
         previous = begin_operation(db, sucursal_id, usuario_id, "CAJA_CERRAR", key, payload)
@@ -91,6 +117,8 @@ def cerrar_caja(db, sucursal_id, usuario_id, caja_id, monto_real, notas, key):
         savepoint = db.begin_nested()
         lock_branch(db, sucursal_id)
         caja = exigir_caja_abierta(db, caja_id, sucursal_id)
+        if revision_esperada is not None and revision_esperada != respuesta_caja(db, caja)["revision_cierre"]:
+            raise operation_error("CAJA_MODIFICADA", "Los importes del turno cambiaron durante el conteo. Actualizá y revisá los importes antes de confirmar el cierre.")
         totals = totales_turno(db, caja.id)
         caja.monto_esperado = money(caja.fondo_inicial + totals["EFECTIVO"])
         caja.recaudacion_total = money(sum(totals.values(), Decimal("0")))

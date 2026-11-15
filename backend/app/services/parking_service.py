@@ -3,6 +3,7 @@ from datetime import timedelta, timezone
 from decimal import Decimal
 from uuid import uuid4
 
+from fastapi import HTTPException
 from sqlalchemy import and_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
@@ -17,7 +18,16 @@ QUOTE_TTL_SECONDS = 120
 
 
 def respuesta_estadia(stay):
-    return schemas.EstadiaOut.model_validate(stay).model_dump(mode="json")
+    response = schemas.EstadiaOut.model_validate(stay).model_dump(mode="json")
+    try:
+        rules, origin = reglas_de_estadia(stay)
+    except HTTPException:
+        # Una regla inválida nunca adquiere la cortesía de la configuración actual.
+        # Las respuestas antiguas recuperadas por idempotencia también quedan
+        # explícitamente desconocidas mediante los defaults del esquema.
+        return response
+    response.update(cortesia_minutos=rules["cortesia_minutos"], origen_cortesia=origin)
+    return response
 
 
 def reglas_actuales(branch, tower, category):
@@ -33,6 +43,16 @@ def reglas_actuales(branch, tower, category):
         })
     except ValueError:
         raise operation_error("CONFIGURACION_INVALIDA", "Las reglas de cobro requieren revisión administrativa") from None
+
+
+def reglas_de_estadia(stay, branch=None):
+    if stay.reglas_ingreso is None:
+        return reglas_actuales(branch if branch is not None else stay.torre.sucursal,
+                               stay.torre, stay.tipo_vehiculo), "HEREDADO_CONFIG_ACTUAL"
+    try:
+        return validate_rules(stay.reglas_ingreso), "INGRESO"
+    except ValueError:
+        raise operation_error("SNAPSHOT_INVALIDO", "El snapshot de reglas requiere revisión") from None
 
 
 def estadia_local(db, estadia_id, sucursal_id, lock=False):
@@ -99,15 +119,7 @@ def cotizar_salida(db, estadia_id, sucursal_id, usuario_id):
             raise operation_error("ESTADIA_FINALIZADA", "La estadía ya fue finalizada")
         if stay.fecha_entrada_utc is None:
             raise operation_error("LEGACY_FECHA_REQUIERE_REVISION", "La fecha heredada no prueba una zona horaria; un ADMIN debe confirmarla explícitamente")
-        if stay.reglas_ingreso is None:
-            rules = reglas_actuales(branch, stay.torre, stay.tipo_vehiculo)
-            origin = "HEREDADO_CONFIG_ACTUAL"
-        else:
-            try:
-                rules = validate_rules(stay.reglas_ingreso)
-            except ValueError:
-                raise operation_error("SNAPSHOT_INVALIDO", "El snapshot de reglas requiere revisión") from None
-            origin = "INGRESO"
+        rules, origin = reglas_de_estadia(stay, branch)
         now = m.utc_now()
         try:
             calculation = calcular_cobro(stay.fecha_entrada_utc, now, rules)
@@ -201,15 +213,19 @@ def revisar_fecha_heredada(db, estadia_id, sucursal_id, usuario_id, fecha_entrad
 
 
 def obtener_estadias_activas(db, sucursal_id):
-    return db.query(m.Estadia).options(joinedload(m.Estadia.vehiculo)).join(m.Torre).filter(
+    stays = db.query(m.Estadia).options(joinedload(m.Estadia.vehiculo),
+                                      joinedload(m.Estadia.torre).joinedload(m.Torre.sucursal)).join(m.Torre).filter(
         m.Estadia.estado == "ACTIVO", m.Torre.sucursal_id == sucursal_id,
     ).order_by(m.Estadia.fecha_entrada.desc()).all()
+    return [respuesta_estadia(stay) for stay in stays]
 
 
 def paginar(query, page, size):
     total = query.count()
+    stays = query.options(joinedload(m.Estadia.vehiculo),
+                          joinedload(m.Estadia.torre).joinedload(m.Torre.sucursal)).offset((page - 1) * size).limit(size).all()
     return {"total": total, "page": page, "pages": max(1, math.ceil(total / size)),
-            "items": query.offset((page - 1) * size).limit(size).all()}
+            "items": [respuesta_estadia(stay) for stay in stays]}
 
 
 def obtener_historial_paginado(db, sucursal_id, page=1, size=20, patente=None):

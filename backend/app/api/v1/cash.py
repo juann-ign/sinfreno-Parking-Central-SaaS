@@ -47,7 +47,7 @@ def cerrar(caja_id: RecordId, data: schemas.CierreCajaFinalizar, background_task
            current_user: m.Usuario = Depends(dependencies.require_local_admin)):
     scope = current_user.sucursal_id
     result, replayed = caja_service.cerrar_caja(db, scope, current_user.id, caja_id,
-                                              data.monto_real, data.notas, key)
+                                              data.monto_real, data.notas, key, data.revision_cierre)
     response.headers["Idempotency-Replayed"] = str(replayed).lower()
     response.headers["Idempotency-Resolved"] = "true"
     if not replayed:

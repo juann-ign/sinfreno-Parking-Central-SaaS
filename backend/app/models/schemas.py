@@ -102,6 +102,8 @@ class EstadiaOut(BaseModel):
     caja_ingreso_id: Optional[int] = None
     caja_id: Optional[int] = None
     cotizacion_id: Optional[str] = None
+    cortesia_minutos: Optional[int] = Field(default=None, ge=0)
+    origen_cortesia: Literal["INGRESO", "HEREDADO_CONFIG_ACTUAL", "DESCONOCIDO"] = "DESCONOCIDO"
     
     class Config:
         from_attributes = True
@@ -185,6 +187,7 @@ class CierreCajaFinalizar(BaseModel):
     model_config = ConfigDict(extra="forbid")
     monto_real: Money
     notas: Optional[str] = Field(None, max_length=1000)
+    revision_cierre: Optional[str] = Field(default=None, min_length=64, max_length=64, pattern=r"^[a-f0-9]{64}$")
 
 class CierreCajaOut(BaseModel):
     id: int
@@ -200,6 +203,7 @@ class CierreCajaOut(BaseModel):
     totales_por_medio: Optional[Dict[str, Money]] = None
     notas: Optional[str] = None
     origen_datos: str
+    revision_cierre: Optional[str] = None
     
     class Config:
         from_attributes = True

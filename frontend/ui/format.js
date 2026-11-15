@@ -35,7 +35,23 @@ export function elapsedInfo(value, now, courtesy) {
   const elapsed = Math.max(0, now - date.getTime());
   return {
     minutes: Math.floor(elapsed / 60000),
-    inCourtesy: elapsed <= Number(courtesy ?? 0) * 60000,
+    inCourtesy:
+      Number.isSafeInteger(courtesy) && courtesy >= 0
+        ? elapsed <= courtesy * 60000
+        : null,
+  };
+}
+export function stayElapsedInfo(stay, now) {
+  const knownOrigin = ["INGRESO", "HEREDADO_CONFIG_ACTUAL"].includes(
+    stay.origen_cortesia,
+  );
+  const courtesy = knownOrigin ? stay.cortesia_minutos : null;
+  const elapsed = elapsedInfo(stay.fecha_entrada, now, courtesy);
+  if (!elapsed) return null;
+  return {
+    ...elapsed,
+    courtesyOrigin:
+      elapsed.inCourtesy === null ? "DESCONOCIDO" : stay.origen_cortesia,
   };
 }
 export function errorMessage(

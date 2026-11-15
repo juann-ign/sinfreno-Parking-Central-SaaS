@@ -1,23 +1,31 @@
 import { useEffect, useState } from "react";
-import { elapsedInfo } from "../ui/format.js";
+import { stayElapsedInfo } from "../ui/format.js";
 
-function Duration({ value, courtesy }) {
+function Duration({ stay }) {
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 15000);
     return () => clearInterval(timer);
   }, []);
-  const elapsed = elapsedInfo(value, now, courtesy);
+  const elapsed = stayElapsedInfo(stay, now);
   if (!elapsed)
     return <span className="sf-badge sf-badge-warning">Fecha a revisar</span>;
-  const { minutes, inCourtesy } = elapsed;
+  const { minutes, inCourtesy, courtesyOrigin } = elapsed;
   return (
-    <span className={`sf-badge ${inCourtesy ? "sf-badge-success" : ""}`}>
-      {inCourtesy ? "En cortesía · " : ""}
-      {minutes < 60
-        ? `${minutes} min`
-        : `${Math.floor(minutes / 60)} h ${minutes % 60} min`}
-    </span>
+    <>
+      <span
+        className={`sf-badge ${inCourtesy ? "sf-badge-success" : inCourtesy === null ? "sf-badge-warning" : ""}`}
+      >
+        {inCourtesy ? "En cortesía · " : ""}
+        {minutes < 60
+          ? `${minutes} min`
+          : `${Math.floor(minutes / 60)} h ${minutes % 60} min`}
+      </span>
+      {courtesyOrigin === "HEREDADO_CONFIG_ACTUAL" && (
+        <small>Ingreso histórico · cortesía según configuración actual</small>
+      )}
+      {courtesyOrigin === "DESCONOCIDO" && <small>Cortesía a revisar</small>}
+    </>
   );
 }
 export default function ActiveTable({
@@ -26,7 +34,6 @@ export default function ActiveTable({
   onQuote,
   canQuote,
   loading,
-  courtesy,
 }) {
   return (
     <div className="sf-table-wrap">
@@ -70,7 +77,7 @@ export default function ActiveTable({
                     : `Sector · ID ${stay.torre_id}`}
                 </td>
                 <td>
-                  <Duration value={stay.fecha_entrada} courtesy={courtesy} />
+                  <Duration stay={stay} />
                 </td>
                 <td className="sf-row-action">
                   {canQuote && (

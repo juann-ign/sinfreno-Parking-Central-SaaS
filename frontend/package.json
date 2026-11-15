@@ -14,7 +14,7 @@
     "test:realtime": "node --test api/realtime.test.js",
     "test:session": "node --test api/session-controller.test.js",
     "test:operations": "node --test api/attempt-store.test.js ui/format.test.js",
-    "test": "node --test api/session-controller.test.js api/realtime.test.js api/attempt-store.test.js config/connections.test.js ui/format.test.js",
+    "test": "node --test api/session-controller.test.js api/realtime.test.js api/attempt-store.test.js config/connections.test.js ui/format.test.js ui/cash-close-state.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
