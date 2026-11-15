@@ -13,13 +13,35 @@ const project = "sinfreno-release-proxy-qa";
 const envPath = resolve(root, ".recovery/proxy-qa.env");
 const caPath = resolve(root, `.recovery/proxy-qa-ca-${Date.now()}.crt`);
 const composeArgs = ["compose", "--env-file", envPath, "-p", project, "-f", resolve(root, "deploy/compose.proxy-qa.yml")];
+function privateSafeDiagnostic(value) {
+  let message = String(value || "");
+  for (const path of [resolve(root, ".recovery/release.env"), envPath]) {
+    if (!existsSync(path)) continue;
+    for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
+      const match = /^(?:RELEASE_DB_PASSWORD|RELEASE_SECRET_KEY|SECRET_KEY|DATABASE_URL)=(.+)$/.exec(line);
+      if (!match) continue;
+      const secret = match[1];
+      if (secret.length >= 8) message = message.replaceAll(secret, "[redacted]");
+      try {
+        const password = decodeURIComponent(new URL(secret).password);
+        if (password.length >= 8) message = message.replaceAll(password, "[redacted]");
+      } catch { /* Most values are keys rather than URLs. */ }
+    }
+  }
+  return message.replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, "[redacted-token]")
+    .split(/\r?\n/).slice(-25).join("\n").slice(-6000);
+}
 function docker(args, input) {
   try {
     return execFileSync("docker", ["--context", "desktop-linux", ...args], {
       encoding: "utf8", input, stdio: ["pipe", "pipe", "pipe"], windowsHide: true, timeout: 90000,
     }).trim();
-  } catch {
-    throw new Error("Falló Docker en el ensayo HTTPS local; revisar el daemon y los recursos QA identificados");
+  } catch (error) {
+    const operation = args[0] === "compose"
+      ? `compose ${args.find((part) => ["up", "down", "exec", "ps"].includes(part)) || ""}`
+      : args[0];
+    const detail = privateSafeDiagnostic(`${error.stderr || ""}\n${error.stdout || ""}`);
+    throw new Error(`Falló Docker (${operation}, ${error.status ?? error.code ?? "sin estado"}) en el ensayo HTTPS local.\n${detail}`);
   }
 }
 const compose = (...args) => docker([...composeArgs, ...args]);
