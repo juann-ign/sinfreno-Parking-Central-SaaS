@@ -15,20 +15,21 @@ class PDFResourceBlocked(ValueError):
 
 TICKET_TEMPLATE = """<!doctype html>
 <html><head><meta charset="utf-8"><style>
-@page { size: a6 portrait; margin: 10mm; }
-body { font-family: Helvetica, Arial, sans-serif; color: #172033; font-size: 10pt; }
+@page { size: a6 portrait; margin: 8mm; }
+body { font-family: Helvetica, Arial, sans-serif; color: #172033; font-size: 9.5pt; line-height: 1.2; }
 .brand { font-size: 18pt; color: #4338ca; font-weight: bold; }
-h1 { font-size: 13pt; margin: 8pt 0; }
-.muted { color: #566075; font-size: 8pt; }
-.rule { border-bottom: 1pt solid #d8deeb; padding-bottom: 8pt; margin-bottom: 10pt; }
+h1 { font-size: 13pt; margin: 5pt 0; }
+p { margin: 5pt 0 0; }
+.muted { color: #566075; font-size: 8pt; line-height: 1.2; }
+.rule { border-bottom: 1pt solid #d8deeb; padding-bottom: 5pt; margin-bottom: 6pt; }
 .plate { font-size: 20pt; font-weight: bold; }
-td { padding: 4pt 0; vertical-align: top; }
+td { padding: 3pt 0; vertical-align: top; }
 .amount { font-size: 20pt; font-weight: bold; color: #4338ca; }
 </style></head><body>
 <div class="rule"><div class="brand">Sinfreno</div><div>{{ sucursal }}</div>
 <h1>{{ titulo }}</h1><div class="muted">Operación #{{ id }} · {{ sector }}</div></div>
 <div class="plate">{{ patente }}</div><div>{{ tipo }}</div>
-<table width="100%"><tr><td>Ingreso</td><td>{{ entrada }}</td></tr>
+<table width="100%"><tr><td width="25%">Ingreso</td><td width="75%">{{ entrada }}</td></tr>
 {% if es_salida %}<tr><td>Egreso</td><td>{{ salida }}</td></tr>{% endif %}</table>
 {% if es_salida %}<div class="rule"><div>Cobro registrado</div><div class="amount">ARS {{ monto }}</div>
 <div>Medio registrado: {{ metodo_pago }}</div></div>

@@ -10,6 +10,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --max-warnings=0",
+    "test:e2e": "playwright test",
+    "test:e2e:list": "playwright test --list",
     "test:connections": "node --test config/connections.test.js",
     "test:realtime": "node --test api/realtime.test.js",
     "test:session": "node --test api/session-controller.test.js",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "1.65.1",
     "@tailwindcss/vite": "^4.0.0",
     "@vitejs/plugin-react": "5.2.0",
     "autoprefixer": "^10.4.20",

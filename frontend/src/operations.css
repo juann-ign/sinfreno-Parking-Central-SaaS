@@ -924,31 +924,43 @@ kbd {
   }
 }
 @media print {
-  body:has(#sinfreno-print-receipt) * {
-    visibility: hidden;
+  /* Remove unrelated layout so the dashboard cannot add blank receipt pages. */
+  body:has(#sinfreno-print-receipt)
+    *:not(:has(#sinfreno-print-receipt)):not(#sinfreno-print-receipt):not(
+      #sinfreno-print-receipt *
+    ) {
+    display: none;
   }
-  #sinfreno-print-receipt,
-  #sinfreno-print-receipt * {
-    visibility: visible;
+  body:has(#sinfreno-print-receipt),
+  body:has(#sinfreno-print-receipt) *:has(#sinfreno-print-receipt) {
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    background: white;
   }
   #sinfreno-print-receipt {
-    position: fixed;
-    left: 0;
-    top: 0;
+    position: static;
+    box-sizing: border-box;
     width: 80mm;
     max-width: 100%;
+    margin: 0;
     padding: 6mm;
     background: white;
     color: black;
+    break-inside: avoid;
   }
   .sf-dialog:has(#sinfreno-print-receipt) {
     position: static;
+    inset: auto;
+    width: auto;
+    max-width: none;
     border: 0;
     box-shadow: none;
     overflow: visible;
     max-height: none;
   }
-  .sf-dialog::backdrop {
+  .sf-dialog:has(#sinfreno-print-receipt)::backdrop {
     display: none;
   }
 }

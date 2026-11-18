@@ -3,11 +3,13 @@
 import base64
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from io import BytesIO
 from pathlib import Path
 from threading import Thread
 from types import SimpleNamespace
 
 import pytest
+from pypdf import PdfReader
 
 from app.services import pdf_service
 
@@ -41,6 +43,49 @@ def test_real_template_escapes_legacy_text_and_real_pdf_distinguishes_entry_exit
 def test_legacy_naive_time_is_labelled_without_utc_reinterpretation():
     html = pdf_service.render_ticket_html(ticket(fecha_entrada_utc=None))
     assert "11/11/2026 12:00 (hora heredada sin zona confirmada)" in html
+
+
+@pytest.mark.parametrize("closed", [False, True], ids=["entry", "exit"])
+@pytest.mark.parametrize("legacy", [False, True], ids=["utc", "legacy"])
+def test_a6_receipt_fits_one_page_without_losing_details_or_notices(closed, legacy):
+    branch = "Estacionamiento Central de Avenida del Libertador - Sucursal Norte"
+    stay = ticket(
+        id=12345, patente="ABC1234", tipo_vehiculo="CAMIONETA",
+        estado="FINALIZADO" if closed else "ACTIVO",
+        monto="1500.00" if closed else 0, metodo_pago="QR" if closed else None,
+        fecha_entrada_utc=None if legacy else datetime(2026, 11, 11, 12, tzinfo=timezone.utc),
+        fecha_salida=datetime(2026, 11, 11, 13) if closed else None,
+        fecha_salida_utc=(
+            datetime(2026, 11, 11, 13, tzinfo=timezone.utc)
+            if closed and not legacy else None
+        ),
+        torre=SimpleNamespace(numero=7, sucursal=SimpleNamespace(nombre=branch)),
+    )
+    document = PdfReader(BytesIO(pdf_service.generar_pdf_ticket(stay)))
+    assert len(document.pages) == 1
+    page = document.pages[0]
+    assert float(page.mediabox.width) == pytest.approx(297.64, abs=0.1)
+    assert float(page.mediabox.height) == pytest.approx(419.53, abs=0.1)
+    text = " ".join(page.extract_text().split())
+    for detail in (
+        "Sinfreno", branch, "Operación #12345", "Sector 7", "ABC1234", "CAMIONETA",
+        "Horarios nuevos: Argentina", "UTC", "03",
+        "Los horarios heredados sin zona confirmada se identifican expresamente.",
+        "Comprobante interno de estacionamiento. No acredita una transacción bancaria ni es una factura fiscal.",
+    ):
+        assert detail in text
+    entry_time = "11/11/2026 12:00 (hora heredada sin zona confirmada)" if legacy else "11/11/2026 09:00 (Argentina)"
+    assert f"Ingreso {entry_time}" in text
+    if closed:
+        exit_time = "11/11/2026 13:00 (hora heredada sin zona confirmada)" if legacy else "11/11/2026 10:00 (Argentina)"
+        assert "Comprobante de egreso" in text
+        assert f"Egreso {exit_time}" in text
+        assert "Cobro registrado ARS 1.500,00 Medio registrado: QR" in text
+        assert "Comprobante de ingreso" not in text
+    else:
+        assert "Comprobante de ingreso" in text
+        assert "Este comprobante registra el ingreso. El importe se cotiza antes de confirmar el egreso." in text
+        assert "Cobro registrado" not in text and "Medio registrado" not in text
 
 
 def test_renderer_does_not_read_a_controlled_temporary_file(tmp_path, monkeypatch):
