@@ -4,14 +4,19 @@ Sinfreno reúne ingreso de vehículos, búsqueda, cotización, registro de cobro
 comprobantes y turnos de caja. Está dirigido a operadores y administradores de
 cocheras, con permisos y datos separados por sucursal.
 
-La release de portfolio del 15/11/2026 usa datos ficticios. El circuito está
-implementado y cuenta con pruebas contra PostgreSQL. En una revisión anterior,
-instalación, pruebas y build Linux pasaron en GitHub Actions; también pasaron la
-imagen estática y el ensayo local HTTPS/WSS. Sigue pendiente el QA
-visual/teclado/impresión: el host de navegador automatizado no está disponible.
-No hay demo pública ni piloto en uso.
-El [registro de continuidad](docs/recovery/RELEASE_2026-11-15.md) distingue los
-resultados observados de esas verificaciones pendientes.
+La release de portfolio usa datos ficticios. El 18/11/2026 se recorrió la
+aplicación en Edge con backend real: teclado, dos terminales, sucursales,
+recuperación, PDF y estilos de impresión, en notebook, escritorio y zoom nativo
+200%. Se corrigieron dos defectos de comprobantes y se añadieron cuatro E2E.
+La CI aprobó 149 pruebas de backend, 40 de frontend y el ensayo productivo
+HTTPS/WSS. Falta validar la impresora y el circuito con una cochera real;
+no hay demo pública ni piloto en uso. El
+[registro de continuidad](docs/recovery/RELEASE_2026-11-15.md) conserva la evidencia.
+
+![Operación de Sinfreno con datos ficticios](docs/portfolio/screenshots/01-operacion.png)
+
+[Cinco capturas verificadas](docs/portfolio/README.md) ·
+[Demostración de 90 segundos y borrador de presentación](docs/portfolio/DEMO_90S.md)
 
 ## Demo local en Windows
 
@@ -117,9 +122,9 @@ y `scripts/` (entorno descartable, backup y ensayo de proxy).
 
 ## Verificación
 
-Verificación actual: **145 tests backend, cero skips**, PostgreSQL real;
+Verificación actual: **149 tests backend, cero skips**, PostgreSQL real;
 **40 tests frontend**, lint/build y auditorías aprobados. Se conserva la evidencia
-de smoke HTTP/WS, actualización representativa y backup/restauración con11tablas.
+de smoke HTTP/WS, actualización representativa y backup/restauración con 11 tablas.
 La variante de imagen `INSTALL_DEV=false` y `APP_ENV=production` se probó desde
 base vacía, sin cuentas automáticas ni paquetes de test, con autenticación,
 ingreso/cotización/cobro, recuperación, cierre, PDF y WSS mediante proxy TLS.
@@ -135,18 +140,19 @@ npm.cmd run lint
 npm.cmd test
 npm.cmd run build
 Pop-Location
-docker --context desktop-linux compose --env-file .recovery/release.env -p sinfreno-release-20261115 -f docker-compose.release.yml exec -T -e RELEASE_ALLOW_RESET=1 backend python -m pytest -q -p no:cacheprovider tests
 ```
 
-La suite backend **reinicia únicamente la base descartable release_disposable**;
-detener operaciones de demo antes de ejecutarla y volver a sembrarla después
-agregando `--reset` al comando del seed, para reemplazar las fixtures de pruebas.
-No ejecutar sobre datos conservados. En PowerShell usar `npm.cmd` evita cambiar
+La suite completa backend usa fixtures que reinician su base: la CI la ejecuta
+en un PostgreSQL nuevo. No ejecutarla sobre la demo conservada. Los cuatro
+[E2E opcionales](frontend/README.md#e2e-opcionales-con-backend-real) usan la
+instancia QA separada y conservan su historial. En PowerShell usar `npm.cmd` evita cambiar
 ExecutionPolicy. [CI](.github/workflows/quality.yml) ejecuta estas verificaciones
-con PostgreSQL en GitHub. El [run43776980855](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/43776980855)
-aprobó los tres jobs desde checkout limpio, incluido el backend productivo sin
-herramientas de test. El QA visual/manual restante figura en una única checklist
-del registro; una descarga PDF no acredita vista previa ni impresión física.
+con PostgreSQL en GitHub. El [run 44392068185](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/44392068185)
+aprobó los tres jobs del commit `e60c66a` desde checkout limpio, incluido el
+backend productivo sin herramientas de test. Ese resultado corresponde a ese
+checkpoint de código. El QA local adicional aprobó cuatro E2E reales y ocho
+pruebas PDF. La revisión al volver y la impresora física figuran en una única
+checklist del registro.
 
 ## Despliegue, recuperación y presentación
 

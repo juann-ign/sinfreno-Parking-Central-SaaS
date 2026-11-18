@@ -51,3 +51,32 @@ Inter y Arvo se sirven localmente desde las distribuciones oficiales Fontsource 
 ## Lint
 
 Se mantienen las reglas recomendadas de ESLint, React Hooks y Fast Refresh, junto con `react/jsx-uses-vars` para reconocer referencias JSX. `--max-warnings=0` exige corregir también las advertencias de dependencias de hooks. ESLint 9 se conserva por compatibilidad con los peer dependencies de `eslint-plugin-react` 7; no se actualizó el stack durante SF-01.
+
+## E2E opcionales con backend real
+
+Playwright 1.65.1 está fijado en manifest/lock. Los cuatro casos verifican el
+recorrido ingreso/cobro/comprobante/F5, permisos y sucursal en contextos
+independientes, impresión y recuperación de una respuesta perdida después del
+commit real. No fabrican respuestas exitosas ni usan esperas fijas.
+
+La ejecución exige opt-in y una instancia **descartable separada** en loopback
+puerto 15180, con el seed ficticio y una caja abierta en Centro. Rechaza el puerto
+15175 de la demo conservada. En esta computadora está preparada la instancia
+`sinfreno-portfolio-qa-20261118`; su estado y comandos están en el
+[informe de QA](../docs/recovery/QA_2026-11-18.md). No inicia servicios ni siembra
+datos automáticamente; los registros propios terminan por el flujo normal de
+salida y quedan en el historial.
+
+```powershell
+$env:SINFRENO_E2E_URL='http://127.0.0.1:15180'
+$env:SINFRENO_E2E_ALLOW_DISPOSABLE='1'
+$env:SINFRENO_E2E_EXECUTABLE_PATH='C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+npm.cmd run test:e2e
+```
+
+Puede usarse `SINFRENO_E2E_CHANNEL=msedge` en lugar de la ruta, o el Chromium
+compatible ya instalado por Playwright. Sin los dos opt-in se omiten los cuatro
+casos antes de abrir el navegador. La CI normal mantiene sus controles; estos
+E2E se ejecutaron por separado contra el QA local. No se guardan storageState,
+trazas, videos ni capturas automáticas. Los artefactos de fallo quedan en
+`.recovery/`, fuera de Git.

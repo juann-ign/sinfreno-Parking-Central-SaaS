@@ -22,7 +22,7 @@ El archivo `.recovery/release.env` generado contiene secretos locales nuevos: es
 
 ### Revisión manual breve
 
-La demo está en `http://127.0.0.1:15175`; el navegador automatizado no tiene host conectado. La única checklist manual está en [el registro de continuidad](recovery/RELEASE_2026-11-15.md#qa-humano-agrupado). Usar perfiles separados para las terminales ficticias. No reiniciar datos ni limpiar almacenamiento mientras haya intentos inciertos que recuperar. No se acreditan capturas ni impresión física.
+La demo conservada está en `http://127.0.0.1:15175`. El QA del18/11 usó una instancia separada en `http://127.0.0.1:15180`, con navegador real, cinco capturas y PDF rasterizados. La única checklist al volver está en [el registro de continuidad](recovery/RELEASE_2026-11-15.md#qa-humano-agrupado). Usar perfiles separados para las terminales ficticias y conservar los intentos inciertos hasta recuperarlos. La impresora física sigue pendiente.
 
 ## Producción preparada
 
