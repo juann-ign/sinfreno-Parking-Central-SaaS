@@ -156,8 +156,7 @@ function SettingsForm({ user, login, retrySession }) {
               />
             </label>
             <p className="sf-help">
-              Una cortesía de 0 se conserva como 0. La cotización del servidor
-              explica la regla aplicada a cada estadía.
+              0 = sin minutos de cortesía.
             </p>
             <div className="sf-brand-readonly">
               <span

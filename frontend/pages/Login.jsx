@@ -127,9 +127,6 @@ export default function Login() {
             <ArrowRight size={18} />
           </button>
         </form>
-        <p className="sf-login-note">
-          Tu rol y tu sucursal determinan las operaciones disponibles.
-        </p>
       </section>
     </main>
   );

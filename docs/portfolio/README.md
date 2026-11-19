@@ -13,7 +13,8 @@ Las operaciones guardan su identidad para poder recuperar un resultado incierto.
 ## Recorrido en imágenes
 
 Cinco capturas verificadas del navegador real, sobre el entorno QA local del
-18/11/2026. Los valores representan operaciones sintéticas; cambian al seguir
+18/11/2026, actualizadas con la validación de patente y los iconos de operación.
+Los valores representan operaciones sintéticas; cambian al seguir
 usando la demo.
 
 | Pantalla | Qué permite revisar |

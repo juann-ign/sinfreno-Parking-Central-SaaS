@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Dialog from "./Dialog.jsx";
 import PendingOperations from "./PendingOperations.jsx";
-import { money, paymentLabels } from "../ui/format.js";
+import { money } from "../ui/format.js";
+import { PaymentLabel } from "../ui/presentation.jsx";
 import {
   acknowledgeCashCloseState,
   cashCloseConfirmation,
@@ -70,8 +71,7 @@ export default function CashModal({
         <form onSubmit={submit}>
           {mode === "open" ? (
             <p className="sf-help">
-              La demo inicia cada turno con fondo de efectivo cero. Los ingresos
-              y cobros nuevos quedarán asociados a la caja correspondiente.
+              Fondo inicial de efectivo: {money("0.00")}.
             </p>
           ) : (
             <>
@@ -103,7 +103,7 @@ export default function CashModal({
                 {Object.entries(displayedCash.totales_por_medio || {}).map(
                   ([method, value]) => (
                     <div key={method}>
-                      <dt>{paymentLabels[method] || method}</dt>
+                      <dt><PaymentLabel method={method} /></dt>
                       <dd>{money(value)}</dd>
                     </div>
                   ),

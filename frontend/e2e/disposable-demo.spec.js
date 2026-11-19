@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 import { test, expect } from '@playwright/test';
 import { disposableE2EEnabled } from '../playwright.config.js';
 
@@ -6,6 +6,11 @@ const operatorEmail = process.env.SINFRENO_E2E_OPERATOR_EMAIL || 'operador@relea
 const northEmail = process.env.SINFRENO_E2E_NORTH_EMAIL || 'admin.norte@release.example.com';
 // This is the explicitly fictitious seed password, never a production credential.
 const demoPassword = process.env.SINFRENO_E2E_PASSWORD || 'Sinfreno-demo-local-2026';
+
+function carPlate() {
+  const letter = () => String.fromCharCode(65 + randomInt(26));
+  return `${letter()}${letter()}${String(randomInt(1000)).padStart(3, '0')}${letter()}${letter()}`;
+}
 
 test.skip(
   !disposableE2EEnabled,
@@ -107,8 +112,58 @@ async function finishOwnStay(page, plate) {
   if (await row.count()) await registerExit(page, plate);
 }
 
+test('plate validity updates per keystroke and category, warning and Enter guard stay in sync', async ({ page }) => {
+  let entryRequests = 0;
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/parking/ingreso')) entryRequests += 1;
+  });
+  await login(page, operatorEmail);
+  const input = page.getByLabel('Patente', { exact: true });
+  const submit = page.getByRole('button', { name: 'Registrar ingreso', exact: true });
+  const warning = page.locator('#entry-plate-warning');
+  await expect(input).toBeEnabled();
+  await expect(submit).toBeDisabled();
+  await expect(warning).toHaveCount(0);
+  let expected = '';
+  for (const character of 'ab12') {
+    await input.press(character);
+    expected += character.toUpperCase();
+    await expect(input).toHaveValue(expected);
+    await expect(submit).toBeDisabled();
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+  }
+  await expect(warning).toContainText('ABC123 o AB123CD');
+  await input.press('Enter');
+  await expect(input).toHaveValue('AB12');
+  await input.fill('abc123');
+  await expect(input).toHaveValue('ABC123');
+  await expect(submit).toBeEnabled();
+  await expect(warning).toHaveCount(0);
+  await page.getByRole('radio', { name: 'Moto', exact: true }).check();
+  await expect(submit).toBeDisabled();
+  await expect(warning).toContainText('123ABC o A123BCD');
+  await input.fill('123abc');
+  await expect(submit).toBeEnabled();
+  await input.fill('a123bcd');
+  await expect(submit).toBeEnabled();
+  await page.getByRole('radio', { name: 'Camioneta', exact: true }).check();
+  await expect(submit).toBeDisabled();
+  await input.fill('ab 123 cd');
+  await expect(input).toHaveValue('AB123CD');
+  await expect(submit).toBeEnabled();
+  await input.fill('ab!123cd');
+  await expect(input).toHaveValue('AB!123CD');
+  await expect(submit).toBeDisabled();
+  await expect(warning).toBeVisible();
+  await input.press('Enter');
+  await input.fill('');
+  await expect(warning).toHaveCount(0);
+  await expect(submit).toBeDisabled();
+  expect(entryRequests).toBe(0);
+});
+
 test('keyboard entry creates one stay, confirms a quote and recovers its receipt after F5', async ({ page }) => {
-  const plate = randomBytes(4).toString('hex').toUpperCase();
+  const plate = carPlate();
   let entryRequests = 0;
   let exitRequests = 0;
   page.on('request', (request) => {
@@ -144,7 +199,7 @@ test('independent operator and branch-admin contexts enforce role and branch bou
   const northContext = await browser.newContext({ baseURL });
   await restrictToLoopback(northContext);
   const northPage = await northContext.newPage();
-  const plate = randomBytes(4).toString('hex').toUpperCase();
+  const plate = carPlate();
   let operatorReady = false;
   try {
     await login(page, operatorEmail);
@@ -207,7 +262,7 @@ test('print media keeps an authorized receipt visible and hides the workspace', 
 });
 
 test('an uncertain entry survives reload and recovers its real result without a second POST', async ({ page }) => {
-  const plate = randomBytes(4).toString('hex').toUpperCase();
+  const plate = carPlate();
   let entryRequests = 0;
   let backendStatus;
   page.on('request', (request) => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Clock, RefreshCw, X } from "lucide-react";
-import { apiDate, dateTime, money, paymentLabels } from "../ui/format.js";
+import { apiDate, money, paymentLabels } from "../ui/format.js";
+import { PaymentIcon, VehicleIcon } from "../ui/presentation.jsx";
 import PendingOperations from "./PendingOperations.jsx";
 
 export default function QuotePanel({
@@ -45,7 +46,9 @@ export default function QuotePanel({
     >
       <header className="sf-section-heading">
         <div>
-          <span className="sf-eyebrow">Salida · estadía #{stay.id}</span>
+          <span className="sf-eyebrow sf-icon-label">
+            <VehicleIcon category={stay.tipo_vehiculo} size={18} /> Salida
+          </span>
           <h2 id="quote-title" ref={headingRef} tabIndex={-1}>
             Cotización para <span className="sf-plate">{stay.patente}</span>
           </h2>
@@ -59,7 +62,7 @@ export default function QuotePanel({
           <X size={20} />
         </button>
       </header>
-      {loading && <p role="status">Calculando importe en el servidor…</p>}
+      {loading && <p role="status">Calculando importe…</p>}
       {error && (
         <div className="sf-notice sf-error" role="alert">
           <p>{error.message}</p>
@@ -85,7 +88,7 @@ export default function QuotePanel({
             <div>
               <span>Importe a registrar</span>
               <strong>{money(quote.monto)}</strong>
-              <small>ARS · importe calculado por el servidor</small>
+              <small>ARS</small>
             </div>
             <div
               className={`sf-badge ${expired ? "sf-badge-warning" : "sf-badge-success"}`}
@@ -105,7 +108,7 @@ export default function QuotePanel({
           {explanation && (
             <dl className="sf-quote-detail">
               <div>
-                <dt>Tiempo calculado</dt>
+                <dt>Tiempo estacionado</dt>
                 <dd>{explanation.minutos_totales} min</dd>
               </div>
               <div>
@@ -114,7 +117,7 @@ export default function QuotePanel({
               </div>
               <div>
                 <dt>Cortesía</dt>
-                <dd>{explanation.cortesia_minutos} min, inclusiva</dd>
+                <dd>Hasta {explanation.cortesia_minutos} min</dd>
               </div>
               <div>
                 <dt>Fracción posterior a la hora</dt>
@@ -131,9 +134,8 @@ export default function QuotePanel({
             </dl>
           )}
           <p className="sf-help">
-            Calculada {dateTime(quote.calculada_en)}. Después de la cortesía se
-            cobra la primera hora completa y luego las fracciones configuradas.
-            Redondeo a dos decimales.
+            Superada la cortesía se cobra la primera hora completa; después,
+            por fracción.
           </p>
           <PendingOperations operations={operations} type="SALIDA" />
           {operations.error && (
@@ -169,6 +171,7 @@ export default function QuotePanel({
                       checked={method === value}
                       onChange={() => setMethod(value)}
                     />
+                    <PaymentIcon method={value} />
                     {label}
                   </label>
                 ))}

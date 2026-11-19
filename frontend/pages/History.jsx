@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import api from "../api/axios.js";
-import { dateTime, errorMessage, money, paymentLabels } from "../ui/format.js";
+import { dateTime, errorMessage, money } from "../ui/format.js";
+import { PaymentLabel, VehicleLabel } from "../ui/presentation.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import TicketModal from "../components/TicketModal.jsx";
 
@@ -107,15 +108,13 @@ export default function History() {
                       <td>
                         <strong className="sf-plate">{stay.patente}</strong>
                         <small>
-                          {stay.tipo_vehiculo} · #{stay.id}
+                          <VehicleLabel category={stay.tipo_vehiculo} /> · #{stay.id}
                         </small>
                       </td>
                       <td>{dateTime(stay.fecha_entrada)}</td>
                       <td>{dateTime(stay.fecha_salida)}</td>
                       <td>
-                        {paymentLabels[stay.metodo_pago] ||
-                          stay.metodo_pago ||
-                          "—"}
+                        <PaymentLabel method={stay.metodo_pago} />
                       </td>
                       <td>{money(stay.monto)}</td>
                       <td>

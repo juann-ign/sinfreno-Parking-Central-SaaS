@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { stayElapsedInfo } from "../ui/format.js";
+import { VehicleLabel } from "../ui/presentation.jsx";
 
 function Duration({ stay }) {
   const [now, setNow] = useState(Date.now);
@@ -69,7 +70,9 @@ export default function ActiveTable({
               <tr key={stay.id}>
                 <td>
                   <strong className="sf-plate">{stay.patente}</strong>
-                  <small>{stay.tipo_vehiculo}</small>
+                  <small className="sf-category-label">
+                    <VehicleLabel category={stay.tipo_vehiculo} />
+                  </small>
                 </td>
                 <td>
                   {towers.find((tower) => tower.id === stay.torre_id)

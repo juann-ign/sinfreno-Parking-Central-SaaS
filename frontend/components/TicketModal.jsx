@@ -3,7 +3,8 @@ import { Download, Printer } from "lucide-react";
 import Dialog from "./Dialog.jsx";
 import api from "../api/axios.js";
 import { getTicketUrl } from "../config/connections.js";
-import { dateTime, errorMessage, money, paymentLabels } from "../ui/format.js";
+import { dateTime, errorMessage, money } from "../ui/format.js";
+import { PaymentLabel, VehicleLabel } from "../ui/presentation.jsx";
 
 export default function TicketModal({ isOpen, ticketData, onClose }) {
   const [busy, setBusy] = useState(false);
@@ -72,7 +73,7 @@ export default function TicketModal({ isOpen, ticketData, onClose }) {
         <dl>
           <div>
             <dt>Categoría</dt>
-            <dd>{ticketData.tipo_vehiculo}</dd>
+            <dd><VehicleLabel category={ticketData.tipo_vehiculo} /></dd>
           </div>
           <div>
             <dt>Ingreso</dt>
@@ -87,8 +88,7 @@ export default function TicketModal({ isOpen, ticketData, onClose }) {
               <div>
                 <dt>Medio registrado</dt>
                 <dd>
-                  {paymentLabels[ticketData.metodo_pago] ||
-                    ticketData.metodo_pago}
+                  <PaymentLabel method={ticketData.metodo_pago} />
                 </dd>
               </div>
               <div className="sf-total">

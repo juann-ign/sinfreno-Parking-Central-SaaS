@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, CarFront } from "lucide-react";
+import { AlertTriangle, ArrowRight, CarFront, MapPin } from "lucide-react";
+import { VehicleIcon } from "../ui/presentation.jsx";
+import { isValidPlate, normalizePlate, plateFormat } from "../ui/plate.js";
+
+const categories = [
+  ["AUTO", "Auto"],
+  ["MOTO", "Moto"],
+  ["CAMIONETA", "Camioneta"],
+];
 
 export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
   const [plate, setPlate] = useState("");
@@ -8,6 +16,9 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
   const plateRef = useRef(null);
   const selectedTower = tower || String(towers[0]?.id || "");
   const disabled = !cashId || !selectedTower || busy || pending;
+  const format = plateFormat(category);
+  const validPlate = isValidPlate(plate, category);
+  const showWarning = plate.length > 0 && !validPlate;
   const initialFocusHandled = useRef(false);
   useEffect(() => {
     if (disabled || initialFocusHandled.current) return;
@@ -19,7 +30,7 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
   }, [disabled]);
   const submit = async (event) => {
     event.preventDefault();
-    if (disabled || !selectedTower) return;
+    if (disabled || !validPlate) return;
     const result = await onSubmit({
       patente: plate.trim().toUpperCase(),
       tipo: category,
@@ -35,17 +46,15 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
     <section className="sf-card sf-entry">
       <div className="sf-section-heading">
         <div>
-          <span className="sf-eyebrow">Entrada rápida</span>
           <h2>
             <CarFront size={22} /> Registrar ingreso
           </h2>
         </div>
-        <span className="sf-hint">Patente + Enter</span>
       </div>
-      <form onSubmit={submit}>
+      <form onSubmit={submit} noValidate>
         <fieldset disabled={disabled} className="sf-entry-fields">
-          <label className="sf-field sf-plate-field" htmlFor="entry-plate">
-            Patente
+          <div className="sf-field sf-plate-field">
+            <label htmlFor="entry-plate">Patente</label>
             <input
               ref={plateRef}
               id="entry-plate"
@@ -54,30 +63,41 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
               required
               minLength={6}
               maxLength={10}
-              pattern="[A-Za-z0-9]{6,10}"
-              placeholder="ABC123"
+              pattern={format.pattern}
+              placeholder={format.placeholder}
+              aria-invalid={showWarning}
+              aria-describedby={showWarning ? "entry-plate-warning" : undefined}
               value={plate}
-              onChange={(event) =>
-                setPlate(
-                  event.target.value.replace(/[^a-z0-9]/gi, "").toUpperCase(),
-                )
-              }
+              onChange={(event) => setPlate(normalizePlate(event.target.value))}
             />
-          </label>
-          <label className="sf-field" htmlFor="entry-category">
-            Categoría
-            <select
-              id="entry-category"
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-            >
-              <option value="AUTO">Auto</option>
-              <option value="MOTO">Moto</option>
-              <option value="CAMIONETA">Camioneta</option>
-            </select>
-          </label>
+            {showWarning && (
+              <p className="sf-plate-warning" id="entry-plate-warning" role="status">
+                <AlertTriangle size={16} aria-hidden="true" />
+                <span>Formato inválido. Usá {format.examples}.</span>
+              </p>
+            )}
+          </div>
+          <div className="sf-field sf-category-field">
+            <span id="entry-category-label">Categoría</span>
+            <div className="sf-vehicle-options" role="radiogroup" aria-labelledby="entry-category-label">
+              {categories.map(([value, label]) => (
+                <label key={value} className={`sf-vehicle-option ${category === value ? "selected" : ""}`}>
+                  <input
+                    className="sf-vehicle-radio"
+                    type="radio"
+                    name="entry-category"
+                    value={value}
+                    checked={category === value}
+                    onChange={() => setCategory(value)}
+                  />
+                  <VehicleIcon category={value} size={24} />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           <label className="sf-field" htmlFor="entry-sector">
-            Sector
+            <span className="sf-icon-label"><MapPin size={16} aria-hidden="true" /> Sector</span>
             <select
               id="entry-sector"
               required
@@ -93,7 +113,7 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
           </label>
           <button
             className="sf-button sf-primary"
-            disabled={!selectedTower || plate.length < 6}
+            disabled={disabled || !validPlate}
             type="submit"
           >
             {busy ? "Registrando…" : "Registrar ingreso"}

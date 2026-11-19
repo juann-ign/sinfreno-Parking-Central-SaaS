@@ -215,11 +215,8 @@ fieldset:disabled .sf-button {
 }
 .sf-entry-fields {
   display: grid;
-  grid-template-columns: minmax(180px, 1.3fr) minmax(130px, 0.8fr) minmax(
-      130px,
-      0.8fr
-    ) auto;
-  align-items: end;
+  grid-template-columns: minmax(180px, 1fr) minmax(270px, 1.15fr) minmax(130px, 0.65fr) auto;
+  align-items: start;
   gap: 16px;
   border: 0;
   padding: 0;
@@ -236,6 +233,87 @@ fieldset:disabled .sf-button {
 }
 .sf-entry-fields .sf-field {
   margin: 0;
+}
+.sf-entry-fields > .sf-button {
+  margin-top: 26px;
+  min-height: 48px;
+}
+.sf-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sf-icon-label svg,
+.sf-vehicle-option svg,
+.sf-plate-warning svg {
+  flex-shrink: 0;
+}
+.sf-category-label {
+  display: block;
+}
+.sf-vehicle-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.sf-vehicle-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 62px;
+  padding: 6px;
+  border: 1px solid #bdc8da;
+  border-radius: 9px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+}
+.sf-vehicle-option:hover {
+  border-color: #818cf8;
+}
+.sf-field .sf-vehicle-radio {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.sf-vehicle-option.selected {
+  background: #eef2ff;
+  color: #3730a3;
+  border-color: #6366f1;
+  box-shadow: inset 0 0 0 1px #6366f1;
+}
+.sf-vehicle-option:has(input:focus-visible) {
+  outline: 3px solid #818cf8;
+  outline-offset: 3px;
+}
+.sf-vehicle-option:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sf-plate-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 0;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.sf-plate-field input[aria-invalid="true"] {
+  border-color: #d97706;
+  background: #fffbeb;
 }
 .sf-field input,
 .sf-field select,
@@ -346,6 +424,7 @@ kbd {
   color: #626d80;
 }
 .sf-table-wrap {
+  position: relative;
   overflow-x: auto;
 }
 .sf-table {
@@ -866,6 +945,9 @@ kbd {
   .sf-entry-fields {
     grid-template-columns: 1fr 1fr;
   }
+  .sf-entry-fields > .sf-button {
+    margin-top: 26px;
+  }
   .sf-summary {
     gap: 14px 0;
   }
@@ -884,6 +966,10 @@ kbd {
   .sf-entry-fields {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+  .sf-entry-fields > .sf-button {
+    margin-top: 0;
+    width: 100%;
   }
   .sf-card > .sf-section-heading {
     padding: 18px;

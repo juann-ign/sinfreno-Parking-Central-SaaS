@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios.js";
-import { dateTime, errorMessage, money, paymentLabels } from "../ui/format.js";
+import { dateTime, errorMessage, money } from "../ui/format.js";
+import { PaymentLabel } from "../ui/presentation.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import Dialog from "../components/Dialog.jsx";
 
@@ -33,11 +34,6 @@ export default function CashHistory() {
         subtitle="Recaudación por turno y conciliación del efectivo físico, sin sumar otros medios como faltante."
       />
       <main className="sf-workspace">
-        <p className="sf-notice">
-          Los turnos nuevos de la demo inician con fondo cero. Los turnos
-          heredados pueden no tener desglose ni asignación de cobros confiable;
-          se muestran sin completar datos inventados.
-        </p>
         {state.error && (
           <p className="sf-notice sf-error" role="alert">
             {state.error}{" "}
@@ -151,7 +147,7 @@ export default function CashHistory() {
                 {Object.entries(selected.totales_por_medio || {}).map(
                   ([method, amount]) => (
                     <div key={method}>
-                      <dt>{paymentLabels[method] || method}</dt>
+                      <dt><PaymentLabel method={method} /></dt>
                       <dd>{money(amount)}</dd>
                     </div>
                   ),

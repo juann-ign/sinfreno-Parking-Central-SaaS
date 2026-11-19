@@ -37,6 +37,11 @@ Al restaurar una sesión se consulta `/auth/me` para consumir rol, permisos y su
 ## Operación y recuperación
 
 - Ingreso: patente + Enter, con categoría y sector preseleccionados; requiere una caja abierta. `N` enfoca ingreso y `/` enfoca búsqueda cuando no se está escribiendo ni en un diálogo.
+- La patente de ingreso es un campo controlado con `useState`: valida por tecla y al enviar. Auto/camioneta: `ABC123` o `AB123CD`; moto: `123ABC` o `A123BCD`. Convierte a mayúsculas y admite espacios/guiones al pegar. Otros caracteres quedan visibles con un aviso junto al campo; botón y Enter se bloquean hasta completar un formato válido para la categoría. La búsqueda admite fragmentos y permite recuperar los identificadores históricos.
+- Categorías con selección directa, icono y texto; medios de pago con iconos compartidos en cotización, historial, caja y comprobantes. Se retiraron instrucciones de demo/atajos y detalles técnicos de las pantallas. Se conservan avisos operativos, reglas de cobro y aclaraciones bancarias/fiscales.
+
+Los formatos estándar se basan en las disposiciones DNRPA [411/2015](https://www.argentina.gob.ar/normativa/nacional/disposici%C3%B3n-411-2015-252063/texto) y [40/2016](https://www.argentina.gob.ar/normativa/nacional/disposici%C3%B3n-40-2016-258787/texto). Se comprueba la sintaxis, no la existencia de un dominio en el registro.
+
 - Salida: seleccionar estadía, consultar cotización del servidor, elegir medio y confirmar el importe visible. Si vence, se solicita cotizar otra vez. La UI distingue datos heredados y permite al ADMIN revisar una fecha con fuente verificable.
 - Los comandos de ingreso, cobro, apertura y cierre conservan una clave de intento, su cuerpo y los IDs concretos antes de enviarse. Ante timeout/red/5xx se ofrece recuperar el resultado o reenviar el mismo intento. No se genera otro comando del mismo tipo mientras el anterior sea incierto. No hay soporte offline con conciliación automática.
 - Los intentos se guardan en `localStorage` por usuario y sucursal. No limpiar el almacenamiento ante una respuesta incierta. Para cuentas simultáneas usar perfiles de navegador independientes. Las claves no conceden autorización: el servidor verifica identidad, autoría y sucursal.
@@ -54,9 +59,9 @@ Se mantienen las reglas recomendadas de ESLint, React Hooks y Fast Refresh, junt
 
 ## E2E opcionales con backend real
 
-Playwright 1.65.1 está fijado en manifest/lock. Los cuatro casos verifican el
+Playwright 1.65.1 está fijado en manifest/lock. Los cinco casos verifican el
 recorrido ingreso/cobro/comprobante/F5, permisos y sucursal en contextos
-independientes, impresión y recuperación de una respuesta perdida después del
+independientes, validación por tecla/categoría y bloqueo de Enter, impresión y recuperación de una respuesta perdida después del
 commit real. No fabrican respuestas exitosas ni usan esperas fijas.
 
 La ejecución exige opt-in y una instancia **descartable separada** en loopback
@@ -75,7 +80,7 @@ npm.cmd run test:e2e
 ```
 
 Puede usarse `SINFRENO_E2E_CHANNEL=msedge` en lugar de la ruta, o el Chromium
-compatible ya instalado por Playwright. Sin los dos opt-in se omiten los cuatro
+compatible ya instalado por Playwright. Sin los dos opt-in se omiten los cinco
 casos antes de abrir el navegador. La CI normal mantiene sus controles; estos
 E2E se ejecutaron por separado contra el QA local. No se guardan storageState,
 trazas, videos ni capturas automáticas. Los artefactos de fallo quedan en

@@ -7,9 +7,11 @@ cocheras, con permisos y datos separados por sucursal.
 La release de portfolio usa datos ficticios. El 18/11/2026 se recorrió la
 aplicación en Edge con backend real: teclado, dos terminales, sucursales,
 recuperación, PDF y estilos de impresión, en notebook, escritorio y zoom nativo
-200%. Se corrigieron dos defectos de comprobantes y se añadieron cuatro E2E.
-La CI aprobó 149 pruebas de backend, 40 de frontend y el ensayo productivo
-HTTPS/WSS. Falta validar la impresora y el circuito con una cochera real;
+200%. Se corrigieron dos defectos de comprobantes. El ingreso ahora valida el
+formato argentino por categoría y ofrece selección visual de vehículos y pagos.
+La base publicada aprobó 149 pruebas de backend y el ensayo productivo HTTPS/WSS;
+el frontend actual pasó 43 pruebas y cinco E2E locales.
+Falta validar la impresora y el circuito con una cochera real;
 no hay demo pública ni piloto en uso. El
 [registro de continuidad](docs/recovery/RELEASE_2026-11-15.md) conserva la evidencia.
 
@@ -123,7 +125,7 @@ y `scripts/` (entorno descartable, backup y ensayo de proxy).
 ## Verificación
 
 Verificación actual: **149 tests backend, cero skips**, PostgreSQL real;
-**40 tests frontend**, lint/build y auditorías aprobados. Se conserva la evidencia
+**43 tests frontend**, lint/build y auditorías aprobados. Se conserva la evidencia
 de smoke HTTP/WS, actualización representativa y backup/restauración con 11 tablas.
 La variante de imagen `INSTALL_DEV=false` y `APP_ENV=production` se probó desde
 base vacía, sin cuentas automáticas ni paquetes de test, con autenticación,
@@ -143,14 +145,14 @@ Pop-Location
 ```
 
 La suite completa backend usa fixtures que reinician su base: la CI la ejecuta
-en un PostgreSQL nuevo. No ejecutarla sobre la demo conservada. Los cuatro
+en un PostgreSQL nuevo. No ejecutarla sobre la demo conservada. Los cinco
 [E2E opcionales](frontend/README.md#e2e-opcionales-con-backend-real) usan la
 instancia QA separada y conservan su historial. En PowerShell usar `npm.cmd` evita cambiar
 ExecutionPolicy. [CI](.github/workflows/quality.yml) ejecuta estas verificaciones
 con PostgreSQL en GitHub. El [run 44392068185](https://github.com/juann-ign/sinfreno-Parking-Central-SaaS/actions/runs/44392068185)
 aprobó los tres jobs del commit `e60c66a` desde checkout limpio, incluido el
 backend productivo sin herramientas de test. Ese resultado corresponde a ese
-checkpoint de código. El QA local adicional aprobó cuatro E2E reales y ocho
+checkpoint de código. El QA local adicional aprobó cinco E2E reales y ocho
 pruebas PDF. La revisión al volver y la impresora física figuran en una única
 checklist del registro.
 

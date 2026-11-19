@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowUpRight,
-  CircleHelp,
+  Clock,
   History,
   LogOut,
   RefreshCw,
@@ -344,7 +343,6 @@ export default function Dashboard({ onLogout }) {
       <main className="sf-workspace">
         <div className="sf-workspace-title">
           <div>
-            <span className="sf-eyebrow">Operación de la sucursal</span>
             <h1>Entradas y salidas</h1>
           </div>
           <div className="sf-cash-status">
@@ -453,7 +451,6 @@ export default function Dashboard({ onLogout }) {
           <section className="sf-card sf-active-list">
             <header className="sf-section-heading">
               <div>
-                <span className="sf-eyebrow">Vehículos en planta</span>
                 <h2>Buscar y cotizar</h2>
               </div>
               <span className="sf-hint">
@@ -526,13 +523,8 @@ export default function Dashboard({ onLogout }) {
           <OwnReceipts version={version} onView={setReceipt} />
         )}
         <footer className="sf-footer">
-          <CircleHelp size={16} />
-          <span>
-            Atajos: <kbd>N</kbd> nuevo ingreso · <kbd>/</kbd> buscar. Consultas
-            y cotizaciones no registran un cobro.
-          </span>
-          <span>
-            Hora de Buenos Aires · ARS <ArrowUpRight size={14} />
+          <span className="sf-icon-label">
+            <Clock size={14} aria-hidden="true" /> Hora de Buenos Aires · ARS
           </span>
         </footer>
       </main>
