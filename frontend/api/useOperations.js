@@ -35,7 +35,7 @@ export function useOperations(scope, onSuccess) {
         store.complete(attempt);
         setPending(store.list());
         if (localStorage.getItem("token") === token)
-          onSuccess(attempt.type, data);
+          onSuccess(attempt.type, data, mode);
         return data;
       } catch (failure) {
         if (keepAttemptAfterFailure(failure, mode)) {

@@ -11,6 +11,7 @@ export default function QuotePanel({
   error,
   cash,
   operations,
+  printOnRegister,
   onRefresh,
   onConfirm,
   onClose,
@@ -189,7 +190,7 @@ export default function QuotePanel({
                   >
                     {operations.busy
                       ? "Registrando…"
-                      : `Registrar cobro de ${money(quote.monto)}`}
+                      : `Registrar cobro de ${money(quote.monto)}${printOnRegister ? " e imprimir" : ""}`}
                   </button>
                 )}
                 <span>

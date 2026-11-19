@@ -18,14 +18,15 @@ export function apiDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
-export function dateTime(value) {
+export function dateTime(value, { showSeconds = false } = {}) {
   if (!value) return "—";
   const date = apiDate(value);
   return date
     ? new Intl.DateTimeFormat("es-AR", {
         timeZone: "America/Argentina/Buenos_Aires",
         dateStyle: "short",
-        timeStyle: "short",
+        timeStyle: showSeconds ? "medium" : "short",
+        hourCycle: "h23",
       }).format(date)
     : `${String(value).replace("T", " ")} · fecha histórica sin zona confirmada`;
 }

@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 from jinja2 import Environment, StrictUndefined
 from xhtml2pdf import pisa
 from xhtml2pdf.files import ResourceAccessPolicy
+from app.services.receipt_details import duracion_estadia
 
 
 class PDFResourceBlocked(ValueError):
@@ -16,26 +17,38 @@ class PDFResourceBlocked(ValueError):
 TICKET_TEMPLATE = """<!doctype html>
 <html><head><meta charset="utf-8"><style>
 @page { size: a6 portrait; margin: 8mm; }
-body { font-family: Helvetica, Arial, sans-serif; color: #172033; font-size: 9.5pt; line-height: 1.2; }
-.brand { font-size: 18pt; color: #4338ca; font-weight: bold; }
+body { font-family: Helvetica, Arial, sans-serif; color: #111; font-size: 9.5pt; line-height: 1.2; }
+.branch { font-size: 14pt; font-weight: bold; }
+.status { text-align: center; font-size: 9pt; font-weight: bold; margin-bottom: 5pt; }
+.status-letter { text-align: center; font-size: 16pt; font-weight: bold; }
 h1 { font-size: 13pt; margin: 5pt 0; }
 p { margin: 5pt 0 0; }
-.muted { color: #566075; font-size: 8pt; line-height: 1.2; }
+.note { font-size: 9pt; line-height: 1.2; }
+.consumer { font-size: 9pt; font-weight: bold; }
 .rule { border-bottom: 1pt solid #d8deeb; padding-bottom: 5pt; margin-bottom: 6pt; }
 .plate { font-size: 20pt; font-weight: bold; }
 td { padding: 3pt 0; vertical-align: top; }
-.amount { font-size: 20pt; font-weight: bold; color: #4338ca; }
+.amount { font-size: 18pt; font-weight: bold; }
+.barcode-cell { height: 13mm; vertical-align: middle; text-align: center; }
+.barcode-code { padding: 1pt 0 2pt; text-align: center; font-family: Courier; }
 </style></head><body>
-<div class="rule"><div class="brand">Sinfreno</div><div>{{ sucursal }}</div>
-<h1>{{ titulo }}</h1><div class="muted">Operación #{{ id }} · {{ sector }}</div></div>
+{% if es_salida %}<div class="status-letter">X</div>
+<div class="status">DOCUMENTO NO VALIDO COMO FACTURA</div>{% endif %}
+<div class="rule"><div class="branch">{{ sucursal }}</div>
+{% if direccion %}<div>{{ direccion }}</div>{% endif %}
+{% if telefono %}<div>Tel. {{ telefono }}</div>{% endif %}
+<h1>{{ titulo }}</h1><div>Operación #{{ id }} · {{ sector }}</div></div>
 <div class="plate">{{ patente }}</div><div>{{ tipo }}</div>
 <table width="100%"><tr><td width="25%">Ingreso</td><td width="75%">{{ entrada }}</td></tr>
-{% if es_salida %}<tr><td>Egreso</td><td>{{ salida }}</td></tr>{% endif %}</table>
+{% if es_salida %}<tr><td>Egreso</td><td>{{ salida }}</td></tr>
+{% if duracion %}<tr><td>Duración</td><td>{{ duracion }}</td></tr>{% endif %}{% endif %}</table>
 {% if es_salida %}<div class="rule"><div>Cobro registrado</div><div class="amount">ARS {{ monto }}</div>
 <div>Medio registrado: {{ metodo_pago }}</div></div>
-{% else %}<p class="muted">Este comprobante registra el ingreso. El importe se cotiza antes de confirmar el egreso.</p>{% endif %}
-<p class="muted">Horarios nuevos: Argentina (UTC−03). Los horarios heredados sin zona confirmada se identifican expresamente.</p>
-<p class="muted">Comprobante interno de estacionamiento. No acredita una transacción bancaria ni es una factura fiscal.</p>
+<p class="note">El medio registrado no acredita una transacción bancaria.</p>
+{% else %}<table width="100%"><tr><td class="barcode-cell"><pdf:barcode type="code128" value="SF-{{ id }}" barwidth="0.375mm" barheight="10mm" humanreadable="0"></pdf:barcode></td></tr>
+<tr><td class="barcode-code">SF-{{ id }}</td></tr></table>
+<p class="note">Conservá este ticket para la salida. Comprobante de ingreso sin valor fiscal.</p>{% endif %}
+<p class="consumer">Orientación al Consumidor<br/>Provincia de Buenos Aires · 148</p>
 </body></html>"""
 
 _environment = Environment(autoescape=True, undefined=StrictUndefined)
@@ -55,7 +68,7 @@ def _fecha(utc_value, legacy_value):
     if value.tzinfo is None:
         return value.strftime("%d/%m/%Y %H:%M") + " (hora heredada sin zona confirmada)"
     local = value.astimezone(ZoneInfo("America/Argentina/Buenos_Aires"))
-    return local.strftime("%d/%m/%Y %H:%M") + " (Argentina)"
+    return local.strftime("%d/%m/%Y %H:%M:%S") + " (Argentina)"
 
 
 def _ars(value):
@@ -70,14 +83,17 @@ def _ars(value):
 
 def render_ticket_html(estadia):
     es_salida = estadia.estado == "FINALIZADO"
+    branch = estadia.torre.sucursal
     return _environment.from_string(TICKET_TEMPLATE).render(
         titulo="Comprobante de egreso" if es_salida else "Comprobante de ingreso",
         id=estadia.id, patente=estadia.patente, tipo=estadia.tipo_vehiculo,
         entrada=_fecha(getattr(estadia, "fecha_entrada_utc", None), estadia.fecha_entrada),
         salida=_fecha(getattr(estadia, "fecha_salida_utc", None), estadia.fecha_salida),
+        duracion=duracion_estadia(getattr(estadia, "fecha_entrada_utc", None), getattr(estadia, "fecha_salida_utc", None)),
         monto=_ars(estadia.monto) if es_salida else "",
         metodo_pago=estadia.metodo_pago or "Sin dato heredado",
-        sucursal=estadia.torre.sucursal.nombre, sector=f"Sector {estadia.torre.numero}",
+        sucursal=branch.nombre, sector=f"Sector {estadia.torre.numero}",
+        direccion=getattr(branch, "direccion", None), telefono=getattr(branch, "telefono", None),
         es_salida=es_salida,
     )
 

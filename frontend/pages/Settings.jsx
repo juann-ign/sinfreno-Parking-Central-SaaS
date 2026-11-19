@@ -4,15 +4,22 @@ import { useAuth } from "../src/context/useAuth.js";
 import { errorMessage } from "../ui/format.js";
 import PageHeader from "../components/PageHeader.jsx";
 
+function settingsValues(branch) {
+  return {
+    nombre: branch.nombre,
+    direccion: branch.direccion ?? "",
+    telefono: branch.telefono ?? "",
+    tarifa_auto: String(branch.tarifa_auto ?? "1000.00"),
+    tarifa_moto: String(branch.tarifa_moto ?? "500.00"),
+    tarifa_camioneta: String(branch.tarifa_camioneta ?? "1500.00"),
+    tiempo_cortesia_min: String(branch.tiempo_cortesia_min ?? 0),
+    fraccion_minutos: String(branch.fraccion_minutos ?? 15),
+  };
+}
+
 function SettingsForm({ user, login, retrySession }) {
-  const [form, setForm] = useState(() => ({
-    nombre: user.sucursal.nombre,
-    tarifa_auto: String(user.sucursal.tarifa_auto ?? "1000.00"),
-    tarifa_moto: String(user.sucursal.tarifa_moto ?? "500.00"),
-    tarifa_camioneta: String(user.sucursal.tarifa_camioneta ?? "1500.00"),
-    tiempo_cortesia_min: user.sucursal.tiempo_cortesia_min ?? 0,
-    fraccion_minutos: user.sucursal.fraccion_minutos ?? 15,
-  }));
+  const [form, setForm] = useState(() => settingsValues(user.sucursal));
+  const saved = useRef(form);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -36,15 +43,16 @@ function SettingsForm({ user, login, retrySession }) {
     const token = localStorage.getItem("token");
     const isCurrent = () => mounted.current && localStorage.getItem("token") === token;
     try {
-      await api.patch(
-        "/parking/config",
-        {
-          ...form,
-          tiempo_cortesia_min: Number(form.tiempo_cortesia_min),
-          fraccion_minutos: Number(form.fraccion_minutos),
-        },
-        { sessionToken: token, timeout: 12000 },
+      const changes = Object.fromEntries(
+        Object.entries(form).filter(([key, value]) => value !== saved.current[key]),
       );
+      if ("tiempo_cortesia_min" in changes) changes.tiempo_cortesia_min = Number(form.tiempo_cortesia_min);
+      if ("fraccion_minutos" in changes) changes.fraccion_minutos = Number(form.fraccion_minutos);
+      const { data } = await api.patch("/parking/config", changes, { sessionToken: token, timeout: 12000 });
+      if (isCurrent()) {
+        saved.current = settingsValues(data);
+        setForm(saved.current);
+      }
     } catch (failure) {
       if (isCurrent()) setError(errorMessage(failure,
         "No pudimos confirmar el guardado. Consultá los valores antes de reintentar.",
@@ -85,6 +93,34 @@ function SettingsForm({ user, login, retrySession }) {
       />
       <main className="sf-workspace">
         <form onSubmit={save} className="sf-settings-grid">
+          <section className="sf-card sf-form-card sf-ticket-contact">
+            <h2>Datos del ticket</h2>
+            <p className="sf-help">La dirección y el teléfono son opcionales. También se actualizan en las reimpresiones.</p>
+            <div className="sf-ticket-contact-fields">
+              <label className="sf-field">
+                Nombre de la sucursal
+                <input
+                  required maxLength={100} value={form.nombre} disabled={busy}
+                  onChange={(event) => setForm({ ...form, nombre: event.target.value })}
+                />
+              </label>
+              <label className="sf-field">
+                Dirección de la cochera
+                <input
+                  maxLength={200} value={form.direccion} disabled={busy}
+                  onChange={(event) => setForm({ ...form, direccion: event.target.value })}
+                />
+              </label>
+              <label className="sf-field">
+                Teléfono de contacto
+                <input
+                  type="tel" maxLength={40} pattern=".*[0-9].*" title="Incluí al menos un dígito."
+                  value={form.telefono} disabled={busy}
+                  onChange={(event) => setForm({ ...form, telefono: event.target.value })}
+                />
+              </label>
+            </div>
+          </section>
           <section className="sf-card sf-form-card">
             <h2>Tarifas por categoría</h2>
             <p className="sf-help">
@@ -115,18 +151,6 @@ function SettingsForm({ user, login, retrySession }) {
           </section>
           <section className="sf-card sf-form-card">
             <h2>Reglas operativas</h2>
-            <label className="sf-field">
-              Nombre de la sucursal
-              <input
-                required
-                maxLength={100}
-                value={form.nombre}
-                disabled={busy}
-                onChange={(event) =>
-                  setForm({ ...form, nombre: event.target.value })
-                }
-              />
-            </label>
             <label className="sf-field">
               Cortesía inclusiva, en minutos
               <input

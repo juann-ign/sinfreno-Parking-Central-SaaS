@@ -14,8 +14,7 @@
   border-bottom: 1px solid #e2e6ef;
   flex-wrap: wrap;
 }
-.sf-brand,
-.sf-receipt-brand {
+.sf-brand {
   font-family: Arvo, Georgia, serif;
   font-size: 27px;
   font-weight: 700;
@@ -23,8 +22,7 @@
   text-decoration: none;
   color: #172033;
 }
-.sf-brand span,
-.sf-receipt-brand span {
+.sf-brand span {
   color: #4f46e5;
   font-family: inherit;
 }
@@ -122,6 +120,19 @@
 }
 .sf-live {
   color: #147452;
+}
+.sf-print-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.sf-print-setting input {
+  width: 18px;
+  height: 18px;
+  accent-color: #4f46e5;
 }
 .sf-muted {
   color: #68738a;
@@ -731,9 +742,40 @@ kbd {
   margin: auto;
   padding: 12px 0;
 }
-.sf-receipt > p:first-of-type {
+.sf-receipt-header {
   font-size: 13px;
-  color: #69758b;
+  color: #48546b;
+  overflow-wrap: anywhere;
+}
+.sf-receipt-branch {
+  color: #172033;
+  font-size: 21px;
+  font-weight: 700;
+}
+.sf-receipt-status {
+  display: grid;
+  justify-items: center;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.sf-receipt-status strong {
+  font-size: 20px;
+}
+.sf-receipt-vehicle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: center;
+  font-size: 14px;
+}
+.sf-receipt-footer {
+  font-size: 13px;
+}
+.sf-receipt-consumer {
+  margin-top: 8px;
+  font-weight: 700;
 }
 .sf-receipt > .sf-plate {
   font-size: 30px;
@@ -745,6 +787,25 @@ kbd {
 .sf-receipt dd {
   max-width: 65%;
   font-size: 13px;
+}
+.sf-receipt .sf-total dd {
+  font-size: 20px;
+}
+.sf-ticket-code {
+  margin: 3mm 0;
+  text-align: center;
+  color: black;
+  break-inside: avoid;
+}
+.sf-ticket-code svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.sf-ticket-code figcaption {
+  font: 10pt/1.2 monospace;
+  margin-top: 1mm;
 }
 .session-recovery {
   max-width: 560px;
@@ -788,6 +849,14 @@ kbd {
 }
 .sf-settings-save {
   grid-column: 1 / -1;
+}
+.sf-ticket-contact {
+  grid-column: 1 / -1;
+}
+.sf-ticket-contact-fields {
+  display: grid;
+  gap: 0 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
 .sf-brand-readonly {
   display: flex;
@@ -1010,6 +1079,14 @@ kbd {
   }
 }
 @media print {
+  /* Use the paper selected in the driver: a named page avoids affecting other views. */
+  @page sinfreno-ticket {
+    size: auto;
+    margin: 0;
+  }
+  body:has(#sinfreno-print-receipt) {
+    page: sinfreno-ticket;
+  }
   /* Remove unrelated layout so the dashboard cannot add blank receipt pages. */
   body:has(#sinfreno-print-receipt)
     *:not(:has(#sinfreno-print-receipt)):not(#sinfreno-print-receipt):not(
@@ -1028,13 +1105,69 @@ kbd {
   #sinfreno-print-receipt {
     position: static;
     box-sizing: border-box;
-    width: 80mm;
-    max-width: 100%;
-    margin: 0;
-    padding: 6mm;
+    width: calc(100% - 6mm);
+    max-width: 72mm;
+    margin: 0 auto;
+    padding: 2mm 0 3mm;
     background: white;
     color: black;
     break-inside: avoid;
+  }
+  #sinfreno-print-receipt * {
+    font-family: Arial, sans-serif;
+    color: black;
+    line-height: 1.2;
+  }
+  #sinfreno-print-receipt .sf-receipt-status {
+    font-size: 9pt;
+    margin-bottom: 2mm;
+  }
+  #sinfreno-print-receipt .sf-receipt-header {
+    font-size: 9pt;
+  }
+  #sinfreno-print-receipt .sf-receipt-branch {
+    font-size: 13pt;
+    margin-bottom: 0.8mm;
+  }
+  #sinfreno-print-receipt .sf-plate {
+    font: bold 18pt/1.1 monospace;
+    margin: 2mm 0 0.8mm;
+    overflow-wrap: anywhere;
+  }
+  #sinfreno-print-receipt .sf-receipt-vehicle {
+    font-size: 9pt;
+    gap: 2mm;
+  }
+  #sinfreno-print-receipt .sf-icon-label svg {
+    display: none;
+  }
+  #sinfreno-print-receipt dl {
+    margin: 2mm 0;
+    padding: 1mm 0;
+    border-color: black;
+  }
+  #sinfreno-print-receipt dl > div {
+    gap: 1.5mm;
+    padding: 0.8mm 0;
+    font-size: 9pt;
+  }
+  #sinfreno-print-receipt dd {
+    font-size: inherit;
+    overflow-wrap: anywhere;
+  }
+  #sinfreno-print-receipt .sf-total {
+    border-color: black;
+    margin-top: 1mm;
+    padding-top: 1.5mm !important;
+  }
+  #sinfreno-print-receipt .sf-total dd {
+    font-size: 13pt;
+  }
+  #sinfreno-print-receipt .sf-receipt-footer {
+    font-size: 9pt;
+  }
+  #sinfreno-print-receipt .sf-receipt-consumer {
+    margin-top: 1.5mm;
   }
   .sf-dialog:has(#sinfreno-print-receipt) {
     position: static;

@@ -5,6 +5,8 @@ import { apiDate, dateTime, elapsedInfo, money, stayElapsedInfo } from "./format
 test("legacy dates are labelled instead of silently acquiring UTC", () => {
   assert.equal(apiDate("2026-11-11T12:00:00"), null);
   assert.match(dateTime("2026-11-11T12:00:00"), /sin zona confirmada/);
+  assert.match(dateTime("2026-11-12T00:32:00Z"), /21:32/);
+  assert.match(dateTime("2026-11-12T00:32:47Z", { showSeconds: true }), /21:32:47/);
   assert.equal(
     apiDate("2026-11-11T09:00:00-03:00").toISOString(),
     "2026-11-11T12:00:00.000Z",

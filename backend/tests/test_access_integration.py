@@ -241,6 +241,27 @@ def test_scoped_lists_configuration_users_and_branding(client, data):
         assert db.get(m.Sucursal, data["branches"][0]).empresa.color_primario != "#abcdef"
 
 
+def test_ticket_contact_is_optional_local_and_editable_only_by_admin(client):
+    url = API + "/parking/config"
+    admin, operator, other = [headers(client, name) for name in ("admin_a1", "op_a1", "admin_a2")]
+    existing = client.get(url, headers=admin).json()
+    assert existing["direccion"] is None and existing["telefono"] is None
+    contact = {"direccion": "  Calle   de prueba 123  ", "telefono": "+54 (221) 000-0000 int. 2"}
+    assert client.patch(url, headers=operator, json=contact).status_code == 403
+    result = client.patch(url, headers=admin, json=contact)
+    assert result.status_code == 200
+    assert result.json()["direccion"] == "Calle de prueba 123"
+    assert result.json()["telefono"] == contact["telefono"]
+    assert client.get(API + "/auth/me", headers=operator).json()["sucursal"]["direccion"] == "Calle de prueba 123"
+    assert client.get(url, headers=other).json()["telefono"] is None
+    for invalid in ({"direccion": "x" * 201}, {"telefono": "1" * 41}, {"telefono": "sin número"},
+                    {"direccion": "Calle\x00 4"}):
+        assert client.patch(url, headers=admin, json=invalid).status_code == 422
+    partial = client.patch(url, headers=admin, json={"direccion": "  "}).json()
+    assert partial["direccion"] is None and partial["telefono"] == contact["telefono"]
+    assert client.patch(url, headers=admin, json={"telefono": None}).json()["telefono"] is None
+
+
 def test_operational_vs_financial_reads_and_cash_management(client, data):
     op = headers(client, "op_a1")
     summary = client.get(API + "/stats/summary", headers=op)
@@ -276,6 +297,8 @@ def test_same_plate_independent_branch_type_and_checkout(client, data):
             "patente": "SHARED1", "tipo": kind, "torre_id": data["towers"][i]}, caja_id=i + 1)
         assert response.status_code == 200, response.text
         assert response.json()["tipo_vehiculo"] == kind
+        assert response.json()["sucursal_nombre"] == ["Alpha Centro", "Alpha Norte", "Beta Centro"][i]
+        assert response.json()["torre_numero"] is not None
         results.append(response.json()["id"])
     duplicate = enter(client, headers(client, "op_a1"), {
         "patente": "SHARED1", "tipo": "MOTO", "torre_id": data["towers"][0]})
@@ -302,6 +325,8 @@ def test_pdf_authenticated_scoped_and_operation_permission(client, data):
     own_pdf = client.get(API + f"/parking/{own}/pdf", headers=op)
     assert own_pdf.status_code == 200, own_pdf.text[:100]
     assert own_pdf.content.startswith(b"%PDF") and own_pdf.headers["content-type"] == "application/pdf"
+    assert client.get(API + f"/parking/{own}/pdf?tipo=INGRESO", headers=op).status_code == 409
+    assert client.get(API + f"/parking/{own}/pdf?tipo=SALIDA", headers=op).status_code == 200
     for stay in (sister, foreign, 999999):
         assert client.get(API + f"/parking/{stay}/pdf", headers=op).status_code == 404
     assert client.get(API + f"/parking/{own}/pdf", headers=headers(client, "history")).status_code == 200

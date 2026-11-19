@@ -9,7 +9,7 @@ const categories = [
   ["CAMIONETA", "Camioneta"],
 ];
 
-export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
+export default function EntryForm({ towers, cashId, onSubmit, busy, pending, printOnRegister }) {
   const [plate, setPlate] = useState("");
   const [category, setCategory] = useState("AUTO");
   const [tower, setTower] = useState("");
@@ -39,7 +39,9 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
     });
     if (result) {
       setPlate("");
-      requestAnimationFrame(() => plateRef.current?.focus());
+      requestAnimationFrame(() => {
+        if (!document.querySelector("dialog[open]")) plateRef.current?.focus();
+      });
     }
   };
   return (
@@ -116,7 +118,7 @@ export default function EntryForm({ towers, cashId, onSubmit, busy, pending }) {
             disabled={disabled || !validPlate}
             type="submit"
           >
-            {busy ? "Registrando…" : "Registrar ingreso"}
+            {busy ? "Registrando…" : printOnRegister ? "Ingresar e imprimir" : "Registrar ingreso"}
             <ArrowRight size={18} />
           </button>
         </fieldset>

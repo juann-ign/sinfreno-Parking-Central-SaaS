@@ -59,10 +59,13 @@ Se mantienen las reglas recomendadas de ESLint, React Hooks y Fast Refresh, junt
 
 ## E2E opcionales con backend real
 
-Playwright 1.65.1 está fijado en manifest/lock. Los cinco casos verifican el
-recorrido ingreso/cobro/comprobante/F5, permisos y sucursal en contextos
-independientes, validación por tecla/categoría y bloqueo de Enter, impresión y recuperación de una respuesta perdida después del
-commit real. No fabrican respuestas exitosas ni usan esperas fijas.
+Playwright 1.65.1 está fijado en manifest/lock. Los seis casos recorren ingreso,
+búsqueda por código y cobro, permisos y sucursales independientes, validación
+de patente, apertura de impresión por confirmación, reimpresión, estilos de
+impresión y recuperación tras perder la respuesta de un ingreso real. El ensayo
+de impresión cuenta invocaciones a la API del navegador y verifica el retorno
+del foco. El papel, el lector y el tiempo de atención se prueban en el puesto.
+La [guía de mostrador](../docs/comprobantes-la-plata.md) detalla el alcance.
 
 La ejecución exige opt-in y una instancia **descartable separada** en loopback
 puerto 15180, con el seed ficticio y una caja abierta en Centro. Rechaza el puerto
@@ -80,7 +83,7 @@ npm.cmd run test:e2e
 ```
 
 Puede usarse `SINFRENO_E2E_CHANNEL=msedge` en lugar de la ruta, o el Chromium
-compatible ya instalado por Playwright. Sin los dos opt-in se omiten los cinco
+compatible ya instalado por Playwright. Sin los dos opt-in se omiten los seis
 casos antes de abrir el navegador. La CI normal mantiene sus controles; estos
 E2E se ejecutaron por separado contra el QA local. No se guardan storageState,
 trazas, videos ni capturas automáticas. Los artefactos de fallo quedan en

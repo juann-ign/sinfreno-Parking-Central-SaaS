@@ -12,6 +12,7 @@ from app.models import db_models as m, schemas
 from app.services.audit_service import registrar_evento
 from app.services.billing import CATEGORIES, calcular_cobro, validate_rules
 from app.services.caja_service import exigir_caja_abierta
+from app.services.receipt_details import duracion_estadia
 from app.services.idempotency import begin_operation, lock_branch, operation_error, save_operation, rollback_or_record_rejection
 
 QUOTE_TTL_SECONDS = 120
@@ -19,6 +20,12 @@ QUOTE_TTL_SECONDS = 120
 
 def respuesta_estadia(stay):
     response = schemas.EstadiaOut.model_validate(stay).model_dump(mode="json")
+    branch = stay.torre.sucursal
+    response.update(
+        torre_numero=stay.torre.numero, sucursal_nombre=branch.nombre,
+        sucursal_direccion=branch.direccion, sucursal_telefono=branch.telefono,
+        duracion_estadia=duracion_estadia(stay.fecha_entrada_utc, stay.fecha_salida_utc),
+    )
     try:
         rules, origin = reglas_de_estadia(stay)
     except HTTPException:

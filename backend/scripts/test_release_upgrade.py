@@ -22,7 +22,7 @@ from app.core.config import settings
 from scripts.access_test_data import require_disposable_database
 
 OLD = "d24ac9f31e02"
-NEW = "e31b19ac0284"
+NEW = "bc42ad61837e"
 LEGACY_ENTRY = datetime(2026, 10, 1, 10, 11, 12)
 LEGACY_EXIT = datetime(2026, 10, 1, 12, 13, 14)
 CREATED = []
@@ -135,7 +135,10 @@ def verify_valid_upgrade(url):
             assert box["fecha_apertura_utc"] is None and box["fecha_cierre_utc"] is None
             assert box["notas"] == "Nota heredada controlada"
             assert box["monto_esperado"] == Decimal("12.35") and box["diferencia"] == Decimal("-0.01")
-            assert db.execute(text("SELECT tarifa_auto FROM sucursales WHERE id=:id"), {"id": ids["branch"]}).scalar_one() == Decimal("1000.13")
+            branch = db.execute(text("SELECT tarifa_auto, direccion, telefono FROM sucursales WHERE id=:id"),
+                                {"id": ids["branch"]}).mappings().one()
+            assert branch["tarifa_auto"] == Decimal("1000.13")
+            assert branch["direccion"] is None and branch["telefono"] is None
         inspector = inspect(engine)
         money_column = next(column for column in inspector.get_columns("estadias") if column["name"] == "monto")
         assert money_column["type"].precision == 14 and money_column["type"].scale == 2

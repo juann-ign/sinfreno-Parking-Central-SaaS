@@ -49,6 +49,8 @@ def test_legacy_naive_time_is_labelled_without_utc_reinterpretation():
 @pytest.mark.parametrize("legacy", [False, True], ids=["utc", "legacy"])
 def test_a6_receipt_fits_one_page_without_losing_details_or_notices(closed, legacy):
     branch = "Estacionamiento Central de Avenida del Libertador - Sucursal Norte"
+    address = "Calle de prueba 1234 entre Avenida del Parque y Calle de la Estación, La Plata"
+    phone = "0221 000 0000"
     stay = ticket(
         id=12345, patente="ABC1234", tipo_vehiculo="CAMIONETA",
         estado="FINALIZADO" if closed else "ACTIVO",
@@ -59,7 +61,7 @@ def test_a6_receipt_fits_one_page_without_losing_details_or_notices(closed, lega
             datetime(2026, 11, 11, 13, tzinfo=timezone.utc)
             if closed and not legacy else None
         ),
-        torre=SimpleNamespace(numero=7, sucursal=SimpleNamespace(nombre=branch)),
+        torre=SimpleNamespace(numero=7, sucursal=SimpleNamespace(nombre=branch, direccion=address, telefono=phone)),
     )
     document = PdfReader(BytesIO(pdf_service.generar_pdf_ticket(stay)))
     assert len(document.pages) == 1
@@ -68,23 +70,26 @@ def test_a6_receipt_fits_one_page_without_losing_details_or_notices(closed, lega
     assert float(page.mediabox.height) == pytest.approx(419.53, abs=0.1)
     text = " ".join(page.extract_text().split())
     for detail in (
-        "Sinfreno", branch, "Operación #12345", "Sector 7", "ABC1234", "CAMIONETA",
-        "Horarios nuevos: Argentina", "UTC", "03",
-        "Los horarios heredados sin zona confirmada se identifican expresamente.",
-        "Comprobante interno de estacionamiento. No acredita una transacción bancaria ni es una factura fiscal.",
+        branch, address, f"Tel. {phone}", "Operación #12345", "Sector 7", "ABC1234", "CAMIONETA",
+        "Orientación al Consumidor Provincia de Buenos Aires · 148",
     ):
         assert detail in text
-    entry_time = "11/11/2026 12:00 (hora heredada sin zona confirmada)" if legacy else "11/11/2026 09:00 (Argentina)"
+    entry_time = "11/11/2026 12:00 (hora heredada sin zona confirmada)" if legacy else "11/11/2026 09:00:00 (Argentina)"
     assert f"Ingreso {entry_time}" in text
     if closed:
-        exit_time = "11/11/2026 13:00 (hora heredada sin zona confirmada)" if legacy else "11/11/2026 10:00 (Argentina)"
+        exit_time = "11/11/2026 13:00 (hora heredada sin zona confirmada)" if legacy else "11/11/2026 10:00:00 (Argentina)"
         assert "Comprobante de egreso" in text
         assert f"Egreso {exit_time}" in text
+        assert ("Duración 1 h 00 min" in text) == (not legacy)
         assert "Cobro registrado ARS 1.500,00 Medio registrado: QR" in text
+        assert "X DOCUMENTO NO VALIDO COMO FACTURA" in text
+        assert "El medio registrado no acredita una transacción bancaria." in text
+        assert "SF-12345" not in text
         assert "Comprobante de ingreso" not in text
     else:
         assert "Comprobante de ingreso" in text
-        assert "Este comprobante registra el ingreso. El importe se cotiza antes de confirmar el egreso." in text
+        assert "SF-12345" in text
+        assert "Conservá este ticket para la salida. Comprobante de ingreso sin valor fiscal." in text
         assert "Cobro registrado" not in text and "Medio registrado" not in text
 
 

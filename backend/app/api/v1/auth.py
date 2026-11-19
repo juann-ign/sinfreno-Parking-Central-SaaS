@@ -19,6 +19,8 @@ def user_info(user):
         "sucursal": {
             "id": sucursal.id,
             "nombre": sucursal.nombre,
+            "direccion": sucursal.direccion,
+            "telefono": sucursal.telefono,
             "tarifa_auto": str(sucursal.tarifa_auto) if sucursal.tarifa_auto is not None else None,
             "tarifa_moto": str(sucursal.tarifa_moto) if sucursal.tarifa_moto is not None else None,
             "tarifa_camioneta": str(sucursal.tarifa_camioneta) if sucursal.tarifa_camioneta is not None else None,

@@ -150,6 +150,9 @@ def update_config(
     # 2. Actualizamos los campos de la sucursal (Nuevos campos dinámicos)
     if obj_in.nombre is not None:
         sucursal.nombre = obj_in.nombre
+    for field in ("direccion", "telefono"):
+        if field in obj_in.model_fields_set:
+            setattr(sucursal, field, getattr(obj_in, field))
 
      # Actualizamos las 3 tarifas
     if obj_in.tarifa_auto is not None:
@@ -186,6 +189,7 @@ def download_ticket_pdf(
     estadia_id: RecordId,
     db: Session = Depends(dependencies.get_db),
     current_user: db_models.Usuario = Depends(dependencies.get_current_branch_user),
+    tipo: Literal["INGRESO", "SALIDA"] | None = None,
 ):
     estadia = db.query(db_models.Estadia).join(db_models.Torre).filter(
         db_models.Estadia.id == estadia_id,
@@ -204,7 +208,10 @@ def download_ticket_pdf(
         or ("salida" in permissions and estadia.usuario_salida_id == current_user.id)
     ):
         raise HTTPException(status_code=403, detail="Permiso insuficiente para el comprobante")
-        
+    tipo_actual = "SALIDA" if estadia.estado == "FINALIZADO" else "INGRESO"
+    if tipo is not None and tipo != tipo_actual:
+        raise operation_error("COMPROBANTE_ACTUALIZADO", "La estadía cambió. Abrí el comprobante actualizado.")
+
     pdf_content = pdf_service.generar_pdf_ticket(estadia)
     
     return Response(

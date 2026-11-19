@@ -15,8 +15,8 @@
     "test:connections": "node --test config/connections.test.js",
     "test:realtime": "node --test api/realtime.test.js",
     "test:session": "node --test api/session-controller.test.js",
-    "test:operations": "node --test api/attempt-store.test.js ui/format.test.js ui/plate.test.js",
-    "test": "node --test api/session-controller.test.js api/realtime.test.js api/attempt-store.test.js config/connections.test.js ui/format.test.js ui/cash-close-state.test.js ui/plate.test.js",
+    "test:operations": "node --test api/attempt-store.test.js ui/format.test.js ui/plate.test.js ui/stay-search.test.js",
+    "test": "node --test api/session-controller.test.js api/realtime.test.js api/attempt-store.test.js config/connections.test.js ui/format.test.js ui/cash-close-state.test.js ui/plate.test.js ui/stay-search.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "axios": "1.21.1",
     "date-fns": "^4.4.0",
     "framer-motion": "^12.43.0",
+    "jsbarcode": "3.12.1",
     "lucide-react": "^0.474.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

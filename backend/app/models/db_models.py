@@ -24,6 +24,8 @@ class Sucursal(Base):
     __tablename__ = "sucursales"
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String)
+    direccion = Column(String(200), nullable=True)
+    telefono = Column(String(40), nullable=True)
 
     # Tarifas por categoría (Flexibilidad total)
     tarifa_auto = Column(Numeric(14, 2), default=Decimal("1000.00"))

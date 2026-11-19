@@ -4,6 +4,7 @@ import {
   Clock,
   History,
   LogOut,
+  Printer,
   RefreshCw,
   Search,
   Settings,
@@ -19,6 +20,7 @@ import { SESSION_ENDED_EVENT } from "../api/session.js";
 import { getWebSocketUrl } from "../config/connections.js";
 import { errorMessage, money } from "../ui/format.js";
 import { checkCashClose } from "../ui/cash-close-state.js";
+import { searchActiveStays } from "../ui/stay-search.js";
 import EntryForm from "../components/EntryForm.jsx";
 import ActiveTable from "../components/ActiveTable.jsx";
 import CashModal from "../components/CashModal.jsx";
@@ -51,6 +53,11 @@ export default function Dashboard({ onLogout }) {
     error: null,
   });
   const [receipt, setReceipt] = useState(null);
+  const [lastReceipt, setLastReceipt] = useState(null);
+  const printSettingKey = `sinfreno:imprimir-al-registrar:${user.sucursal.id}`;
+  const [printOnRegister, setPrintOnRegister] = useState(
+    () => localStorage.getItem(printSettingKey) === "1",
+  );
   const [cashDialog, setCashDialog] = useState(null);
   const [cashChecking, setCashChecking] = useState(false);
   const [reviewDate, setReviewDate] = useState(false);
@@ -62,6 +69,22 @@ export default function Dashboard({ onLogout }) {
   const cashCheckAbort = useRef(null);
   const cashCheckLock = useRef(false);
   const searchRef = useRef(null);
+  const focusNextOperation = useCallback((type) => {
+    requestAnimationFrame(() => {
+      if (document.querySelector("dialog[open]")) return;
+      if (type === "INGRESO") {
+        document.getElementById("entry-plate")?.focus();
+      } else {
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+    });
+  }, []);
+  const closeReceipt = useCallback(() => {
+    setReceipt(null);
+    if (receipt?.operation) focusNextOperation(receipt.operation);
+  }, [receipt, focusNextOperation]);
+  const viewReceipt = (data) => setReceipt({ data });
   const refresh = useCallback(() => {
     queryAbort.current?.abort();
     const controller = new AbortController();
@@ -177,10 +200,17 @@ export default function Dashboard({ onLogout }) {
     };
   }, [user.sucursal.id, login, logout, refresh, reconnect]);
   const onOperation = useCallback(
-    (type, result) => {
+    (type, result, mode) => {
       refresh();
       setVersion((value) => value + 1);
       if (type === "INGRESO" || type === "SALIDA") {
+        setLastReceipt(result);
+        const shouldPrint = printOnRegister && mode === "initial";
+        if (shouldPrint) {
+          setReceipt({ data: result, autoPrint: true, operation: type });
+        } else if (type === "SALIDA") {
+          focusNextOperation(type);
+        }
         if (type === "SALIDA") {
           setSelected(null);
           setQuote({ value: null, loading: false, error: null });
@@ -190,7 +220,9 @@ export default function Dashboard({ onLogout }) {
             ? `Ingreso registrado · ${result.patente}`
             : `Cobro registrado · ${result.patente} · ${money(result.monto)}`,
           {
-            action: { label: "Comprobante", onClick: () => setReceipt(result) },
+            action: shouldPrint ? undefined : {
+              label: "Ver ticket", onClick: () => setReceipt({ data: result }),
+            },
             duration: 7000,
           },
         );
@@ -203,7 +235,7 @@ export default function Dashboard({ onLogout }) {
         );
       }
     },
-    [refresh],
+    [refresh, printOnRegister, focusNextOperation],
   );
   const operations = useOperations(
     `${user.email}/${user.sucursal.id}`,
@@ -264,9 +296,10 @@ export default function Dashboard({ onLogout }) {
         signal: controller.signal,
         timeout: 12000,
       })
-      .then(({ data: value }) =>
-        setQuote({ value, loading: false, error: null }),
-      )
+      .then(({ data: value }) => {
+        if (!controller.signal.aborted)
+          setQuote({ value, loading: false, error: null });
+      })
       .catch((failure) => {
         if (!controller.signal.aborted)
           setQuote({
@@ -282,9 +315,8 @@ export default function Dashboard({ onLogout }) {
           });
       });
   }, []);
-  const filtered = data.stays.filter((stay) =>
-    stay.patente.includes(term.trim().toUpperCase()),
-  );
+  const { matches: filtered, exact } = searchActiveStays(data.stays, term);
+  const canQuote = hasPermission("salida") && !operations.busy && !pendingExit;
   const cashText = {
     loading: "Consultando caja…",
     closed: "Caja cerrada",
@@ -386,6 +418,31 @@ export default function Dashboard({ onLogout }) {
             <RefreshCw size={15} />
             Actualizar datos
           </button>
+          {(hasPermission("ingreso") || hasPermission("salida")) && (
+            <label className="sf-print-setting">
+              <input
+                type="checkbox"
+                checked={printOnRegister}
+                disabled={operations.busy}
+                onChange={(event) => {
+                  const enabled = event.target.checked;
+                  localStorage.setItem(printSettingKey, enabled ? "1" : "0");
+                  setPrintOnRegister(enabled);
+                }}
+              />
+              Imprimir al registrar en este puesto
+            </label>
+          )}
+          {lastReceipt && (
+            <button
+              className="sf-text-button"
+              type="button"
+              disabled={operations.busy}
+              onClick={() => setReceipt({ data: lastReceipt, autoPrint: true })}
+            >
+              <Printer size={16} aria-hidden="true" /> Imprimir último ticket · {lastReceipt.patente}
+            </button>
+          )}
         </div>
         {cash.status === "error" && (
           <p className="sf-notice sf-error" role="alert">
@@ -414,6 +471,7 @@ export default function Dashboard({ onLogout }) {
             towers={data.config?.torres || []}
             cashId={openCash?.id}
             busy={operations.busy}
+            printOnRegister={printOnRegister}
             pending={operations.pending.some((item) => item.type === "INGRESO")}
             onSubmit={(body) =>
               operations.run("INGRESO", { url: "/parking/ingreso", body })
@@ -459,13 +517,25 @@ export default function Dashboard({ onLogout }) {
             </header>
             <label className="sf-search">
               <Search size={20} />
-              <span className="sr-only">Buscar patente activa</span>
+              <span className="sr-only">Buscar patente activa o número de ticket</span>
               <input
                 ref={searchRef}
-                placeholder="Buscar patente…"
+                placeholder="Patente o ticket (ej. #123)"
                 autoComplete="off"
                 value={term}
-                onChange={(event) => setTerm(event.target.value.toUpperCase())}
+                onChange={(event) => {
+                  setTerm(event.target.value.toUpperCase());
+                  if (selected && !operations.busy && !pendingExit) {
+                    quoteAbort.current?.abort();
+                    setSelected(null);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+                  event.preventDefault();
+                  if (exact && canQuote && !event.repeat && !event.nativeEvent.isComposing)
+                    fetchQuote(exact);
+                }}
               />
               <kbd>/</kbd>
             </label>
@@ -478,9 +548,7 @@ export default function Dashboard({ onLogout }) {
               vehicles={filtered}
               towers={data.config?.torres || []}
               loading={data.loading}
-              canQuote={
-                hasPermission("salida") && !operations.busy && !pendingExit
-              }
+              canQuote={canQuote}
               onQuote={fetchQuote}
             />
           </section>
@@ -493,6 +561,7 @@ export default function Dashboard({ onLogout }) {
               error={quote.error}
               cash={openCash}
               operations={operations}
+              printOnRegister={printOnRegister}
               onRefresh={() => {
                 operations.clearError();
                 fetchQuote(selected);
@@ -520,7 +589,7 @@ export default function Dashboard({ onLogout }) {
         {(hasPermission("ingreso") ||
           hasPermission("salida") ||
           hasPermission("ver_historial")) && (
-          <OwnReceipts version={version} onView={setReceipt} />
+          <OwnReceipts version={version} onView={viewReceipt} />
         )}
         <footer className="sf-footer">
           <span className="sf-icon-label">
@@ -543,10 +612,13 @@ export default function Dashboard({ onLogout }) {
       )}
       {receipt && (
         <TicketModal
-          key={receipt.id}
+          key={receipt.data.id}
           isOpen
-          ticketData={receipt}
-          onClose={() => setReceipt(null)}
+          ticketData={receipt.data}
+            branchConfig={data.config}
+          autoPrint={receipt.autoPrint}
+          onAfterAutoPrint={closeReceipt}
+          onClose={closeReceipt}
         />
       )}
       {reviewDate && selected && (

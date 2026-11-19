@@ -89,6 +89,18 @@ async function closeReceipt(page) {
   await expect(dialog).toHaveCount(0);
 }
 
+async function observePrintRequests(page) {
+  await page.addInitScript(() => {
+    window.ticketPrintRequests = [];
+    // The native chooser can finish after either printing or cancelling.
+    window.print = () => {
+      const ticket = document.querySelector('dialog[open] #sinfreno-print-receipt');
+      window.ticketPrintRequests.push(ticket?.innerText ?? null);
+      window.dispatchEvent(new Event('afterprint'));
+    };
+  });
+}
+
 async function registerExit(page, plate) {
   await plateRow(activeTable(page), plate)
     .getByRole('button', { name: 'Cotizar salida', exact: true }).click();
@@ -175,9 +187,26 @@ test('keyboard entry creates one stay, confirms a quote and recovers its receipt
   await login(page, operatorEmail);
   try {
     await enterByKeyboard(page, plate);
-    await openReceipt(page, plate, false);
+    const entry = await openReceipt(page, plate, false);
+    const code = await entry.locator('.sf-ticket-code figcaption').innerText();
+    expect(code).toMatch(/^SF-[1-9][0-9]*$/);
+    await expect(entry.locator('.sf-ticket-code svg g rect').first()).toBeVisible();
     await closeReceipt(page);
-    await registerExit(page, plate);
+    const search = page.getByRole('textbox', { name: /^Buscar patente activa/ });
+    await search.fill(plate.slice(0, 4));
+    await search.press('Enter');
+    await expect(page.locator('.sf-quote')).toHaveCount(0);
+    await search.fill(code);
+    await search.press('Enter');
+    const quote = page.getByRole('region', { name: `Cotización para ${plate}`, exact: true });
+    await expect(quote.getByRole('button', { name: /^Registrar cobro de / })).toBeEnabled();
+    expect(exitRequests).toBe(0);
+    await quote.getByRole('button', { name: /^Registrar cobro de / }).click();
+    await expect(plateRow(ownReceipts(page), plate)).toContainText('Salida');
+    await search.fill(code);
+    await search.press('Enter');
+    await expect(activeTable(page)).toContainText('No hay vehículos');
+    await expect(page.locator('.sf-quote')).toHaveCount(0);
     const receipt = await openReceipt(page, plate, true);
     const receiptText = await receipt.locator('#sinfreno-print-receipt').innerText();
     expect(entryRequests).toBe(1);
@@ -239,6 +268,59 @@ test('independent operator and branch-admin contexts enforce role and branch bou
   }
 });
 
+test('desk printing follows confirmation once, returns focus and prints another copy without another charge', async ({ page }) => {
+  const plate = carPlate();
+  let entries = 0;
+  let exits = 0;
+  page.on('request', (request) => {
+    if (request.method() !== 'POST') return;
+    const path = new URL(request.url()).pathname;
+    if (path.endsWith('/parking/ingreso')) entries += 1;
+    if (/\/parking\/\d+\/salida$/.test(path)) exits += 1;
+  });
+  await observePrintRequests(page);
+  await login(page, operatorEmail);
+  const setting = page.getByRole('checkbox', { name: 'Imprimir al registrar en este puesto', exact: true });
+  await expect(setting).not.toBeChecked();
+  await setting.check();
+  await page.reload();
+  await expect(setting).toBeChecked();
+  const prints = () => page.evaluate(() => window.ticketPrintRequests);
+  const lastTicket = page.getByRole('button', { name: `Imprimir último ticket · ${plate}`, exact: true });
+  try {
+    await expect(page.getByRole('button', { name: 'Ingresar e imprimir', exact: true })).toBeVisible();
+    expect(await prints()).toHaveLength(0);
+    await enterByKeyboard(page, plate);
+    await expect.poll(prints).toHaveLength(1);
+    expect((await prints())[0]).toContain(plate);
+    await expect(page.getByLabel('Patente', { exact: true })).toBeFocused();
+    await lastTicket.click();
+    await expect.poll(prints).toHaveLength(2);
+    expect((await prints())[1]).toEqual((await prints())[0]);
+    await registerExit(page, plate);
+    await expect.poll(prints).toHaveLength(3);
+    expect((await prints())[2]).toContain(plate);
+    expect((await prints())[2]).not.toEqual((await prints())[0]);
+    await expect(page.getByRole('textbox', { name: /^Buscar patente activa/ })).toBeFocused();
+    await lastTicket.click();
+    await expect.poll(prints).toHaveLength(4);
+    expect((await prints())[3]).toEqual((await prints())[2]);
+    await page.reload();
+    await openReceipt(page, plate, true);
+    expect(await prints()).toHaveLength(0);
+    await closeReceipt(page);
+    expect(entries).toBe(1);
+    expect(exits).toBe(1);
+  } finally {
+    await finishOwnStay(page, plate);
+  }
+  await page.getByRole('button', { name: 'Salir', exact: true }).click();
+  await login(page, northEmail);
+  await expect(setting).not.toBeChecked();
+  await expect(lastTicket).toHaveCount(0);
+  expect(await prints()).toHaveLength(0);
+});
+
 test('print media keeps an authorized receipt visible and hides the workspace', async ({ page }) => {
   await login(page, operatorEmail);
   const view = ownReceipts(page).getByRole('button', { name: 'Ver comprobante', exact: true }).first();
@@ -270,7 +352,9 @@ test('an uncertain entry survives reload and recovers its real result without a 
       entryRequests += 1;
     }
   });
+  await observePrintRequests(page);
   await login(page, operatorEmail);
+  await page.getByRole('checkbox', { name: 'Imprimir al registrar en este puesto', exact: true }).check();
   await page.route('**/api/v1/parking/ingreso', async (route) => {
     try {
       // Process the real command exactly once, then lose only its response.
@@ -296,6 +380,7 @@ test('an uncertain entry survives reload and recovers its real result without a 
     const reference = await attempt.locator('small').innerText();
     expect(backendStatus).toBe(200);
     expect(entryRequests).toBe(1);
+    expect(await page.evaluate(() => window.ticketPrintRequests)).toHaveLength(0);
 
     await page.reload();
     await expect(pending.getByRole('heading', { name: 'Resultado por confirmar', exact: true })).toBeVisible();
@@ -313,6 +398,7 @@ test('an uncertain entry survives reload and recovers its real result without a 
     await expect(plateRow(activeTable(page), plate)).toHaveCount(1);
     await openReceipt(page, plate, false);
     expect(entryRequests).toBe(1);
+    expect(await page.evaluate(() => window.ticketPrintRequests)).toHaveLength(0);
   } finally {
     await finishOwnStay(page, plate);
   }

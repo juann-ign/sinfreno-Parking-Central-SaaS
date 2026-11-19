@@ -16,7 +16,29 @@ class EmpresaBase(BaseModel):
     nombre: str
     cuit: str
 
-class SucursalBase(BaseModel):
+class ContactoSucursal(BaseModel):
+    direccion: Optional[str] = Field(None, max_length=200)
+    telefono: Optional[str] = Field(None, max_length=40)
+
+    @field_validator("direccion", "telefono", mode="before")
+    @classmethod
+    def limpiar_linea_contacto(cls, value):
+        if isinstance(value, str):
+            value = " ".join(value.split())
+            if value and not value.isprintable():
+                raise ValueError("Usá texto imprimible para el ticket")
+            return value or None
+        return value
+
+    @field_validator("telefono")
+    @classmethod
+    def validar_telefono(cls, value):
+        if value is not None and not any(char in "0123456789" for char in value):
+            raise ValueError("El teléfono debe incluir un número")
+        return value
+
+
+class SucursalBase(ContactoSucursal):
     nombre: str
     tarifa_auto: Rate
     tarifa_moto: Rate
@@ -91,6 +113,11 @@ class EstadiaOut(BaseModel):
     patente: str
     tipo_vehiculo: str
     torre_id: int
+    torre_numero: Optional[int] = None
+    sucursal_nombre: Optional[str] = None
+    sucursal_direccion: Optional[str] = None
+    sucursal_telefono: Optional[str] = None
+    duracion_estadia: Optional[str] = None
     usuario_ingreso_id: int
     usuario_salida_id: Optional[int] = None
     fecha_entrada: datetime = Field(validation_alias=AliasChoices("fecha_entrada_publica", "fecha_entrada"))
@@ -158,7 +185,7 @@ class PeakHour(BaseModel):
         from_attributes = True
 
 # Nuevo esquema para actualizar la sucursal
-class SucursalUpdate(BaseModel):
+class SucursalUpdate(ContactoSucursal):
     nombre: Optional[str] = None
     tarifa_auto: Optional[Rate] = None
     tarifa_moto: Optional[Rate] = None
